@@ -46,8 +46,8 @@ public class NoneTypePrioritiserTest {
     }
 
     @Test
-    public void testGetPriorityTypeReturnsNoneType() {
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.NONE));
+    public void testPriorityTypeReturnsNoneType() {
+        assertThat(instance.priorityType(), equalTo(PriorityType.NONE));
     }
 
     @Test

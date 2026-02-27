@@ -77,14 +77,14 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     private List<VariantAnnotation> buildVariantAnnotations(GenomicVariant variant, VariantAnnotations variantAnnotations) {
-        // Group annotations by geneSymbol then create new Jannovar.VariantAnnotations from these then return List<VariantAnnotation>
-        // see issue https://github.com/exomiser/Exomiser/issues/294. However it creates approximately 2x as many variants
-        // which doubles the runtime, and most of the new variants are then filtered out. So here we're trying to limit the amount of new
-        // VariantAnnotations returned by only splitting those with a MODERATE or greater putative impact.
+        // Group annotations by geneSymbol then create new Jannovar. VariantAnnotations from these return a List<VariantAnnotation>
+        // see issue https://github.com/exomiser/Exomiser/issues/294. However, it creates approximately twice as many variants
+        // which doubles the runtime, and most of the new variants are then filtered out. So here we're trying to limit the number of new
+        // VariantAnnotations returned by only splitting those with a LOW or greater putative impact to include UTRs and non-coding intron/exon variants
         if (effectsMoreThanOneGeneWithMinimumImpact(variantAnnotations, PutativeImpact.MODERATE)) {
             return splitAnnotationsByGene(variantAnnotations)
                     .map(variantGeneAnnotations -> buildVariantAlleleAnnotation(variant, variantGeneAnnotations))
-                    .collect(toUnmodifiableList());
+                    .toList();
         }
         return List.of(buildVariantAlleleAnnotation(variant, variantAnnotations));
     }
@@ -192,15 +192,11 @@ class JannovarSmallVariantAnnotator implements VariantAnnotator {
     }
 
     private TranscriptAnnotation.RankType getRankType(RankType annoLocRankType) {
-        switch (annoLocRankType) {
-            case EXON:
-                return TranscriptAnnotation.RankType.EXON;
-            case INTRON:
-                return TranscriptAnnotation.RankType.INTRON;
-            case UNDEFINED:
-                return TranscriptAnnotation.RankType.UNDEFINED;
-        }
-        return TranscriptAnnotation.RankType.UNDEFINED;
+        return switch (annoLocRankType) {
+            case EXON -> TranscriptAnnotation.RankType.EXON;
+            case INTRON -> TranscriptAnnotation.RankType.INTRON;
+            case UNDEFINED -> TranscriptAnnotation.RankType.UNDEFINED;
+        };
     }
 
     private VariantEffect getVariantEffectOrDefault(Collection<VariantEffect> annotatedEffects, VariantEffect defaultEffect) {

@@ -27,8 +27,8 @@ import org.monarchinitiative.exomiser.api.v1.OutputProto;
 import org.monarchinitiative.exomiser.core.analysis.Analysis;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.pedigree.TestPedigrees;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Gene;
@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -54,12 +53,12 @@ class AnalysisResultsWriterTest {
     private Path tempFile;
 
     @BeforeEach
-    private void getTempFile() throws IOException {
+    public void getTempFile() throws IOException {
         tempFile = Files.createTempFile("exomiser_test", "");
     }
 
     @AfterEach
-    private void deleteTempFile() throws Exception {
+    public void deleteTempFile() throws Exception {
         Files.delete(tempFile);
     }
 
@@ -92,7 +91,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         for (OutputFormat outputFormat : Arrays.asList(OutputFormat.HTML, OutputFormat.TSV_GENE, OutputFormat.TSV_VARIANT, OutputFormat.VCF)) {
-            String fileExtension = outputFormat.getFileExtension();
+            String fileExtension = outputFormat.fileExtension();
             Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, fileExtension.equals("vcf") ? "vcf.gz" : fileExtension));
             assertThat(outputPath.toFile().exists(), is(true));
             assertThat(outputPath.toFile().delete(), is(true));
@@ -112,7 +111,7 @@ class AnalysisResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
-        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.fileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
         assertThat(outputPath.toFile().delete(), is(true));
     }
@@ -130,7 +129,7 @@ class AnalysisResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
-        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.getFileExtension()));
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.JSON.fileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
         assertThat(outputPath.toFile().delete(), is(true));
     }
@@ -150,7 +149,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
         for (OutputFormat outputFormat : singleFileFormats) {
-            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.getFileExtension()));
+            Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, outputFormat.fileExtension()));
             assertThat(outputPath.toFile().exists(), is(true));
             assertThat(outputPath.toFile().delete(), is(true));
         }
@@ -169,14 +168,13 @@ class AnalysisResultsWriterTest {
         Analysis analysis = Analysis.builder().build();
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), settings);
 
-        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.getFileExtension()));
+        Path outputPath = Paths.get(String.format("%s.%s", outputPrefix, OutputFormat.HTML.fileExtension()));
         assertThat(outputPath.toFile().exists(), is(true));
     }
 
     @Test
     void testWriteToFileWithOutputOptions() {
-
-        List<String> outputFormats = Arrays.stream(OutputFormat.values()).map(OutputFormat::toString).collect(Collectors.toList());
+        List<String> outputFormats = Arrays.stream(OutputFormat.values()).map(OutputFormat::toString).toList();
 
         OutputProto.OutputOptions outputOptions = OutputProto.OutputOptions.newBuilder()
                 .setOutputDirectory(tempFile.getParent().toString())
@@ -185,7 +183,7 @@ class AnalysisResultsWriterTest {
                 .build();
 
         Sample sample = Sample.builder()
-                .probandSampleName(TestPedigrees.affectedChild().getId())
+                .probandSampleName(TestPedigrees.affectedChild().id())
                 .pedigree(TestPedigrees.trioChildAffected())
                 .genomeAssembly(GenomeAssembly.HG19)
                 .vcfPath(Paths.get("src/test/resources/multiSampleWithProbandHomRef.vcf"))
@@ -195,7 +193,7 @@ class AnalysisResultsWriterTest {
         AnalysisResultsWriter.writeToFile(newAnalysisResults(sample, analysis), outputOptions);
 
         for (OutputFormat outputFormat : OutputFormat.values()) {
-            String fileExtension = outputFormat.getFileExtension();
+            String fileExtension = outputFormat.fileExtension();
             Path outputPath = Paths.get(String.format("%s.%s", tempFile, fileExtension.equals("vcf") ? "vcf.gz" : fileExtension));
             assertThat(outputPath.toString(), outputPath.toFile().exists(), is(true));
             assertThat(outputPath.toString(), outputPath.toFile().delete(), is(true));

@@ -74,13 +74,13 @@ public abstract class AnalysisRunnerTestBase {
     }
 
     Map<String, Gene> makeResults(List<Gene> genes) {
-        return genes.stream().collect(toMap(Gene::getGeneSymbol, Function.identity()));
+        return genes.stream().collect(toMap(Gene::geneSymbol, Function.identity()));
     }
 
     void printResults(AnalysisResults analysisResults) {
-        for (Gene gene : analysisResults.getGenes()) {
+        for (Gene gene : analysisResults.genes()) {
             logger.debug("{}", gene);
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+            for (VariantEvaluation variantEvaluation : gene.variantEvaluations()) {
                 logger.debug("{}", variantEvaluation);
             }
         }

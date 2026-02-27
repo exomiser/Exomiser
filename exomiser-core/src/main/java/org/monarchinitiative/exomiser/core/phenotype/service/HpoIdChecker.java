@@ -25,7 +25,7 @@ import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -67,7 +67,7 @@ public class HpoIdChecker {
      */
     public String getCurrentId(String hpoId) {
         PhenotypeTerm term = getCurrentTerm(hpoId);
-        return term == null ? hpoId : term.getId();
+        return term == null ? hpoId : term.id();
     }
 
     /**
@@ -90,11 +90,11 @@ public class HpoIdChecker {
             logger.warn("Input {} - unable to find current id. Returning input {}", hpoId, hpoId);
             return null;
         }
-        if (hpoId.equals(term.getId())) {
-            logger.debug("Input is current - {} ({})", hpoId, term.getLabel());
+        if (hpoId.equals(term.id())) {
+            logger.debug("Input is current - {} ({})", hpoId, term.label());
             return term;
         } else {
-            logger.info("Input term {} is obsolete. Replaced by {} ({})", hpoId, term.getId(), term.getLabel());
+            logger.info("Input term {} is obsolete. Replaced by {} ({})", hpoId, term.id(), term.label());
             return term;
         }
     }

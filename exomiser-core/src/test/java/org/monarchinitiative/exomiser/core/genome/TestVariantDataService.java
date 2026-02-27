@@ -120,7 +120,7 @@ public class TestVariantDataService implements VariantDataService {
 
         List<PathogenicityScore> wanted = pathData.pathogenicityScores()
                 .stream()
-                .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.getSource()))
+                .filter(pathogenicity -> pathogenicitySources.contains(pathogenicity.source()))
                 .toList();
 
         return PathogenicityData.of(pathData.clinVarData(), wanted);

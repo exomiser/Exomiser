@@ -568,8 +568,8 @@ public class MvStoreAlleleIndexerTest {
 //            String key = field.getKey();
 //            if (FREQUENCY_SOURCE_MAP.containsKey(key)) {
 //                AlleleProto.FrequencySource source = FREQUENCY_SOURCE_MAP.get(key);
-//                float value = field.getValue();
-//                frequencies.add(AlleleProto.Frequency.newBuilder().setFrequencySource(source).setFreq(value).build());
+//                float frequency = field.getValue();
+//                frequencies.add(AlleleProto.Frequency.newBuilder().setFrequencySource(source).setFreq(frequency).build());
 //            }
 //        }
 //        return frequencies;

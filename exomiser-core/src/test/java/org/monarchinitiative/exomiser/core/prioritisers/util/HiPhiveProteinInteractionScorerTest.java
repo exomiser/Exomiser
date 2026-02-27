@@ -21,16 +21,17 @@
 package org.monarchinitiative.exomiser.core.prioritisers.util;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import org.jblas.FloatMatrix;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneMatch;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModelPhenotypeMatch;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -40,7 +41,7 @@ import static org.hamcrest.number.IsCloseTo.closeTo;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class HiPhiveProteinInteractionScorerTest {
+class HiPhiveProteinInteractionScorerTest {
 
     //the Random-walk with restart (RWR) matrix used here is described in:
     //http://www.sciencedirect.com/science/article/pii/S0002929708001729
@@ -88,23 +89,24 @@ public class HiPhiveProteinInteractionScorerTest {
 
 
     private GeneDiseaseModel makeModelForGeneId(String modelId, int entrezGeneId) {
-        return new GeneDiseaseModel(modelId, Organism.HUMAN, entrezGeneId,"","", "", Collections.emptyList());
+        Disease disease = Disease.builder().associatedGeneId(entrezGeneId).build();
+        return new GeneDiseaseModel(modelId, Organism.HUMAN, disease);
     }
 
     @Test
-    public void testEmpty() {
+    void testEmpty() {
         HiPhiveProteinInteractionScorer instance = HiPhiveProteinInteractionScorer.empty();
         assertThat(instance.getClosestPhenoMatchInNetwork(123), equalTo(GeneMatch.NO_HIT));
     }
 
     @Test
-    public void testEmptyInputValues() {
+    void testEmptyInputValues() {
         HiPhiveProteinInteractionScorer instance = new HiPhiveProteinInteractionScorer(DataMatrix.empty(), ArrayListMultimap.create(), 0.0);
         assertThat(instance.getClosestPhenoMatchInNetwork(123), equalTo(GeneMatch.NO_HIT));
     }
 
     @Test
-    public void geneInNetworkButUnderPhenotypeCutoff() {
+    void geneInNetworkButUnderPhenotypeCutoff() {
         ArrayListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
         bestGeneModels.put(1, geneModelMatch(1, HIGH_QUALITY_PHENO_SCORE_CUT_OFF - 0.5, "MONDO:1"));
 
@@ -114,7 +116,7 @@ public class HiPhiveProteinInteractionScorerTest {
     }
 
     @Test
-    public void geneInNetworkSelfHit() {
+    void geneInNetworkSelfHit() {
         ArrayListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
         bestGeneModels.put(1, geneModelMatch(1, 0.7, "MONDO:1"));
 
@@ -124,25 +126,25 @@ public class HiPhiveProteinInteractionScorerTest {
     }
 
     @Test
-    public void geneInNetworkClosestHit() {
+    void geneInNetworkClosestHit() {
         GeneModelPhenotypeMatch bestModel = geneModelMatch(5, 0.7, "MONDO:5");
 
         ArrayListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
-        bestGeneModels.put(bestModel.getEntrezGeneId(), bestModel);
+        bestGeneModels.put(bestModel.entrezGeneId(), bestModel);
 
         HiPhiveProteinInteractionScorer instance = new HiPhiveProteinInteractionScorer(dataMatrix, bestGeneModels, HIGH_QUALITY_PHENO_SCORE_CUT_OFF);
 
         int queryGeneId = 6;
         GeneMatch closestPhenoMatchInNetwork = instance.getClosestPhenoMatchInNetwork(queryGeneId);
 
-        assertThat(closestPhenoMatchInNetwork.getQueryGeneId(), equalTo(queryGeneId));
-        assertThat(closestPhenoMatchInNetwork.getMatchGeneId(), equalTo(bestModel.getEntrezGeneId()));
-        assertThat(closestPhenoMatchInNetwork.getScore(), closeTo(0.57d, 0.001));
-        assertThat(closestPhenoMatchInNetwork.getBestMatchModels(), equalTo(ImmutableList.of(bestModel)));
+        assertThat(closestPhenoMatchInNetwork.queryGeneId(), equalTo(queryGeneId));
+        assertThat(closestPhenoMatchInNetwork.matchGeneId(), equalTo(bestModel.entrezGeneId()));
+        assertThat(closestPhenoMatchInNetwork.score(), closeTo(0.57d, 0.001));
+        assertThat(closestPhenoMatchInNetwork.bestMatchModels(), equalTo(List.of(bestModel)));
     }
 
     @Test
-    public void geneInNetworkClosestHitTwoNetworks() {
+    void geneInNetworkClosestHitTwoNetworks() {
 
         GeneModelPhenotypeMatch model5 = geneModelMatch(5, 0.7, "MONDO:5");
         //in the interaction matrix above 1-2-3-4 are in one network and 5-6 are in another
@@ -150,19 +152,19 @@ public class HiPhiveProteinInteractionScorerTest {
         GeneModelPhenotypeMatch model3 = geneModelMatch(3, 0.63, "MONDO:3");
 
         ArrayListMultimap<Integer, GeneModelPhenotypeMatch> bestGeneModels = ArrayListMultimap.create();
-        bestGeneModels.put(model5.getEntrezGeneId(), model5);
-        bestGeneModels.put(model2.getEntrezGeneId(), model2);
-        bestGeneModels.put(model3.getEntrezGeneId(), model3);
+        bestGeneModels.put(model5.entrezGeneId(), model5);
+        bestGeneModels.put(model2.entrezGeneId(), model2);
+        bestGeneModels.put(model3.entrezGeneId(), model3);
 
         HiPhiveProteinInteractionScorer instance = new HiPhiveProteinInteractionScorer(dataMatrix, bestGeneModels, HIGH_QUALITY_PHENO_SCORE_CUT_OFF);
 
         int queryGeneId = 4;
         GeneMatch closestPhenoMatchInNetwork = instance.getClosestPhenoMatchInNetwork(queryGeneId);
 
-        assertThat(closestPhenoMatchInNetwork.getQueryGeneId(), equalTo(queryGeneId));
-        assertThat(closestPhenoMatchInNetwork.getMatchGeneId(), equalTo(model3.getEntrezGeneId()));
-        assertThat(closestPhenoMatchInNetwork.getScore(), closeTo(0.563d, 0.001));
-        assertThat(closestPhenoMatchInNetwork.getBestMatchModels(), equalTo(ImmutableList.of(model3)));
+        assertThat(closestPhenoMatchInNetwork.queryGeneId(), equalTo(queryGeneId));
+        assertThat(closestPhenoMatchInNetwork.matchGeneId(), equalTo(model3.entrezGeneId()));
+        assertThat(closestPhenoMatchInNetwork.score(), closeTo(0.563d, 0.001));
+        assertThat(closestPhenoMatchInNetwork.bestMatchModels(), equalTo(List.of(model3)));
     }
 
 }

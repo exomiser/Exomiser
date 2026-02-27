@@ -28,7 +28,7 @@ import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class FailedVariantFilter implements VariantFilter {
+public record FailedVariantFilter() implements VariantFilter {
 
     private static final FilterType FILTER_TYPE = FilterType.FAILED_VARIANT_FILTER;
 
@@ -41,7 +41,7 @@ public class FailedVariantFilter implements VariantFilter {
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        VariantContextFilterState vcfFilterState = determineVariantContextState(variantEvaluation.getVariantContext());
+        VariantContextFilterState vcfFilterState = determineVariantContextState(variantEvaluation.variantContext());
         if (vcfFilterState == VariantContextFilterState.PASSED || vcfFilterState == VariantContextFilterState.UNFILTERED) {
             return PASS;
         }
@@ -60,21 +60,8 @@ public class FailedVariantFilter implements VariantFilter {
     }
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return FILTER_TYPE;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        return getClass() == obj.getClass();
     }
 
     @Override

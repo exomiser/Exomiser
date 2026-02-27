@@ -46,7 +46,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
         return variantEvaluation -> {
             //Only load the variant if the gene has passed the other filters
             //this should drastically reduce the number of collected variants
-            Gene gene = genes.get(variantEvaluation.getGeneSymbol());
+            Gene gene = genes.get(variantEvaluation.geneSymbol());
             return gene != null && gene.passedFilters();
         };
     }
@@ -76,7 +76,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
 
     private UnaryOperator<Gene> removeFailedVariants() {
         return gene -> {
-            gene.getVariantEvaluations().removeIf(variantFailedFilters());
+            gene.variantEvaluations().removeIf(variantFailedFilters());
             return gene;
         };
     }

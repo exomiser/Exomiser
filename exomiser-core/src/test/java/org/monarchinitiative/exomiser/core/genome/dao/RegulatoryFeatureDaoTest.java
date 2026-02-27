@@ -66,7 +66,7 @@ public class RegulatoryFeatureDaoTest {
 
         for (RegulatoryFeature result : results) {
             assertThat(regulatoryFeatures, hasItem(result));
-            assertThat(result.getFeatureType(), not(RegulatoryFeature.FeatureType.UNKNOWN));
+            assertThat(result.featureType(), not(RegulatoryFeature.FeatureType.UNKNOWN));
         }
     }
 

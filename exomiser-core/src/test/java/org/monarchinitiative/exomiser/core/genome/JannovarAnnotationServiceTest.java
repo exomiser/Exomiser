@@ -25,7 +25,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import htsjdk.variant.variantcontext.VariantContext;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.svart.GenomicVariant;
-import org.monarchinitiative.svart.util.VariantTrimmer;
+import org.monarchinitiative.svart.sequence.VariantTrimmer;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;

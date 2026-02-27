@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers;
 
-import com.google.common.collect.Sets;
 import org.monarchinitiative.exomiser.core.phenotype.Model;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
@@ -41,30 +40,20 @@ import java.util.*;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class HiPhiveOptions {
+public record HiPhiveOptions(
+        String diseaseId,
+        String candidateGeneSymbol,
+
+        boolean isBenchmarkingEnabled,
+
+        boolean runPpi,
+        boolean runHuman,
+        boolean runMouse,
+        boolean runFish
+) {
     private static final Logger logger = LoggerFactory.getLogger(HiPhiveOptions.class);
 
     private static final HiPhiveOptions DEFAULT = HiPhiveOptions.builder().build();
-
-    private final String diseaseId;
-    private final String candidateGeneSymbol;
-
-    private final boolean benchmarkingEnabled;
-
-    private final boolean runPpi;
-    private final boolean runHuman;
-    private final boolean runMouse;
-    private final boolean runFish;
-
-    private HiPhiveOptions(Builder builder) {
-        diseaseId = builder.diseaseId;
-        candidateGeneSymbol = builder.candidateGeneSymbol;
-        benchmarkingEnabled = builder.benchmarkingEnabled;
-        runPpi = builder.runPpi;
-        runHuman = builder.runHuman;
-        runMouse = builder.runMouse;
-        runFish = builder.runFish;
-    }
 
     public static HiPhiveOptions defaults() {
         return DEFAULT;
@@ -87,45 +76,17 @@ public class HiPhiveOptions {
         return stringJoiner.toString();
     }
 
-    public String getDiseaseId() {
-        return diseaseId;
-    }
-
-    public String getCandidateGeneSymbol() {
-        return candidateGeneSymbol;
-    }
-
-    public boolean isBenchmarkingEnabled() {
-        return benchmarkingEnabled;
-    }
-
-    public boolean runPpi() {
-        return runPpi;
-    }
-
-    public boolean runFish() {
-        return runFish;
-    }
-
-    public boolean runMouse() {
-        return runMouse;
-    }
-
-    public boolean runHuman() {
-        return runHuman;
-    }
-
     /**
      * Tests whether of not the {@link GeneModel} is a benchmarking model. This method takes into account whether or not
-     * the instance is benchmarkingEnabled so clients do not need to check this first.
+     * the instance is isBenchmarkingEnabled so clients do not need to check this first.
      *
      * @param geneModel the {@link GeneModel} to be tested
      * @return true if the {@link GeneModel} matches either the disease or gene specified in the options. Will return
-     * false if the instance is not benchmarkingEnabled.
+     * false if the instance is not isBenchmarkingEnabled.
      * @since 13.0.0
      */
     public boolean isBenchmarkingModel(GeneModel geneModel) {
-        return benchmarkingEnabled && isBenchmarkHit(geneModel);
+        return isBenchmarkingEnabled && isBenchmarkHit(geneModel);
     }
 
     private boolean isBenchmarkHit(GeneModel model) {
@@ -133,12 +94,12 @@ public class HiPhiveOptions {
     }
 
     private boolean matchesCandidateGeneSymbol(GeneModel model) {
-        return model.getHumanGeneSymbol() != null && model.getHumanGeneSymbol().equals(candidateGeneSymbol);
+        return model.humanGeneSymbol() != null && model.humanGeneSymbol().equals(candidateGeneSymbol);
     }
 
     private boolean matchesDisease(Model model) {
         // human model ID is now disease plus entrezgene to ensure uniqueness in HiPhive code
-        return model.getId() != null && model.getId().split("_")[0].equals(diseaseId);
+        return model.id() != null && model.id().split("_")[0].equals(diseaseId);
     }
 
     public Set<Organism> getOrganismsToRun() {
@@ -156,7 +117,7 @@ public class HiPhiveOptions {
         if (organismsToRun.isEmpty()) {
             return Collections.emptySet();
         }
-        return Sets.immutableEnumSet(organismsToRun);
+        return Collections.unmodifiableSet(EnumSet.copyOf(organismsToRun));
     }
 
     static class InvalidRunParameterException extends RuntimeException {
@@ -166,61 +127,16 @@ public class HiPhiveOptions {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        HiPhiveOptions that = (HiPhiveOptions) o;
-
-        if (benchmarkingEnabled != that.benchmarkingEnabled) {
-            return false;
-        }
-        if (runPpi != that.runPpi) {
-            return false;
-        }
-        if (runHuman != that.runHuman) {
-            return false;
-        }
-        if (runMouse != that.runMouse) {
-            return false;
-        }
-        if (runFish != that.runFish) {
-            return false;
-        }
-        if (diseaseId != null ? !diseaseId.equals(that.diseaseId) : that.diseaseId != null) {
-            return false;
-        }
-        return !(candidateGeneSymbol != null ? !candidateGeneSymbol.equals(that.candidateGeneSymbol) : that.candidateGeneSymbol != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = diseaseId != null ? diseaseId.hashCode() : 0;
-        result = 31 * result + (candidateGeneSymbol != null ? candidateGeneSymbol.hashCode() : 0);
-        result = 31 * result + (benchmarkingEnabled ? 1 : 0);
-        result = 31 * result + (runPpi ? 1 : 0);
-        result = 31 * result + (runHuman ? 1 : 0);
-        result = 31 * result + (runMouse ? 1 : 0);
-        result = 31 * result + (runFish ? 1 : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "HiPhiveOptions{" +
-                "diseaseId='" + diseaseId + '\'' +
-                ", candidateGeneSymbol='" + candidateGeneSymbol + '\'' +
-                ", benchmarkingEnabled=" + benchmarkingEnabled +
-                ", runPpi=" + runPpi +
-                ", runHuman=" + runHuman +
-                ", runMouse=" + runMouse +
-                ", runFish=" + runFish +
-                '}';
+               "diseaseId='" + diseaseId + '\'' +
+               ", candidateGeneSymbol='" + candidateGeneSymbol + '\'' +
+               ", isBenchmarkingEnabled=" + isBenchmarkingEnabled +
+               ", runPpi=" + runPpi +
+               ", runHuman=" + runHuman +
+               ", runMouse=" + runMouse +
+               ", runFish=" + runFish +
+               '}';
     }
 
     public static Builder builder() {
@@ -299,7 +215,15 @@ public class HiPhiveOptions {
 
         public HiPhiveOptions build() {
             this.benchmarkingEnabled = assertBenchmarkingStatus(diseaseId, candidateGeneSymbol);
-            return new HiPhiveOptions(this);
+            return new HiPhiveOptions(
+                diseaseId,
+                candidateGeneSymbol,
+                benchmarkingEnabled,
+                runPpi,
+                runHuman,
+                runMouse,
+                runFish
+            );
         }
 
         private boolean assertBenchmarkingStatus(String diseaseId, String candidateGeneSymbol) {

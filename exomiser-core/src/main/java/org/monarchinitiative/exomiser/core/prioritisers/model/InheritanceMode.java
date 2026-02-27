@@ -86,34 +86,24 @@ public enum InheritanceMode {
     }
 
     public boolean isCompatibleWithDominant() {
-        switch(this) {
-            case AUTOSOMAL_DOMINANT:
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (this) {
+            case AUTOSOMAL_DOMINANT, AUTOSOMAL_DOMINANT_AND_RECESSIVE -> true;
+            default -> false;
+        };
     }
 
     public boolean isCompatibleWithRecessive() {
-        switch(this) {
-            case AUTOSOMAL_RECESSIVE:
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (this) {
+            case AUTOSOMAL_RECESSIVE, AUTOSOMAL_DOMINANT_AND_RECESSIVE -> true;
+            default -> false;
+        };
     }
 
     public boolean isXlinked() {
-        switch(this) {
-            case X_LINKED:
-            case X_DOMINANT:
-            case X_RECESSIVE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (this) {
+            case X_LINKED, X_DOMINANT, X_RECESSIVE -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -121,47 +111,34 @@ public enum InheritanceMode {
      * @return a set of {@code ModeOfInheritance} which are equivalent to the {@code InheritanceMode)
      */
     public Set<ModeOfInheritance> toModeOfInheritance() {
-        switch (this) {
-            case AUTOSOMAL_DOMINANT:
-                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
-            case AUTOSOMAL_RECESSIVE:
-                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
-                return EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
-            case X_RECESSIVE:
-                return EnumSet.of(ModeOfInheritance.X_RECESSIVE);
-            case X_DOMINANT:
-                return EnumSet.of(ModeOfInheritance.X_DOMINANT);
-            case X_LINKED:
-                return EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
-            case MITOCHONDRIAL:
-                return EnumSet.of(ModeOfInheritance.MITOCHONDRIAL);
-            default:
-                return EnumSet.noneOf(ModeOfInheritance.class);
-        }
+        return switch (this) {
+            case AUTOSOMAL_DOMINANT -> EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+            case AUTOSOMAL_RECESSIVE -> EnumSet.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+            case AUTOSOMAL_DOMINANT_AND_RECESSIVE ->
+                    EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT, ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+            case X_RECESSIVE -> EnumSet.of(ModeOfInheritance.X_RECESSIVE);
+            case X_DOMINANT -> EnumSet.of(ModeOfInheritance.X_DOMINANT);
+            case X_LINKED -> EnumSet.of(ModeOfInheritance.X_RECESSIVE, ModeOfInheritance.X_DOMINANT);
+            case MITOCHONDRIAL -> EnumSet.of(ModeOfInheritance.MITOCHONDRIAL);
+            default -> EnumSet.noneOf(ModeOfInheritance.class);
+        };
     }
 
     public boolean isCompatibleWith(ModeOfInheritance modeOfInheritance) {
         if (modeOfInheritance == ModeOfInheritance.ANY) {
             return true;
         }
-        switch (this) {
-            case AUTOSOMAL_DOMINANT:
-                return modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT;
-            case AUTOSOMAL_RECESSIVE:
-                return modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE;
-            case AUTOSOMAL_DOMINANT_AND_RECESSIVE:
-                return modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT || modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE;
-            case X_RECESSIVE:
-                return modeOfInheritance == ModeOfInheritance.X_RECESSIVE;
-            case X_DOMINANT:
-                return modeOfInheritance == ModeOfInheritance.X_DOMINANT;
-            case X_LINKED:
-                return modeOfInheritance == ModeOfInheritance.X_RECESSIVE || modeOfInheritance == ModeOfInheritance.X_DOMINANT;
-            case MITOCHONDRIAL:
-                return modeOfInheritance == ModeOfInheritance.MITOCHONDRIAL;
-            default:
-                return false;
-        }
+        return switch (this) {
+            case AUTOSOMAL_DOMINANT -> modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT;
+            case AUTOSOMAL_RECESSIVE -> modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE;
+            case AUTOSOMAL_DOMINANT_AND_RECESSIVE ->
+                    modeOfInheritance == ModeOfInheritance.AUTOSOMAL_DOMINANT || modeOfInheritance == ModeOfInheritance.AUTOSOMAL_RECESSIVE;
+            case X_RECESSIVE -> modeOfInheritance == ModeOfInheritance.X_RECESSIVE;
+            case X_DOMINANT -> modeOfInheritance == ModeOfInheritance.X_DOMINANT;
+            case X_LINKED ->
+                    modeOfInheritance == ModeOfInheritance.X_RECESSIVE || modeOfInheritance == ModeOfInheritance.X_DOMINANT;
+            case MITOCHONDRIAL -> modeOfInheritance == ModeOfInheritance.MITOCHONDRIAL;
+            default -> false;
+        };
     }
 }

@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -71,7 +72,7 @@ class ProtoParserTest {
 
     @Test
     void readIncorrectFileTypeThrowsException() {
-        assertThrows(ProtoParser.ProtoParserException.class, () -> parseSample(Paths.get("src/test/resources/minimal.vcf")));
+        assertThrows(ProtoParseException.class, () -> parseSample(Paths.get("src/test/resources/minimal.vcf")));
     }
 
     @Test
@@ -133,26 +134,28 @@ class ProtoParserTest {
 
     @Test
     void testParseYaml() {
-        String phenopacketYaml = "---\n" +
-                "subject:\n" +
-                "  id: \"manuel\"\n" +
-                "phenotypicFeatures:\n" +
-                "  - type:\n" +
-                "      id: \"HP:0001156\"\n" +
-                "      label: \"Brachydactyly\"\n" +
-                "  - type:\n" +
-                "      id: \"HP:0001363\"\n" +
-                "      label: \"Craniosynostosis\"\n" +
-                "  - type:\n" +
-                "      id: \"HP:0011304\"\n" +
-                "      label: \"Broad thumb\"\n" +
-                "  - type:\n" +
-                "      id: \"HP:0010055\"\n" +
-                "      label: \"Broad hallux\"\n" +
-                "htsFiles:\n" +
-                "  - uri: \"file://Pfeiffer.vcf\"\n" +
-                "    htsFormat: \"VCF\"\n" +
-                "    genomeAssembly: \"GRCh37\"";
+        String phenopacketYaml = """
+                ---
+                subject:
+                  id: "manuel"
+                phenotypicFeatures:
+                  - type:
+                      id: "HP:0001156"
+                      label: "Brachydactyly"
+                  - type:
+                      id: "HP:0001363"
+                      label: "Craniosynostosis"
+                  - type:
+                      id: "HP:0011304"
+                      label: "Broad thumb"
+                  - type:
+                      id: "HP:0010055"
+                      label: "Broad hallux"
+                htsFiles:
+                  - uri: "file://Pfeiffer.vcf"
+                    htsFormat: VCF
+                    genomeAssembly: "GRCh37"
+                """;
 
         Phenopacket phenopacket = ProtoParser.parseFromJsonOrYaml(Phenopacket.newBuilder(), phenopacketYaml).build();
         assertThat(phenopacket.getSubject().getId(), equalTo("manuel"));
@@ -161,4 +164,26 @@ class ProtoParserTest {
         assertThat(phenopacket.getHtsFiles(0).getHtsFormat(), equalTo(HtsFile.HtsFormat.VCF));
     }
 
+    @Test
+    void testParseYamlError() {
+        String phenopacketYaml = """
+                ---
+                subject:
+                  id: "manuel"
+                # phenotypicFeatures should be an array, here it is an OntologyClass object
+                phenotypicFeatures:
+                   type:
+                      id: "HP:0001156"
+                      label: "Brachydactyly"
+                htsFiles:
+                  - uri: "file://Pfeiffer.vcf"
+                    htsFormat: VCF
+                    genomeAssembly: "GRCh37"
+                """;
+
+        Exception exception = assertThrows(ProtoParseException.class,
+                () -> ProtoParser.parseFromJsonOrYaml(Phenopacket.newBuilder(), phenopacketYaml).build());
+        assertThat(exception.getMessage(), startsWith("Unable to parse message type org.phenopackets.schema.v1.Phenopacket" +
+                                                      " from input string caused by: Expected an array for phenotypic_features but found"));
+    }
 }

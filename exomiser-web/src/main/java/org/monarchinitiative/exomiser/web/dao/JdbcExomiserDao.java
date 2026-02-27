@@ -59,7 +59,7 @@ public class JdbcExomiserDao implements ExomiserDao {
         String query = "SELECT disease_id, diseasename FROM disease";
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = createPreparedStatement(connection, query);
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
                 ResultSet rs = preparedStatement.executeQuery()) {
 
             return processGetDiseasesResults(rs);
@@ -76,7 +76,7 @@ public class JdbcExomiserDao implements ExomiserDao {
         String query = "select id, lcname from hpo";
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = createPreparedStatement(connection, query);
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
                 ResultSet rs = preparedStatement.executeQuery()) {
 
             return processGetHpoTermsResults(rs);
@@ -93,7 +93,7 @@ public class JdbcExomiserDao implements ExomiserDao {
         String query = "select human_gene_symbol, human_gene_symbol from human2mouse_orthologs";
         try (
                 Connection connection = dataSource.getConnection();
-                PreparedStatement preparedStatement = createPreparedStatement(connection, query);
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
                 ResultSet rs = preparedStatement.executeQuery()) {
 
             return processGetHpoTermsResults(rs);
@@ -103,11 +103,6 @@ public class JdbcExomiserDao implements ExomiserDao {
         }
 
         return Collections.emptyMap();
-    }
-
-    private PreparedStatement createPreparedStatement(Connection connection, String query) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        return preparedStatement;
     }
 
     private Map<String, String> processGetDiseasesResults(ResultSet rs) throws SQLException {

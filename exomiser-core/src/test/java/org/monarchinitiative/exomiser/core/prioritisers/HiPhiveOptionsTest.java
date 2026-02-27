@@ -28,6 +28,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.prioritisers.HiPhiveOptions.InvalidRunParameterException;
+import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneDiseaseModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneModel;
 import org.monarchinitiative.exomiser.core.prioritisers.model.GeneOrthologModel;
@@ -42,9 +43,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class HiPhiveOptionsTest {
+class HiPhiveOptionsTest {
 
-    private final GeneModel model = new GeneDiseaseModel("OMIM:101600", Organism.HUMAN, 12345, "Gene1", "DISEASE:1", "Test disease", Collections.emptyList());
+    private final GeneModel model;
+
+    {
+        Disease disease = Disease.builder()
+                .diseaseId("DISEASE:1")
+                .diseaseName("Test disease")
+                .associatedGeneId(12345)
+                .associatedGeneSymbol("Gene1")
+                .phenotypeIds(Collections.emptyList())
+                .build();
+        model = new GeneDiseaseModel("OMIM:101600", Organism.HUMAN, disease);
+    }
 
     private void assertAllRunParamsAreTrue(HiPhiveOptions hiPhiveOptions) {
         assertThat(hiPhiveOptions.runHuman(), is(true));
@@ -54,19 +66,19 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testReturnsFalseWithDefaultConstructor() {
+    void testReturnsFalseWithDefaultConstructor() {
         HiPhiveOptions instance = HiPhiveOptions.builder().build();
         assertThat(instance.isBenchmarkingModel(model), is(false));
     }
 
     @Test
-    public void testDefault() {
+    void testDefault() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
         assertDefaultOptions(instance);
     }
 
     @Test
-    public void testBuilderDefaults() {
+    void testBuilderDefaults() {
         HiPhiveOptions instance = HiPhiveOptions.builder().build();
         assertDefaultOptions(instance);
     }
@@ -80,18 +92,18 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testAllRunParametersAreTrueUsingParameterisedConstructorAndEmptyRunParameters() {
+    void testAllRunParametersAreTrueUsingParameterisedConstructorAndEmptyRunParameters() {
         HiPhiveOptions instance = HiPhiveOptions.builder().runParams("").build();
         assertAllRunParamsAreTrue(instance);
     }
 
     @Test
-    public void testThrowsInvalidRunParameterExceptionWhenEncountersUnrecognisedRunParameter() {
+    void testThrowsInvalidRunParameterExceptionWhenEncountersUnrecognisedRunParameter() {
         assertThrows(InvalidRunParameterException.class, () -> HiPhiveOptions.builder().runParams("floorb").build());
     }
 
     @Test
-    public void testSetsRunHumanTrueAllOthersFalseWhenOnlyHumanSpecifiedInParameters() {
+    void testSetsRunHumanTrueAllOthersFalseWhenOnlyHumanSpecifiedInParameters() {
         HiPhiveOptions instance = HiPhiveOptions.builder().runParams("human").build();
         assertThat(instance.runHuman(), is(true));
         assertThat(instance.runMouse(), is(false));
@@ -100,7 +112,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testSetsRunHumanMouseTrueAllOthersFalseWhenOnlyHumanMouseSpecifiedInParameters() {
+    void testSetsRunHumanMouseTrueAllOthersFalseWhenOnlyHumanMouseSpecifiedInParameters() {
         HiPhiveOptions instance = HiPhiveOptions.builder().runParams("human,mouse").build();
         assertThat(instance.runHuman(), is(true));
         assertThat(instance.runMouse(), is(true));
@@ -109,7 +121,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testSetsRunHumanMouseFishTrueRunPpiFalseWhenOnlyHumanMouseFishSpecifiedInParameters() {
+    void testSetsRunHumanMouseFishTrueRunPpiFalseWhenOnlyHumanMouseFishSpecifiedInParameters() {
         HiPhiveOptions instance = HiPhiveOptions.builder().runParams("human,mouse,fish").build();
         assertThat(instance.runHuman(), is(true));
         assertThat(instance.runMouse(), is(true));
@@ -118,7 +130,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testSetsRunHumanMouseFishPpiTrueHumanMouseFishPpiSpecifiedInParameters() {
+    void testSetsRunHumanMouseFishPpiTrueHumanMouseFishPpiSpecifiedInParameters() {
         HiPhiveOptions instance = HiPhiveOptions.builder().runParams("human,mouse,fish,ppi").build();
         assertThat(instance.runHuman(), is(true));
         assertThat(instance.runMouse(), is(true));
@@ -127,7 +139,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testWillRemoveWhitespaceFromRunParams() {
+    void testWillRemoveWhitespaceFromRunParams() {
         HiPhiveOptions instance = HiPhiveOptions.builder().runParams("human,mouse,fish , ppi").build();
         assertThat(instance.runHuman(), is(true));
         assertThat(instance.runMouse(), is(true));
@@ -151,7 +163,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testBuilderRunParams() {
+    void testBuilderRunParams() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("human,mouse,fish,ppi")
                 .build();
@@ -164,25 +176,25 @@ public class HiPhiveOptionsTest {
 
 
     @Test
-    public void testGetDiseaseId() {
+    void testDiseaseId() {
         String diseaseId = "OMIM:101600";
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .diseaseId(diseaseId)
                 .build();
-        assertThat(instance.getDiseaseId(), equalTo(diseaseId));
+        assertThat(instance.diseaseId(), equalTo(diseaseId));
     }
 
     @Test
-    public void testGetCandidateGeneSymbol() {
+    void testGetCandidateGeneSymbol() {
         String candidateGeneSymbol = "Gene1";
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(candidateGeneSymbol)
                 .build();
-        assertThat(instance.getCandidateGeneSymbol(), equalTo(candidateGeneSymbol));
+        assertThat(instance.candidateGeneSymbol(), equalTo(candidateGeneSymbol));
     }
 
     @Test
-    public void returnsTrueWhenDiseaseIdMatchesModelIdAndGeneSymbolMatchesModelHumanGeneSymbolForDiseaseModel() {
+    void returnsTrueWhenDiseaseIdMatchesModelIdAndGeneSymbolMatchesModelHumanGeneSymbolForDiseaseModel() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
         HiPhiveOptions instance = HiPhiveOptions.builder()
@@ -193,7 +205,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsTrueWhenDiseaseIdMatchesModelIdAndGeneSymbolMatchesModelHumanGeneSymbolForGeneModel() {
+    void returnsTrueWhenDiseaseIdMatchesModelIdAndGeneSymbolMatchesModelHumanGeneSymbolForGeneModel() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
 
@@ -208,7 +220,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenDiseaseIdAndGeneSymbolAreEmpty() {
+    void returnsFalseWhenDiseaseIdAndGeneSymbolAreEmpty() {
         String diseaseId = "";
         String candidateGeneSymbol = "";
 
@@ -221,7 +233,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void isBenchmarkingEnabledReturnsFalseWhenDiseaseIdOrGeneSymbolAreEmpty() {
+    void isBenchmarkingEnabledReturnsFalseWhenDiseaseIdOrGeneSymbolAreEmpty() {
         HiPhiveOptions emptyGeneSymbol = HiPhiveOptions.builder()
                 .candidateGeneSymbol("")
                 .diseaseId("disease")
@@ -236,7 +248,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenDiseaseIdAndGeneSymbolAreNull() {
+    void returnsFalseWhenDiseaseIdAndGeneSymbolAreNull() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(null)
                 .diseaseId(null)
@@ -246,7 +258,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenDiseaseIdMatchesModelIdAndGeneSymbolIsEmpty() {
+    void returnsFalseWhenDiseaseIdMatchesModelIdAndGeneSymbolIsEmpty() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "";
 
@@ -259,7 +271,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenDiseaseIdMatchesModelIdAndGeneSymbolIsNull() {
+    void returnsFalseWhenDiseaseIdMatchesModelIdAndGeneSymbolIsNull() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = null;
 
@@ -272,7 +284,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenGeneSymbolMatchesModelHumanGeneSymbolAndDiseaseIdIsNull() {
+    void returnsFalseWhenGeneSymbolMatchesModelHumanGeneSymbolAndDiseaseIdIsNull() {
         String diseaseId = null;
         String candidateGeneSymbol = "Gene1";
 
@@ -285,7 +297,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenGeneSymbolMatchesModelHumanGeneSymbolAndDiseaseIdIsEmpty() {
+    void returnsFalseWhenGeneSymbolMatchesModelHumanGeneSymbolAndDiseaseIdIsEmpty() {
         String diseaseId = "";
         String candidateGeneSymbol = "Gene1";
 
@@ -298,10 +310,18 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenModelIdIsNull() {
+    void returnsFalseWhenHumanGeneSymbolIsNull() {
         String diseaseId = "OMIM:101600";
         String candidateGeneSymbol = "Gene1";
-        GeneModel model = new GeneDiseaseModel(null, Organism.HUMAN, 12345, candidateGeneSymbol, diseaseId, "Test disease", Collections.emptyList());
+
+        var disease = Disease.builder()
+                .diseaseId(diseaseId)
+                .diseaseName("Test disease")
+                .associatedGeneId(12345)
+                .associatedGeneSymbol(null)
+                .phenotypeIds(Collections.emptyList())
+                .build();
+        GeneModel model = new GeneDiseaseModel(diseaseId, Organism.HUMAN, disease);
 
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol(candidateGeneSymbol)
@@ -312,29 +332,14 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void returnsFalseWhenHumanGeneSymbolIsNull() {
-        String diseaseId = "OMIM:101600";
-        String candidateGeneSymbol = "Gene1";
-
-        GeneModel model = new GeneDiseaseModel(diseaseId, Organism.HUMAN, 12345, null, diseaseId, "Test disease", Collections.emptyList());
-
-        HiPhiveOptions instance = HiPhiveOptions.builder()
-                .candidateGeneSymbol(candidateGeneSymbol)
-                .diseaseId(diseaseId)
-                .build();
-
-        assertThat(instance.isBenchmarkingModel(model), is(false));
-    }
-
-    @Test
-    public void testHashCode() {
+    void testHashCode() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
         HiPhiveOptions other = HiPhiveOptions.defaults();
         assertThat(instance.hashCode(), equalTo(other.hashCode()));
     }
 
     @Test
-    public void testHashCodeNotEquals() {
+    void testHashCodeNotEquals() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
         HiPhiveOptions other = HiPhiveOptions.builder()
                 .candidateGeneSymbol("geneSymbol")
@@ -344,14 +349,14 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
         HiPhiveOptions other = HiPhiveOptions.defaults();
         assertThat(instance.equals(other), is(true));
     }
 
     @Test
-    public void testNotEquals() {
+    void testNotEquals() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
         HiPhiveOptions other = HiPhiveOptions.builder()
                 .candidateGeneSymbol("geneSymbol")
@@ -361,31 +366,31 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-     public void testToStringDefaultConstructor() {
+     void testToStringDefaultConstructor() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
-        String defaultString  = "HiPhiveOptions{diseaseId='', candidateGeneSymbol='', benchmarkingEnabled=false, runPpi=true, runHuman=true, runMouse=true, runFish=true}";
+        String defaultString  = "HiPhiveOptions{diseaseId='', candidateGeneSymbol='', isBenchmarkingEnabled=false, runPpi=true, runHuman=true, runMouse=true, runFish=true}";
         assertThat(instance.toString(), equalTo(defaultString));
     }
 
     @Test
-    public void testToStringNonDefaultRunParams() {
+    void testToStringNonDefaultRunParams() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .candidateGeneSymbol("geneSymbol")
                 .diseaseId("diseaseId")
                 .runParams("human,mouse")
                 .build();
-        String defaultString  = "HiPhiveOptions{diseaseId='diseaseId', candidateGeneSymbol='geneSymbol', benchmarkingEnabled=true, runPpi=false, runHuman=true, runMouse=true, runFish=false}";
+        String defaultString  = "HiPhiveOptions{diseaseId='diseaseId', candidateGeneSymbol='geneSymbol', isBenchmarkingEnabled=true, runPpi=false, runHuman=true, runMouse=true, runFish=false}";
         assertThat(instance.toString(), equalTo(defaultString));
     }
 
     @Test
-    public void testGetOrganismsToRunAllOrganisms() {
+    void testGetOrganismsToRunAllOrganisms() {
         HiPhiveOptions instance = HiPhiveOptions.defaults();
         assertThat(instance.getOrganismsToRun(), equalTo(EnumSet.of(Organism.HUMAN, Organism.MOUSE, Organism.FISH)));
     }
 
     @Test
-    public void testGetOrganismsToRunNoOrganisms() {
+    void testGetOrganismsToRunNoOrganisms() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("ppi")
                 .build();
@@ -393,7 +398,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRunNothingDefinedMeansAll() {
+    void testGetOrganismsToRunNothingDefinedMeansAll() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("")
                 .build();
@@ -401,7 +406,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRunHumanMouseOnly() {
+    void testGetOrganismsToRunHumanMouseOnly() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("human,mouse")
                 .build();
@@ -409,7 +414,7 @@ public class HiPhiveOptionsTest {
     }
 
     @Test
-    public void testGetOrganismsToRunFishOnly() {
+    void testGetOrganismsToRunFishOnly() {
         HiPhiveOptions instance = HiPhiveOptions.builder()
                 .runParams("fish")
                 .build();

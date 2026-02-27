@@ -42,17 +42,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class KnownVariantFilterTest {
 
     private final VariantFilter instance = new KnownVariantFilter();
-    
-    private final FilterResult PASS_RESULT = new PassFilterResult(FilterType.KNOWN_VARIANT_FILTER);
-    private final FilterResult FAIL_RESULT = new FailFilterResult(FilterType.KNOWN_VARIANT_FILTER);
-    
+
     private VariantEvaluation buildVariantWithFrequencyData(FrequencyData frequencyData) {
         return TestFactory.variantBuilder(1, 1, "A", "T").frequencyData(frequencyData).build();
     }
 
     @Test
     public void testVariantType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));
+        assertThat(instance.filterType(), equalTo(FilterType.KNOWN_VARIANT_FILTER));
     }
 
     @Test
@@ -60,7 +57,7 @@ public class KnownVariantFilterTest {
         FrequencyData frequencyData = FrequencyData.of("rs12345");
         VariantEvaluation variantEvaluation = buildVariantWithFrequencyData(frequencyData);
         FilterResult filterResult = instance.runFilter(variantEvaluation);
-        assertThat(filterResult, equalTo(FAIL_RESULT));
+        assertThat(filterResult, equalTo(FilterResult.fail(FilterType.KNOWN_VARIANT_FILTER)));
     }
     
     @Test
@@ -68,14 +65,14 @@ public class KnownVariantFilterTest {
         FrequencyData frequencyData = FrequencyData.of(Frequency.of(FrequencySource.THOUSAND_GENOMES, 1f));
         VariantEvaluation variantEvaluation = buildVariantWithFrequencyData(frequencyData);
         FilterResult filterResult = instance.runFilter(variantEvaluation);
-        assertThat(filterResult, equalTo(FAIL_RESULT));
+        assertThat(filterResult, equalTo(FilterResult.fail(FilterType.KNOWN_VARIANT_FILTER)));
     }
 
     @Test
     public void testRunFilterReturnsPassResultWhenFilteringVariantWithNoRepresentationInDatabase() {
         VariantEvaluation variantEvaluation = buildVariantWithFrequencyData(FrequencyData.empty());
         FilterResult filterResult = instance.runFilter(variantEvaluation);
-        assertThat(filterResult, equalTo(PASS_RESULT));
+        assertThat(filterResult, equalTo(FilterResult.pass(FilterType.KNOWN_VARIANT_FILTER)));
     }
     
 }

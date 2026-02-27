@@ -21,7 +21,6 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -30,43 +29,33 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class RegulatoryFeatureTest {
+class RegulatoryFeatureTest {
 
-    private RegulatoryFeature instance;
-
-    @BeforeEach
-    public void setUp() {
-        //do we want types or polymorphism? Start with type as this is pretty much just a DTO at the moment?
-        int chr = 1;
-        int start = 10;
-        int end = 100;
-        RegulatoryFeature.FeatureType featureType = RegulatoryFeature.FeatureType.ENHANCER;
-        instance = new RegulatoryFeature(chr, start, end, featureType);
-    }
+    private final RegulatoryFeature instance = new RegulatoryFeature(1, 10, 100, RegulatoryFeature.FeatureType.ENHANCER);
 
     @Test
-    public void getChromosome() {
+    void contigId() {
         assertThat(instance.contigId(), equalTo(1));
     }
 
     @Test
-    public void getStart() {
+    void start() {
         assertThat(instance.start(), equalTo(10));
     }
 
     @Test
-    public void getEnd() {
+    void end() {
         assertThat(instance.end(), equalTo(100));
     }
 
     @Test
-    public void testGetFeatureType() {
-        assertThat(instance.getFeatureType(), equalTo(RegulatoryFeature.FeatureType.ENHANCER));
+    void testFeatureType() {
+        assertThat(instance.featureType(), equalTo(RegulatoryFeature.FeatureType.ENHANCER));
     }
 
     @Test
-    public void testGetVariantEffect() {
-        assertThat(instance.getVariantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
+    void testVariantEffect() {
+        assertThat(instance.variantEffect(), equalTo(VariantEffect.REGULATORY_REGION_VARIANT));
     }
 
 }

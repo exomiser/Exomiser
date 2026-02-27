@@ -35,7 +35,7 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class KnownVariantFilter implements VariantFilter {
+public record KnownVariantFilter() implements VariantFilter {
 
     private static final FilterType KNOWN_VARIANT_FILTER_TYPE = FilterType.KNOWN_VARIANT_FILTER;
 
@@ -51,26 +51,26 @@ public class KnownVariantFilter implements VariantFilter {
     }
 
     private boolean notRepresentedInDatabase(VariantEvaluation variantEvaluation) {
-        return !variantEvaluation.getFrequencyData().isRepresentedInDatabase();
+        return !variantEvaluation.frequencyData().isRepresentedInDatabase();
     }
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return KNOWN_VARIANT_FILTER_TYPE;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(KNOWN_VARIANT_FILTER_TYPE);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        return getClass() == obj.getClass();
-    }
+//    @Override
+//    public int hashCode() {
+//        return Objects.hashCode(KNOWN_VARIANT_FILTER_TYPE);
+//    }
+//
+//    @Override
+//    public boolean equals(Object obj) {
+//        if (obj == null) {
+//            return false;
+//        }
+//        return getClass() == obj.getClass();
+//    }
 
     @Override
     public String toString() {

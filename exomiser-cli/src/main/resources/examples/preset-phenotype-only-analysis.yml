@@ -1,0 +1,12 @@
+## Exomiser phenotype only analysis.
+##
+# This is the Exomiser phenotype-only analysis preset. It will produce a JSONL file of about 200MB for each result.
+# Consequently, we recommend the TSV_GENE or PARQUET output options.
+---
+analysisMode: PASS_ONLY
+inheritanceModes: {
+}
+steps: [
+    omimPrioritiser: { },
+    hiPhivePrioritiser: { }
+]

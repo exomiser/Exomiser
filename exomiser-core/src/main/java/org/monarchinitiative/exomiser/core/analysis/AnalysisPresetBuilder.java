@@ -22,7 +22,6 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
@@ -115,13 +114,15 @@ class AnalysisPresetBuilder {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
-                .pathogenicitySources(EnumSet.of(REVEL, MVP, REMM))
+                .pathogenicitySources(EnumSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI, REMM))
                 .addHiPhivePrioritiser(HI_PHIVE_OPTIONS)
                 .addPriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.5f)// will remove a lot of the weak PPI hits
+                .addGeneBlacklistFilter()
                 .addFailedVariantFilter()
+                .addAlleleBalanceFilter()
                 .addRegulatoryFeatureFilter()
                 .addFrequencyFilter()
-                .addPathogenicityFilter(true)
+                .addPathogenicityFilter(false)
                 .addInheritanceFilter()
                 .addOmimPrioritiser()
                 .build();
@@ -132,7 +133,10 @@ class AnalysisPresetBuilder {
                 .analysisMode(AnalysisMode.PASS_ONLY)
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
-                .pathogenicitySources(EnumSet.of(REVEL, MVP))
+                .pathogenicitySources(EnumSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI))
+                .addGeneBlacklistFilter()
+                .addFailedVariantFilter()
+                .addAlleleBalanceFilter()
                 .addVariantEffectFilter(EnumSet.of(
                         VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT,
                         VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,
@@ -146,7 +150,6 @@ class AnalysisPresetBuilder {
                         VariantEffect.INTERGENIC_VARIANT,
                         VariantEffect.REGULATORY_REGION_VARIANT
                 ))
-                .addFailedVariantFilter()
                 .addFrequencyFilter()
                 .addPathogenicityFilter(true)
                 .addInheritanceFilter()

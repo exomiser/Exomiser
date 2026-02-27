@@ -1,6 +1,7 @@
-## Exomiser genome analysis template.
-# These are all the possible options for running exomiser. Use this as a template for
-# your own set-up.
+## Genomiser Whole-Genome Analysis Model
+## exomiser_model_4
+# This is the standard Genomiser analysis for all sequence variants. If you just want to look at coding sequence variants,
+# use one of the preset-exome-analysis models.
 ---
 analysisMode: PASS_ONLY
 inheritanceModes: {
@@ -33,11 +34,11 @@ frequencySources: [
   #  GNOMAD_G_OTH,
     GNOMAD_G_SAS
 ]
-# Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM, SPLICE_AI, ALPHA_MISSENSE
+# Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP, ALPHA_MISSENSE), CADD, REMM, SPLICE_AI
 # REMM is trained on non-coding regulatory regions
 # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
 # and updated their location in the application.properties. Exomiser will not run without this.
-pathogenicitySources: [ REVEL, MVP, REMM ]
+pathogenicitySources: [ REVEL, MVP, ALPHA_MISSENSE, REMM, SPLICE_AI ]
 # this is the recommended order for a genome-sized analysis.
 steps: [
     hiPhivePrioritiser: { },
@@ -46,10 +47,12 @@ steps: [
   # dramatically reduce the time and memory required to analyse a genome.
   # 0.501 is a good compromise to select good phenotype matches and the best protein-protein interactions hits from hiPhive
     priorityScoreFilter: { priorityType: HIPHIVE_PRIORITY, minPriorityScore: 0.501 },
+    geneBlacklistFilter: { },
     failedVariantFilter: { },
+    alleleBalanceFilter: { },
     regulatoryFeatureFilter: { },
     frequencyFilter: { maxFrequency: 2.0 },
-    pathogenicityFilter: { keepNonPathogenic: true },
+    pathogenicityFilter: { keepNonPathogenic: false },
     inheritanceFilter: { },
     omimPrioritiser: { }
 ]

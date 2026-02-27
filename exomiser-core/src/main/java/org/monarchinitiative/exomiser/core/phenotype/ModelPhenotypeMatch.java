@@ -29,32 +29,16 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 8.0.0
  */
-public final class ModelPhenotypeMatch<T extends Model> implements Comparable<ModelPhenotypeMatch<T>> {
+public record ModelPhenotypeMatch<T extends Model>(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) implements Comparable<ModelPhenotypeMatch<T>> {
 
-    private final double score;
-    private final T model;
-    private final List<PhenotypeMatch> bestPhenotypeMatches;
-
-    private ModelPhenotypeMatch(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
-        this.score = score;
-        this.model = Objects.requireNonNull(model);
-        this.bestPhenotypeMatches = Objects.requireNonNull(bestPhenotypeMatches);
+    public ModelPhenotypeMatch {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(bestPhenotypeMatches);
+        bestPhenotypeMatches = List.copyOf(bestPhenotypeMatches);
     }
 
     public static <T extends Model> ModelPhenotypeMatch<T> of(double score, T model, List<PhenotypeMatch> bestPhenotypeMatches) {
-        return new ModelPhenotypeMatch<>(score, model, List.copyOf(bestPhenotypeMatches));
-    }
-
-    public double getScore() {
-        return score;
-    }
-
-    public T getModel() {
-        return model;
-    }
-
-    public List<PhenotypeMatch> getBestPhenotypeMatches() {
-        return bestPhenotypeMatches;
+        return new ModelPhenotypeMatch<>(score, model, bestPhenotypeMatches);
     }
 
     /**
@@ -69,26 +53,7 @@ public final class ModelPhenotypeMatch<T extends Model> implements Comparable<Mo
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ModelPhenotypeMatch)) return false;
-        ModelPhenotypeMatch<?> that = (ModelPhenotypeMatch<?>) o;
-        return Double.compare(that.score, score) == 0 &&
-                model.equals(that.model) &&
-                bestPhenotypeMatches.equals(that.bestPhenotypeMatches);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(score, model, bestPhenotypeMatches);
-    }
-
-    @Override
     public String toString() {
-        return "ModelPhenotypeMatch{" +
-                "score=" + score +
-                ", model=" + model +
-                ", bestPhenotypeMatches=" + bestPhenotypeMatches +
-                '}';
+        return "ModelPhenotypeMatch{" + "score=" + score + ", model=" + model + ", bestPhenotypeMatches=" + bestPhenotypeMatches + '}';
     }
 }

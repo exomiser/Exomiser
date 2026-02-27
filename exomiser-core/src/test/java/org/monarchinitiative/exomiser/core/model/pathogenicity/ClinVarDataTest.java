@@ -33,21 +33,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class ClinVarDataTest {
+class ClinVarDataTest {
 
     @Test
-    public void testEmptyBuilder() {
+    void testEmptyBuilder() {
         ClinVarData instance = ClinVarData.builder().build();
-
-        assertThat(instance.getVariationId(), equalTo(""));
-        assertThat(instance.getPrimaryInterpretation(), equalTo(ClinSig.NOT_PROVIDED));
-        assertThat(instance.getSecondaryInterpretations(), equalTo(Collections.emptySet()));
-        assertThat(instance.getReviewStatus(), equalTo(ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED));
-        assertThat(instance.getIncludedAlleles(), equalTo(Collections.emptyMap()));
+        assertThat(instance, equalTo(ClinVarData.empty()));
+        assertThat(instance.variationId(), equalTo(""));
+        assertThat(instance.primaryInterpretation(), equalTo(ClinSig.NOT_PROVIDED));
+        assertThat(instance.secondaryInterpretations(), equalTo(Collections.emptySet()));
+        assertThat(instance.reviewStatus(), equalTo(ClinVarData.ReviewStatus.NO_ASSERTION_PROVIDED));
+        assertThat(instance.includedAlleles(), equalTo(Collections.emptyMap()));
     }
 
     @Test
-    public void testBuilderWithValues() {
+    void testBuilderWithValues() {
         String alleleId = "12345";
         String variationId = "23456";
         String geneSymbol = "GENE1";
@@ -65,18 +65,18 @@ public class ClinVarDataTest {
                 .includedAlleles(included)
                 .build();
 
-        assertThat(instance.getVariationId(), equalTo(variationId));
-        assertThat(instance.getGeneSymbol(), equalTo(geneSymbol));
-        assertThat(instance.getVariantEffect(), equalTo(variantEffect));
-        assertThat(instance.getPrimaryInterpretation(), equalTo(clinSig));
-        assertThat(instance.getSecondaryInterpretations(), equalTo(secondaryInterpretations));
-        assertThat(instance.getReviewStatus(), equalTo(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS));
-        assertThat(instance.getIncludedAlleles(), equalTo(included));
+        assertThat(instance.variationId(), equalTo(variationId));
+        assertThat(instance.geneSymbol(), equalTo(geneSymbol));
+        assertThat(instance.variantEffect(), equalTo(variantEffect));
+        assertThat(instance.primaryInterpretation(), equalTo(clinSig));
+        assertThat(instance.secondaryInterpretations(), equalTo(secondaryInterpretations));
+        assertThat(instance.reviewStatus(), equalTo(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_MULTIPLE_SUBMITTERS_NO_CONFLICTS));
+        assertThat(instance.includedAlleles(), equalTo(included));
         System.out.println(instance);
     }
 
     @Test
-    public void testStringValue() {
+    void testStringValue() {
         String alleleId = "12345";
         ClinSig clinSig = ClinSig.PATHOGENIC;
         Set<ClinSig> secondaryInterpretations = EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION);
@@ -128,7 +128,7 @@ public class ClinVarDataTest {
         ClinVarData instance = ClinVarData.builder()
                 .hgvsCdna("c.12345A>G")
                 .build();
-        assertThat(instance.getHgvsCdna(), equalTo("c.12345A>G"));
+        assertThat(instance.hgvsCdna(), equalTo("c.12345A>G"));
     }
 
     @Test
@@ -136,7 +136,7 @@ public class ClinVarDataTest {
         ClinVarData instance = ClinVarData.builder()
                 .hgvsProtein("p.(Ser123Gly)")
                 .build();
-        assertThat(instance.getHgvsProtein(), equalTo("p.(Ser123Gly)"));
+        assertThat(instance.hgvsProtein(), equalTo("p.(Ser123Gly)"));
     }
 
     @Test
@@ -145,6 +145,23 @@ public class ClinVarDataTest {
         ClinVarData instance = ClinVarData.builder()
                 .conflictingInterpretationCounts(conflictingInterpretations)
                 .build();
-        assertThat(instance.getConflictingInterpretationCounts(), equalTo(conflictingInterpretations));
+        assertThat(instance.conflictingInterpretationCounts(), equalTo(conflictingInterpretations));
+    }
+
+    @Test
+    void toBuilder() {
+        ClinVarData instance = ClinVarData.builder()
+                .variationId("12345")
+                .geneSymbol("GENE1")
+                .primaryInterpretation(ClinSig.LIKELY_PATHOGENIC)
+                .variantEffect(VariantEffect.MISSENSE_VARIANT)
+                .hgvsCdna("c.12345A>G")
+                .hgvsProtein("p.(Ser123Gly)")
+                .secondaryInterpretations(EnumSet.of(ClinSig.RISK_FACTOR, ClinSig.ASSOCIATION))
+                .reviewStatus(ClinVarData.ReviewStatus.CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
+                .conflictingInterpretationCounts(Map.of(ClinSig.PATHOGENIC, 3, ClinSig.UNCERTAIN_SIGNIFICANCE, 1))
+                .includedAlleles(Map.of("54321", ClinSig.PATHOGENIC_OR_LIKELY_PATHOGENIC))
+                .build();
+        assertThat(instance.toBuilder().build(), equalTo(instance));
     }
 }

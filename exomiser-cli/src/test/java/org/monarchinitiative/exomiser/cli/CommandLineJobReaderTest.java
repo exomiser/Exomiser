@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Timestamp;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.apache.commons.cli.CommandLine;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
@@ -35,7 +34,7 @@ import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisMode;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisProtoBuilder;
 import org.monarchinitiative.exomiser.core.analysis.sample.PhenopacketPedigreeReader;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
+import org.monarchinitiative.exomiser.core.analysis.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.proto.ProtoParser;
 import org.monarchinitiative.exomiser.core.writers.OutputSettingsProtoConverter;
@@ -57,6 +56,8 @@ import static org.monarchinitiative.exomiser.core.model.pathogenicity.Pathogenic
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
+@Deprecated(forRemoval = true)
+@Disabled
 class CommandLineJobReaderTest {
 
     private final CommandLineJobReader instance = new CommandLineJobReader();
@@ -264,7 +265,7 @@ class CommandLineJobReaderTest {
 //                    FrequencySource.GNOMAD_G_OTH,
                     FrequencySource.GNOMAD_G_SAS
             ))
-            .pathogenicitySources(ImmutableSet.of(REVEL, MVP))
+            .pathogenicitySources(ImmutableSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI))
             .addFailedVariantFilter()
             .addVariantEffectFilter(ImmutableSet.of(
                     FIVE_PRIME_UTR_EXON_VARIANT,

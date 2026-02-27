@@ -20,7 +20,6 @@
 
 package org.monarchinitiative.exomiser.core.prioritisers.service;
 
-import com.google.common.collect.ImmutableList;
 import org.monarchinitiative.exomiser.core.model.GeneIdentifier;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatchService;
@@ -57,14 +56,14 @@ public class TestPriorityServiceFactory {
     private static final PriorityService TEST_SERVICE = setUpPriorityService();
     private static final PriorityService STUB_SERVICE = setUpStubPriorityService();
 
-    private static final List<PhenotypeTerm> PFEIFFER_PHENOTYPES = ImmutableList.of(
+    private static final List<PhenotypeTerm> PFEIFFER_PHENOTYPES = List.of(
             PhenotypeTerm.of("HP:0010055", "Broad hallux"),
             PhenotypeTerm.of("HP:0001363", "Craniosynostosis"),
             PhenotypeTerm.of("HP:0001156", "Brachydactyly syndrome"),
             PhenotypeTerm.of("HP:0011304", "Broad thumb")
     );
 
-    private static final List<PhenotypeTerm> TARS_PHENOTYPES = ImmutableList.of(
+    private static final List<PhenotypeTerm> TARS_PHENOTYPES = List.of(
             PhenotypeTerm.of("HP:0007370", "Aplasia/Hypoplasia of the corpus callosum"),
             PhenotypeTerm.of("HP:0001873", "Thrombocytopenia"),
             PhenotypeTerm.of("HP:0004977", "Bilateral radial aplasia"),
@@ -117,21 +116,21 @@ public class TestPriorityServiceFactory {
         List<PhenotypeMatch> hpHpMappings = TestPrioritiserDataFileReader.readOntologyMatchData("src/test/resources/prioritisers/hp-hp-mappings");
 
         Map<String, PhenotypeTerm> hpPhenotypesTerms = hpHpMappings.stream()
-                .map(PhenotypeMatch::getQueryPhenotype)
+                .map(PhenotypeMatch::queryPhenotype)
                 .distinct()
-                .collect(Collectors.toConcurrentMap(PhenotypeTerm::getId, Function.identity()));
+                .collect(Collectors.toConcurrentMap(PhenotypeTerm::id, Function.identity()));
 
         logger.info("This data links {} phenotypes:", hpPhenotypesTerms.size());
-        hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.getId(), term.getLabel()));
+        hpPhenotypesTerms.values().forEach(term ->logger.info("    {} - {}", term.id(), term.label()));
 
         logger.info("Via cross-species phenotype mappings:");
-        logger.info("    hp-hp: " + hpHpMappings.size());
+        logger.info("    hp-hp: {}", hpHpMappings.size());
 
         List<PhenotypeMatch> hpMpMappings = TestPrioritiserDataFileReader.readOntologyMatchData("src/test/resources/prioritisers/hp-mp-mappings");
-        logger.info("    hp-mp: " + hpMpMappings.size());
+        logger.info("    hp-mp: {}", hpMpMappings.size());
 
         List<PhenotypeMatch> hpZpMappings = TestPrioritiserDataFileReader.readOntologyMatchData("src/test/resources/prioritisers/hp-zp-mappings");
-        logger.info("    hp-zp: " + hpZpMappings.size());
+        logger.info("    hp-zp: {}", hpZpMappings.size());
 
         return TestOntologyService.builder()
                 .setHpIdPhenotypeTerms(hpPhenotypesTerms)
@@ -142,7 +141,7 @@ public class TestPriorityServiceFactory {
     }
 
     private static Map<PhenotypeTerm, List<PhenotypeMatch>> createPhenotypeMap(List<PhenotypeMatch> crossOntologyMappings) {
-        return crossOntologyMappings.parallelStream().collect(Collectors.groupingBy(PhenotypeMatch::getQueryPhenotype));
+        return crossOntologyMappings.parallelStream().collect(Collectors.groupingBy(PhenotypeMatch::queryPhenotype));
     }
 
     private static PriorityService setUpPriorityService() {
@@ -152,12 +151,12 @@ public class TestPriorityServiceFactory {
         logger.info("Associated with genes:");
         testModelService.getHumanGeneDiseaseModels().stream()
                 .map(geneModel -> GeneIdentifier.builder()
-                        .entrezId(String.valueOf(geneModel.getEntrezGeneId()))
-                        .geneSymbol(geneModel.getHumanGeneSymbol())
+                        .entrezId(String.valueOf(geneModel.entrezGeneId()))
+                        .geneSymbol(geneModel.humanGeneSymbol())
                         .build())
                 .distinct()
-                .forEach(geneIdentifier -> logger.info("    Entrez:{} - {}", geneIdentifier.getEntrezId(), geneIdentifier
-                        .getGeneSymbol()));
+                .forEach(geneIdentifier -> logger.info("    Entrez:{} - {}", geneIdentifier.entrezId(), geneIdentifier
+                        .geneSymbol()));
 
         List<Disease> diseases = TestPrioritiserDataFileReader.readDiseaseData("src/test/resources/prioritisers/disease-models");
         TestDiseaseDao testDiseaseDao = new TestDiseaseDao(diseases);
@@ -167,10 +166,10 @@ public class TestPriorityServiceFactory {
 
     private static ModelService setUpModelService() {
         List<GeneModel> diseaseModels = TestPrioritiserDataFileReader.readDiseaseModelData("src/test/resources/prioritisers/disease-models");
-        logger.info("    Disease Models: " + diseaseModels.size());
+        logger.info("    Disease Models: {}", diseaseModels.size());
 
         List<GeneModel> mouseModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/mouse-models");
-        logger.info("    Mouse Models: " + mouseModels.size());
+        logger.info("    Mouse Models: {}", mouseModels.size());
 
         List<GeneModel> fishModels = TestPrioritiserDataFileReader.readOrganismData("src/test/resources/prioritisers/fish-models");
         logger.info("    Fish Models: {}", fishModels.size());

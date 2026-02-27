@@ -24,10 +24,9 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnalyser;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeAnnotator;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
+import org.monarchinitiative.exomiser.core.analysis.score.InheritanceModeAnalyser;
+import org.monarchinitiative.exomiser.core.analysis.score.InheritanceModeAnnotator;
+import org.monarchinitiative.exomiser.core.pedigree.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.*;
@@ -37,6 +36,7 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.prioritisers.MockPrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.NoneTypePrioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
@@ -85,14 +85,14 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
-        assertThat(analysisResults.getVariantEvaluations().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
+        assertThat(analysisResults.variantEvaluations().size(), equalTo(1));
 
-        for (Gene gene : analysisResults.getGenes()) {
+        for (Gene gene : analysisResults.genes()) {
             assertThat(gene.passedFilters(), is(true));
-            for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
-                SampleGenotype probandGenotype = variantEvaluation.getSampleGenotype(analysisResults.getProbandSampleName());
-                assertThat(probandGenotype.getCalls().contains(AlleleCall.ALT), is(true));
+            for (VariantEvaluation variantEvaluation : gene.variantEvaluations()) {
+                SampleGenotype probandGenotype = variantEvaluation.sampleGenotype(analysisResults.probandSampleName());
+                assertThat(probandGenotype.calls().contains(AlleleCall.ALT), is(true));
             }
         }
     }
@@ -105,11 +105,11 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Analysis analysis = makeAnalysis(intervalFilter);
         AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Gene passedGene = analysisResults.getGenes().get(0);
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        Gene passedGene = analysisResults.genes().get(0);
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
     }
 
     @Test
@@ -122,15 +122,15 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Gene passedGene = analysisResults.getGenes().get(0);
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        Gene passedGene = analysisResults.genes().get(0);
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
         //For the PassOnlyAnalysisRunner the resulting genes should only contain passed variants
-        assertThat(passedGene.getVariantEvaluations(), equalTo(passedGene.getPassedVariantEvaluations()));
+        assertThat(passedGene.variantEvaluations(), equalTo(passedGene.passedVariantEvaluations()));
 
-        VariantEvaluation passedVariant = passedGene.getPassedVariantEvaluations().get(0);
+        VariantEvaluation passedVariant = passedGene.passedVariantEvaluations().get(0);
         //1	145508800	rs12345678	T	C	123.15	PASS	GENE=RBM8A	GT:DP	1/1:33
         assertThat(passedVariant.contigId(), equalTo(1));
         assertThat(passedVariant.start(), equalTo(145508800));
@@ -149,8 +149,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().isEmpty(), is(true));
-        assertThat(analysisResults.getVariantEvaluations().isEmpty(), is(true));
+        assertThat(analysisResults.genes().isEmpty(), is(true));
+        assertThat(analysisResults.variantEvaluations().isEmpty(), is(true));
     }
 
     @Test
@@ -166,16 +166,16 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(1));
-        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+        assertThat(rbm8a.numberOfVariants(), equalTo(1));
+        assertThat(rbm8a.passedVariantEvaluations().isEmpty(), is(false));
 
-        VariantEvaluation rbm8Variant1 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant1 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant1.passedFilters(), is(true));
         assertThat(rbm8Variant1.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant1.passedFilter(FilterType.QUALITY_FILTER), is(true));
@@ -211,7 +211,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         VariantFilter qualityFilter = new QualityFilter(120);
         Map<String, Double> hiPhiveGeneScores = Map.of("GNRHR2", 0.75, "RBM8A", 0.65);
         Prioritiser<?> mockHiPhivePrioritiser = new MockPrioritiser(PriorityType.HIPHIVE_PRIORITY, hiPhiveGeneScores);
-        GeneFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        GeneFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Sample sample = vcfandPhenotypesSample;
         Analysis analysis = Analysis.builder()
@@ -225,16 +225,16 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
                 .build();
         AnalysisResults analysisResults = instance.run(sample, analysis);
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene rbm8a = results.get("RBM8A");
         assertThat(rbm8a.passedFilters(), is(true));
-        assertThat(rbm8a.getNumberOfVariants(), equalTo(1));
-        assertThat(rbm8a.getPassedVariantEvaluations().isEmpty(), is(false));
+        assertThat(rbm8a.numberOfVariants(), equalTo(1));
+        assertThat(rbm8a.passedVariantEvaluations().isEmpty(), is(false));
 
-        VariantEvaluation rbm8Variant2 = rbm8a.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant2 = rbm8a.variantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
@@ -256,16 +256,16 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.priorityScore(), equalTo(desiredPrioritiserScore));
         assertThat(passedGene.hasVariants(), equalTo(false));
-        System.out.println(passedGene.getGeneScores());    }
+        System.out.println(passedGene.geneScores());    }
 
     @Test
     public void testRunAnalysisPrioritiserPriorityScoreFilterVariantFilter() {
@@ -283,23 +283,23 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
-        System.out.println(passedGene.getGeneScores());
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.priorityScore(), equalTo(desiredPrioritiserScore));
+        System.out.println(passedGene.geneScores());
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
 
-        VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant2 = passedGene.variantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
-        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
+        assertThat(rbm8Variant2.geneSymbol(), equalTo(passedGene.geneSymbol()));
     }
     
     @Test
@@ -312,7 +312,7 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         Prioritiser prioritiser = new MockPrioritiser(prioritiserTypeToMock, geneSymbolPrioritiserScores);
         GeneFilter priorityScoreFilter = new PriorityScoreFilter(prioritiserTypeToMock, desiredPrioritiserScore - 0.1);
         VariantFilter intervalFilter = new IntervalFilter(new GeneticInterval(1, 145508800, 145508800));
-        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Sample sample = vcfandPhenotypesSample;
         Analysis analysis = Analysis.builder()
@@ -327,23 +327,23 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
-        System.out.println(passedGene.getGeneScores());
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.priorityScore(), equalTo(desiredPrioritiserScore));
+        System.out.println(passedGene.geneScores());
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
 
-        VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant2 = passedGene.variantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
-        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
+        assertThat(rbm8Variant2.geneSymbol(), equalTo(passedGene.geneSymbol()));
         assertThat(rbm8Variant2.passedFilter(FilterType.INTERVAL_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.QUALITY_FILTER), is(true));
         assertThat(rbm8Variant2.passedFilter(FilterType.INHERITANCE_FILTER), is(true));
@@ -352,12 +352,12 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
     @Test
     public void testRunAnalysisAutosomalDominantTrioDeNovoInheritanceFilter() {
         VariantFilter qualityFilter = new QualityFilter(5);
-        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .pedigree(TestPedigrees.trioChildAffected())
-                .probandSampleName(TestPedigrees.affectedChild().getId())
+                .probandSampleName(TestPedigrees.affectedChild().id())
                 .build();
         Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
@@ -368,29 +368,29 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
         Gene passedGene = results.get("GNRHR2");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(114814));
-        assertThat(passedGene.getGeneSymbol(), equalTo("GNRHR2"));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(145510000));
+        assertThat(passedGene.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(passedGene.entrezGeneId(), equalTo(114814));
+        assertThat(passedGene.geneSymbol(), equalTo("GNRHR2"));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
+        assertThat(passedGene.variantEvaluations().get(0).start(), equalTo(145510000));
         
     }
 
     @Test
     public void testRunAnalysisAutosomalDominantTrioSharedInheritanceFilter() {
         VariantFilter qualityFilter = new QualityFilter(5);
-        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
 
         Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .pedigree(TestPedigrees.trioChildAndFatherAffected())
-                .probandSampleName(TestPedigrees.affectedChild().getId())
+                .probandSampleName(TestPedigrees.affectedChild().id())
                 .build();
         Analysis analysis = Analysis.builder()
                 .inheritanceModeOptions(InheritanceModeOptions.defaults())
@@ -401,29 +401,29 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_DOMINANT), is(true));
-        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123256214));
+        assertThat(passedGene.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_DOMINANT));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
+        assertThat(passedGene.variantEvaluations().get(0).start(), equalTo(123256214));
     	
     }
 
     @Test
     public void testRunAnalysisAutosomalRecessiveTrioInheritanceFilter() {
         VariantFilter qualityFilter = new QualityFilter(5);
-        InheritanceFilter inheritanceFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
+        InheritanceFilter inheritanceFilter = InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_RECESSIVE);
 
         Sample sample = Sample.builder()
                 .vcfPath(TestPedigrees.trioVcfPath())
                 .pedigree(TestPedigrees.trioChildAffected())
-                .probandSampleName(TestPedigrees.affectedChild().getId())
+                .probandSampleName(TestPedigrees.affectedChild().id())
                 .build();
 
         Analysis analysis = Analysis.builder()
@@ -435,29 +435,29 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(sample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(2));
+        assertThat(analysisResults.genes().size(), equalTo(2));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
         //CompoundHeterozygous
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(2));
-        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123256214));
-        assertThat(passedGene.getVariantEvaluations().get(1).start(), equalTo(145508800));
+        assertThat(passedGene.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.numberOfVariants(), equalTo(2));
+        assertThat(passedGene.variantEvaluations().get(0).start(), equalTo(123256214));
+        assertThat(passedGene.variantEvaluations().get(1).start(), equalTo(145508800));
 
         //Homozygous
         passedGene = results.get("FGFR2");
         assertThat(passedGene.passedFilters(), is(true));
         assertThat(passedGene.isCompatibleWith(ModeOfInheritance.AUTOSOMAL_RECESSIVE), is(true));
-        assertThat(passedGene.getCompatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(2263));
-        assertThat(passedGene.getGeneSymbol(), equalTo("FGFR2"));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
-        assertThat(passedGene.getVariantEvaluations().get(0).start(), equalTo(123239370));
+        assertThat(passedGene.compatibleInheritanceModes(), hasItem(ModeOfInheritance.AUTOSOMAL_RECESSIVE));
+        assertThat(passedGene.entrezGeneId(), equalTo(2263));
+        assertThat(passedGene.geneSymbol(), equalTo("FGFR2"));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
+        assertThat(passedGene.variantEvaluations().get(0).start(), equalTo(123239370));
     }
 
     @Test
@@ -488,8 +488,8 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
 
         InheritanceModeAnalyser instance = new InheritanceModeAnalyser(new InheritanceModeAnnotator(pedigree, InheritanceModeOptions.defaults()));
         instance.analyseInheritanceModes(List.of(rbm8a));
-        System.out.println(rbm8a.getCompatibleInheritanceModes());
-        rbm8a.getPassedVariantEvaluations().forEach(System.out::println);
+        System.out.println(rbm8a.compatibleInheritanceModes());
+        rbm8a.passedVariantEvaluations().forEach(System.out::println);
     }
 
     @Test
@@ -529,23 +529,23 @@ public class PassOnlyAnalysisRunnerTest extends AnalysisRunnerTestBase {
         AnalysisResults analysisResults = instance.run(vcfandPhenotypesSample, analysis);
 
         printResults(analysisResults);
-        assertThat(analysisResults.getGenes().size(), equalTo(1));
+        assertThat(analysisResults.genes().size(), equalTo(1));
 
-        Map<String, Gene> results = makeResults(analysisResults.getGenes());
+        Map<String, Gene> results = makeResults(analysisResults.genes());
 
         Gene passedGene = results.get("RBM8A");
         assertThat(passedGene.passedFilters(), is(true));
-        assertThat(passedGene.getEntrezGeneID(), equalTo(9939));
-        assertThat(passedGene.getGeneSymbol(), equalTo("RBM8A"));
-        assertThat(passedGene.getPriorityScore(), equalTo(desiredPrioritiserScore));
-        assertThat(passedGene.getNumberOfVariants(), equalTo(1));
+        assertThat(passedGene.entrezGeneId(), equalTo(9939));
+        assertThat(passedGene.geneSymbol(), equalTo("RBM8A"));
+        assertThat(passedGene.priorityScore(), equalTo(desiredPrioritiserScore));
+        assertThat(passedGene.numberOfVariants(), equalTo(1));
 
-        VariantEvaluation rbm8Variant2 = passedGene.getVariantEvaluations().get(0);
+        VariantEvaluation rbm8Variant2 = passedGene.variantEvaluations().get(0);
         assertThat(rbm8Variant2.passedFilters(), is(true));
         assertThat(rbm8Variant2.contigId(), equalTo(1));
         assertThat(rbm8Variant2.start(), equalTo(145508800));
-        assertThat(rbm8Variant2.getGeneSymbol(), equalTo(passedGene.getGeneSymbol()));
-        assertThat(rbm8Variant2.getFrequencyData(), equalTo(frequencyData));
-        assertThat(rbm8Variant2.getPathogenicityData(), equalTo(pathogenicityData));
+        assertThat(rbm8Variant2.geneSymbol(), equalTo(passedGene.geneSymbol()));
+        assertThat(rbm8Variant2.frequencyData(), equalTo(frequencyData));
+        assertThat(rbm8Variant2.pathogenicityData(), equalTo(pathogenicityData));
     }
 }

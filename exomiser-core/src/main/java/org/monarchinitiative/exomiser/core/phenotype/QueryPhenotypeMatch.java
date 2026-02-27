@@ -54,7 +54,7 @@ public class QueryPhenotypeMatch {
 
         this.queryTerms = List.copyOf(this.queryTermPhenotypeMatches.keySet());
         this.bestPhenotypeMatches = makeBestPhenotypeMatches(this.queryTermPhenotypeMatches);
-        this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).max().orElse(0d);
+        this.theoreticalMaxMatchScore = bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::score).max().orElse(0d);
         this.theoreticalBestAvgScore = calculateBestAverageScore(bestPhenotypeMatches, queryTerms.size());
     }
 
@@ -64,7 +64,7 @@ public class QueryPhenotypeMatch {
             // otherwise get a NaN value that escalates to other scores and eventually throws an exception
             return 0;
         }
-        return bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::getScore).sum() / numQueryPhenotypes;
+        return bestPhenotypeMatches.stream().mapToDouble(PhenotypeMatch::score).sum() / numQueryPhenotypes;
     }
 
     private Set<PhenotypeMatch> makeBestPhenotypeMatches(Map<PhenotypeTerm, Set<PhenotypeMatch>> termPhenotypeMatches) {
@@ -79,7 +79,7 @@ public class QueryPhenotypeMatch {
      * Finds the best PhenotypeMatch for that phenotype term. This is the one with the highest score. OR returns a null
      */
     private Function<Set<PhenotypeMatch>, PhenotypeMatch> bestPhenotypeMatch() {
-        return phenotypeMatches -> phenotypeMatches.stream().max(Comparator.comparingDouble(PhenotypeMatch::getScore))
+        return phenotypeMatches -> phenotypeMatches.stream().max(Comparator.comparingDouble(PhenotypeMatch::score))
                 .orElse(null);
     }
 

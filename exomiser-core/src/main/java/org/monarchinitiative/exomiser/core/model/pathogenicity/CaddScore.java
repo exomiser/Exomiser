@@ -25,7 +25,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  * 
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class CaddScore extends ScaledPathogenicityScore {
+public record CaddScore(float rawScore, float scaledScore) implements PathogenicityScore {
 
     /**
      * Creates a {@link CaddScore} from the input PHRED scaled score. *IMPORTANT* this method will rescale the input
@@ -41,9 +41,20 @@ public class CaddScore extends ScaledPathogenicityScore {
         float score = 1 - (float) Math.pow(10, -(phredScaledScore / 10));
         return new CaddScore(phredScaledScore, score);
     }
-        
-    private CaddScore(float rawScore, float scaledScore) {
-        super(PathogenicitySource.CADD, rawScore, scaledScore);
+
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.CADD;
+    }
+
+    @Override
+    public float score() {
+        return scaledScore;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s: %.3f (%.3f)", source(), scaledScore, rawScore);
     }
 
 }

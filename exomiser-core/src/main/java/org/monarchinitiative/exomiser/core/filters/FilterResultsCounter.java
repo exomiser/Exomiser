@@ -48,7 +48,7 @@ class FilterResultsCounter {
      * @since 13.4.0
      */
     protected void logResultsForFilter(Filter<?> filter, Gene gene) {
-        FilterType filterType = filter.getFilterType();
+        FilterType filterType = filter.filterType();
         if (filter.isOnlyGeneDependent()) {
             // Cater for the case where the PriorityScoreFilter is run before any variants are loaded
             // don't add variant filter counts here as they can get mixed with genes which did have variants
@@ -61,7 +61,7 @@ class FilterResultsCounter {
     }
 
     private void logVariantFilterStats(FilterType filterType, Gene gene) {
-        for (VariantEvaluation variantEvaluation : gene.getVariantEvaluations()) {
+        for (VariantEvaluation variantEvaluation : gene.variantEvaluations()) {
             logFilterResult(filterType, variantEvaluation);
         }
     }
@@ -80,7 +80,7 @@ class FilterResultsCounter {
     }
 
     protected void logResult(FilterResult result) {
-        FilterType filterType = result.getFilterType();
+        FilterType filterType = result.filterType();
         if (result.passed()) {
             logPassResult(filterType);
         } else if (result.failed()) {
@@ -134,13 +134,12 @@ class FilterResultsCounter {
      */
     public List<FilterResultCount> filterResultCounts() {
         // this method is not synchronised as it should be called after any parallel threads have finally been joined
-        List<FilterResultCount> filterResultCounts = new ArrayList<>();
-        for (FilterType type : filtersRun) {
-            PassFailCount passFailCount = passFailCounts.get(type);
-            FilterResultCount filterResultCount = new FilterResultCount(type, passFailCount.passCount, passFailCount.failCount);
-            filterResultCounts.add(filterResultCount);
-        }
-        return List.copyOf(filterResultCounts);
+        return filtersRun.stream()
+                .map(type -> {
+                    PassFailCount passFailCount = passFailCounts.get(type);
+                    return new FilterResultCount(type, passFailCount.passCount, passFailCount.failCount);
+                })
+                .toList();
     }
 
     public FilterResultCount filterResultCount(FilterType filterType) {

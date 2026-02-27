@@ -99,7 +99,7 @@ public class SvPathogenicityDao implements PathogenicityDao {
 
     private PathogenicityScore toPathScore(SvResult svResult) {
         ClinVarData clinVarData = svResult.clinVarData;
-        float score = mapClinSigToScore(clinVarData.getPrimaryInterpretation());
+        float score = mapClinSigToScore(clinVarData.primaryInterpretation());
         return PathogenicityScore.of(PathogenicitySource.CLINVAR, score);
     }
 

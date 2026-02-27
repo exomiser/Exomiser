@@ -42,6 +42,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.DiseaseIdentifiers;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -81,11 +82,11 @@ public class HtmlResultsWriter implements ResultsWriter {
     @Override
     public void writeFile(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
-        Sample sample = analysisResults.getSample();
-        Path outFile = settings.makeOutputFilePath(sample.getVcfPath(), OUTPUT_FORMAT);
+        Sample sample = analysisResults.sample();
+        Path outFile = settings.makeOutputFilePath(sample.vcfPath(), OUTPUT_FORMAT);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
             Context context = buildContext(analysisResults, settings);
-            templateEngine.process("results", context, writer);
+            templateEngine.process("results_bootstrap_5", context, writer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFile, ex);
         }
@@ -96,48 +97,51 @@ public class HtmlResultsWriter implements ResultsWriter {
     public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
         Context context = buildContext(analysisResults, settings);
-        return templateEngine.process("results", context);
+        return templateEngine.process("results_bootstrap_5", context);
     }
 
     private Context buildContext(AnalysisResults analysisResults, OutputSettings outputSettings) {
         Context context = new Context();
 
-        Analysis analysis = analysisResults.getAnalysis();
-        Sample sample = analysisResults.getSample();
+        Analysis analysis = analysisResults.analysis();
+        Sample sample = analysisResults.sample();
 
         String yamlString = toYamlJobString(sample, analysis, outputSettings);
         context.setVariable("settings", yamlString);
 
         //make the user aware of any unanalysed variants
-        List<VariantEvaluation> unAnalysedVarEvals = analysisResults.getUnAnnotatedVariantEvaluations();
+        List<VariantEvaluation> unAnalysedVarEvals = analysisResults.unAnnotatedVariantEvaluations();
         context.setVariable("unAnalysedVarEvals", unAnalysedVarEvals);
 
         //write out the analysis reports section
         List<FilterReport> analysisStepReports = ResultsWriterUtils.makeFilterReports(analysis, analysisResults);
         context.setVariable("filterReports", analysisStepReports);
+        context.setVariable("filterReportEvalCount", !analysisStepReports.isEmpty() ? analysisStepReports.get(0).totalEvaluationCount() : 0.00);
         //write out the variant type counters
-        List<String> sampleNames = analysisResults.getSampleNames();
+        List<String> sampleNames = analysisResults.sampleNames();
         List<VariantEffectCount> variantTypeCounters = ResultsWriterUtils.makeVariantEffectCounters(sampleNames, analysisResults
-                .getVariantEvaluations());
+                .variantEvaluations());
         String sampleName = "Anonymous";
-        if (!sample.getProbandSampleName().isEmpty()) {
-            sampleName = sample.getProbandSampleName();
+        if (!sample.probandSampleName().isEmpty()) {
+            sampleName = sample.probandSampleName();
         }
         context.setVariable("sampleName", sampleName);
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
 
-        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.getGenes());
+        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.genes())
+                .stream().filter(gene -> gene.combinedScore() != 0)
+                .toList();
         context.setVariable("genes", filteredGenes);
 
         //this will change the links to the relevant resource.
         // For the time being we're going to maintain the original behaviour (UCSC)
         // Need to wire it up through the system or it might be easiest to autodetect this from the transcripts of passed variants.
         // One of UCSC, ENSEMBL or REFSEQ
-        var transcriptDb = analysisResults.getContributingVariants().stream()
-                .flatMap(variantEvaluation -> variantEvaluation.getTranscriptAnnotations().stream())
+        var transcriptDb = analysisResults.contributingVariants().stream()
+                .flatMap(variantEvaluation -> variantEvaluation.transcriptAnnotations().stream())
                 .findFirst()
-                .map(TranscriptAnnotation::getAccession)
+                .map(TranscriptAnnotation::accession)
                 .map(value -> {
                     if (value.startsWith("ENST")) {
                         return "ENSEMBL";
@@ -149,13 +153,20 @@ public class HtmlResultsWriter implements ResultsWriter {
                     return "";
                 })
                 .orElse("ENSEMBL");
-        context.setVariable("ensemblAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "grch37" : "www");
-        context.setVariable("ucscAssembly", sample.getGenomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
+        context.setVariable("ensemblAssembly", sample.genomeAssembly() == GenomeAssembly.HG19 ? "grch37" : "www");
+        context.setVariable("ucscAssembly", sample.genomeAssembly() == GenomeAssembly.HG19 ? "hg19" : "hg38");
         context.setVariable("transcriptDb", transcriptDb);
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         context.setVariable("pValueFormatter", new ScientificDecimalFormat("0.0E0"));
         context.setVariable("conflictingInterpretationsFormatter", new ConflictingInterpretationsFormatter());
+        context.setVariable("diseaseIdentifiers", new DiseaseIdentifer());
         return context;
+    }
+
+    public static class DiseaseIdentifer {
+        public String toUrl(String diseaseId) {
+            return DiseaseIdentifiers.toURLString(diseaseId);
+        }
     }
 
     /**

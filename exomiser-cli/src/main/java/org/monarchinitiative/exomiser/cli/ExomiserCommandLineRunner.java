@@ -40,7 +40,8 @@ import java.util.List;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@Component
+//@Component
+@Deprecated(forRemoval = true)
 public class ExomiserCommandLineRunner implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(ExomiserCommandLineRunner.class);

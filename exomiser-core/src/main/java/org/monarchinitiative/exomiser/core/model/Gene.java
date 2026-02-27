@@ -32,11 +32,8 @@ import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * This class represents a Gene in which {@link Variant}
@@ -85,7 +82,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     private GeneScore topGeneScore;
     private final Map<ModeOfInheritance, GeneScore> geneScoreMap = new EnumMap<>(ModeOfInheritance.class);
 
-    private final Map<PriorityType, PriorityResult> priorityResultsMap = new EnumMap<>(PriorityType.class);
+    private final Map<PriorityType, PriorityResult> priorityResults = new EnumMap<>(PriorityType.class);
     /**
      * A list of all of the variants that affect this gene.
      */
@@ -99,15 +96,27 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     public Gene(GeneIdentifier geneIdentifier) {
         this.geneIdentifier = Objects.requireNonNull(geneIdentifier, "GeneIdentifier for a Gene cannot be null");
-        if (geneIdentifier.getGeneSymbol().isEmpty()) {
+        if (geneIdentifier.geneSymbol().isEmpty()) {
             //we can tolerate empty gene identifiers as sometimes there is none - GeneIdentifier will supply a -1 code
             throw new IllegalArgumentException("GeneIdentifier geneSymbol cannot be empty for a Gene");
         }
 
-        this.geneSymbol = geneIdentifier.getGeneSymbol();
-        this.entrezGeneId = geneIdentifier.getEntrezIdAsInteger();
+        this.geneSymbol = geneIdentifier.geneSymbol();
+        this.entrezGeneId = validateEntrezIdIntValue(geneIdentifier.entrezId());
 
         this.topGeneScore = GeneScore.builder().geneIdentifier(geneIdentifier).build();
+    }
+
+    private int validateEntrezIdIntValue(String entrezId) {
+        if (entrezId == null || entrezId.isEmpty()) {
+            //This is permissible - will default to returning a NULL_ENTREZ_ID
+            return -1;
+        }
+        try {
+            return Integer.parseInt(entrezId);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("entrezId '" + entrezId + "' is invalid. GeneIdentifier entrezId must be a positive integer");
+        }
     }
 
     /**
@@ -132,16 +141,16 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the symbol associated with this gene (extracted from one of the
      * Variant objects)
      */
-    public String getGeneSymbol() {
-        return geneIdentifier.getGeneSymbol();
+    public String geneSymbol() {
+        return geneIdentifier.geneSymbol();
     }
 
     @JsonIgnore
-    public String getGeneId() {
-        return geneIdentifier.getGeneId();
+    public String geneId() {
+        return geneIdentifier.geneId();
     }
 
-    public GeneIdentifier getGeneIdentifier() {
+    public GeneIdentifier geneIdentifier() {
         return geneIdentifier;
     }
 
@@ -150,15 +159,15 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * one of the Variant objects)
      */
     @JsonIgnore
-    public int getEntrezGeneID() {
-        return geneIdentifier.getEntrezIdAsInteger();
+    public int entrezGeneId() {
+        return entrezGeneId;
     }
 
     /**
      * @return the number of {@link Variant} associated with this gene.
      */
     @JsonIgnore
-    public int getNumberOfVariants() {
+    public int numberOfVariants() {
         return variantEvaluations.size();
     }
 
@@ -180,7 +189,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
 
     private void addGeneFilterResultsToVariant(VariantEvaluation variantEvaluation) {
         for (FilterResult filterResult : filterResults.values()) {
-            if (filterResult.getFilterType() != FilterType.INHERITANCE_FILTER) {
+            if (filterResult.filterType() != FilterType.INHERITANCE_FILTER) {
                 variantEvaluation.addFilterResult(filterResult);
             }
         }
@@ -189,25 +198,25 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * @return A list of all variants in the VCF file that affect this gene.
      */
-    public List<VariantEvaluation> getVariantEvaluations() {
+    public List<VariantEvaluation> variantEvaluations() {
         return variantEvaluations;
     }
 
     @JsonIgnore
-    public List<VariantEvaluation> getPassedVariantEvaluations() {
-        return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).collect(toList());
+    public List<VariantEvaluation> passedVariantEvaluations() {
+        return variantEvaluations.stream().filter(VariantEvaluation::passedFilters).toList();
     }
 
     @JsonIgnore
-    public List<VariantEvaluation> getNonContributingPassedVariantEvaluations() {
+    public List<VariantEvaluation> nonContributingPassedVariantEvaluations() {
         return variantEvaluations.stream()
                 .filter(VariantEvaluation::passedFilters)
                 .filter(variantEvaluation -> !variantEvaluation.contributesToGeneScore())
-                .collect(toList());
+                .toList();
     }
 
     @Override
-    public Set<ModeOfInheritance> getCompatibleInheritanceModes() {
+    public Set<ModeOfInheritance> compatibleInheritanceModes() {
         return inheritanceModes;
     }
 
@@ -261,7 +270,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         if (variantEvaluations.isEmpty()) {
             return false;
         }
-        Variant ve = variantEvaluations.get(0);
+        Variant ve = variantEvaluations.getFirst();
         return ve.contigId() == 23;
     }
 
@@ -270,7 +279,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         if (variantEvaluations.isEmpty()) {
             return false;
         }
-        Variant ve = variantEvaluations.get(0);
+        Variant ve = variantEvaluations.getFirst();
         return ve.contigId() == 24;
     }
 
@@ -279,7 +288,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     public void addPriorityResult(PriorityResult priorityResult) {
         Objects.requireNonNull(priorityResult);
-        priorityResultsMap.put(priorityResult.getPriorityType(), priorityResult);
+        priorityResults.put(priorityResult.priorityType(), priorityResult);
     }
 
     /**
@@ -288,7 +297,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     @Nullable
     public PriorityResult getPriorityResult(PriorityType type) {
-        return priorityResultsMap.get(type);
+        return priorityResults.get(type);
     }
 
     /**
@@ -303,7 +312,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     @Nullable
     @SuppressWarnings("unchecked")
     public <T extends PriorityResult> T getPriorityResult(Class<T> clazz) {
-        for (PriorityResult priorityResult : priorityResultsMap.values()) {
+        for (PriorityResult priorityResult : priorityResults.values()) {
             if (clazz.isInstance(priorityResult)) {
                 return (T) priorityResult;
             }
@@ -315,14 +324,14 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @return the map of {@code PriorityResult} objects that represent the
      * result of filtering
      */
-    public Map<PriorityType, PriorityResult> getPriorityResults() {
-        return priorityResultsMap;
+    public Map<PriorityType, PriorityResult> priorityResults() {
+        return priorityResults;
     }
 
-    public List<Disease> getAssociatedDiseases() {
+    public List<Disease> associatedDiseases() {
         OmimPriorityResult omimPriorityResult = getPriorityResult(OmimPriorityResult.class);
         // This is a bit silly. Known diseases should be added as part of Gene creation.
-        return omimPriorityResult == null ? List.of() : omimPriorityResult.getAssociatedDiseases();
+        return omimPriorityResult == null ? List.of() : omimPriorityResult.associatedDiseases();
     }
 
     /**
@@ -332,7 +341,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     public synchronized void addGeneScore(GeneScore geneScore) {
         Objects.requireNonNull(geneScore);
-        geneScoreMap.put(geneScore.getModeOfInheritance(), geneScore);
+        geneScoreMap.put(geneScore.modeOfInheritance(), geneScore);
         topGeneScore = GeneScore.max(topGeneScore, geneScore);
     }
 
@@ -344,11 +353,11 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     @JsonIgnore
-    public GeneScore getTopGeneScore() {
+    public GeneScore topGeneScore() {
         return topGeneScore;
     }
 
-    public List<GeneScore> getGeneScores() {
+    public List<GeneScore> geneScores() {
         return List.copyOf(geneScoreMap.values());
     }
 
@@ -358,7 +367,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      * @since 13.1.0
      * @return A list of {@link GeneScore} with a compatible mode of inheritance.
      */
-    public List<GeneScore> getCompatibleGeneScores() {
+    public List<GeneScore> compatibleGeneScores() {
         // An explanation about the logic here: If the Analysis.inheritanceModes is empty or no MOI dependent analysis
         // step has been run the (compatible) inheritanceModes will be empty. The GeneScorer will always give a gene a
         // GeneScore but in this case it will have an MOI.ANY. So, in the case that no compatible inheritanceModes are
@@ -367,7 +376,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return inheritanceModes.isEmpty() ? anyMoiScoreOrEmptyList() : geneScoreMap.entrySet().stream()
                 .filter(entry -> inheritanceModes.contains(entry.getKey()))
                 .map(Map.Entry::getValue)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private List<GeneScore> anyMoiScoreOrEmptyList() {
@@ -375,7 +384,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
         return geneScore != null ? List.of(geneScore) : List.of();
     }
 
-    public GeneScore getGeneScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public GeneScore geneScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         return geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.builder()
                 .geneIdentifier(this.geneIdentifier)
@@ -387,8 +396,8 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     /**
      * Gets the priority score for the gene.
      */
-    public double getPriorityScore() {
-        return topGeneScore.getPhenotypeScore();
+    public double priorityScore() {
+        return topGeneScore.phenotypeScore();
     }
 
     /**
@@ -397,30 +406,30 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      *
      * @return a score that will be used to rank the gene.
      */
-    public double getPriorityScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public double priorityScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
-        return geneScore.getPhenotypeScore();
+        return geneScore.phenotypeScore();
     }
 
     /**
      * Get the variant score for the gene.
      */
-    public double getVariantScore() {
-        return topGeneScore.getVariantScore();
+    public double variantScore() {
+        return topGeneScore.variantScore();
     }
 
     /**
      * @return a variant score that will be used to rank the gene.
      */
-    public double getVariantScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public double variantScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
-        return geneScore.getVariantScore();
+        return geneScore.variantScore();
     }
 
-    public double getCombinedScore() {
-        return topGeneScore.getCombinedScore();
+    public double combinedScore() {
+        return topGeneScore.combinedScore();
     }
 
     @JsonGetter
@@ -434,10 +443,10 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      *
      * @return a combined score that will be used to rank the gene.
      */
-    public double getCombinedScoreForMode(ModeOfInheritance modeOfInheritance) {
+    public double combinedScoreForMode(ModeOfInheritance modeOfInheritance) {
         Objects.requireNonNull(modeOfInheritance);
         GeneScore geneScore = geneScoreMap.getOrDefault(modeOfInheritance, GeneScore.empty());
-        return geneScore.getCombinedScore();
+        return geneScore.combinedScore();
     }
 
     /**
@@ -498,7 +507,7 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     @Override
     public boolean addFilterResult(FilterResult filterResult) {
         Objects.requireNonNull(filterResult);
-        filterResults.put(filterResult.getFilterType(), filterResult);
+        filterResults.put(filterResult.filterType(), filterResult);
         if (filterResult.passed()) {
             return addPassedFilterResult(filterResult);
         }
@@ -506,12 +515,12 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     }
 
     private boolean addPassedFilterResult(FilterResult filterResult) {
-        passedFilterTypes.add(filterResult.getFilterType());
+        passedFilterTypes.add(filterResult.filterType());
         return true;
     }
 
     private boolean addFailedFilterResult(FilterResult filterResult) {
-        failedFilterTypes.add(filterResult.getFilterType());
+        failedFilterTypes.add(filterResult.filterType());
         return false;
     }
 
@@ -548,8 +557,8 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
      */
     public static Comparator<Gene> comparingScoreForInheritanceMode(ModeOfInheritance modeOfInheritance) {
         return (g1, g2) -> {
-            GeneScore g1ScoreForMode = g1.getGeneScoreForMode(modeOfInheritance);
-            GeneScore g2ScoreForMode = g2.getGeneScoreForMode(modeOfInheritance);
+            GeneScore g1ScoreForMode = g1.geneScoreForMode(modeOfInheritance);
+            GeneScore g2ScoreForMode = g2.geneScoreForMode(modeOfInheritance);
             return GeneScore.compare(g1ScoreForMode, g2ScoreForMode);
         };
     }
@@ -572,16 +581,16 @@ public class Gene implements Comparable<Gene>, Filterable, Inheritable {
     @Override
     public String toString() {
         return "Gene{" +
-                "geneSymbol='" + geneSymbol + '\'' +
-                ", entrezGeneId=" + entrezGeneId +
-                ", compatibleWith=" + inheritanceModes +
-                ", filterStatus=" + getFilterStatus() +
-                ", failedFilterTypes=" + failedFilterTypes +
-                ", passedFilterTypes=" + passedFilterTypes +
-                ", combinedScore=" + getCombinedScore() +
-                ", phenotypeScore=" + getPriorityScore() +
-                ", variantScore=" + getVariantScore() +
-                ", variants=" + variantEvaluations.size() +
-                '}';
+               "geneSymbol='" + geneSymbol + '\'' +
+               ", entrezGeneId=" + entrezGeneId +
+               ", compatibleWith=" + inheritanceModes +
+               ", filterStatus=" + getFilterStatus() +
+               ", failedFilterTypes=" + failedFilterTypes +
+               ", passedFilterTypes=" + passedFilterTypes +
+               ", combinedScore=" + combinedScore() +
+               ", phenotypeScore=" + priorityScore() +
+               ", variantScore=" + variantScore() +
+               ", variants=" + variantEvaluations.size() +
+               '}';
     }
 }

@@ -39,13 +39,13 @@ public class OmimPriorityResultTest {
     @Test
     public void testType() {
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 0, Collections.emptyList(), Collections.emptyMap());
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
+        assertThat(instance.priorityType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
     @Test
-    public void testGetScore() {
+    public void testScore() {
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, Collections.emptyList(), Collections.emptyMap());
-        assertThat(instance.getScore(), equalTo(1d));
+        assertThat(instance.score(), equalTo(1d));
     }
 
     @Test
@@ -53,7 +53,7 @@ public class OmimPriorityResultTest {
         Disease disease = Disease.builder().diseaseId("OMIM:12345").diseaseName("OMIM disease name").diseaseType(Disease.DiseaseType.DISEASE).inheritanceModeCode("D").build();
         List<Disease> diseases = Lists.newArrayList(disease);
         OmimPriorityResult instance = new OmimPriorityResult(1234, "GENE1", 1d, diseases, Collections.emptyMap());
-        assertThat(instance.getAssociatedDiseases(), equalTo(diseases));
+        assertThat(instance.associatedDiseases(), equalTo(diseases));
     }
 
     @Test

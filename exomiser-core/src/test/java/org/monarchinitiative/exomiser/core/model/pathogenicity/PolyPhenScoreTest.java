@@ -47,8 +47,8 @@ public class PolyPhenScoreTest {
     }
 
     @Test
-    public void testGetSource() {
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.POLYPHEN));
+    public void testSource() {
+        assertThat(instance.source(), equalTo(PathogenicitySource.POLYPHEN));
     }
     
     @Test

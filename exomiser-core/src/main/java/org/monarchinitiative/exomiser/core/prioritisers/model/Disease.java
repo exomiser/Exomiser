@@ -28,7 +28,13 @@ import java.util.Objects;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public final class Disease implements Model {
+public record Disease(String diseaseId,
+                      String diseaseName,
+                      int associatedGeneId,
+                      String associateGeneSymbol,
+                      DiseaseType diseaseType,
+                      InheritanceMode inheritanceMode,
+                      List<String> phenotypeIds) implements Model {
 
     public enum DiseaseType {
 
@@ -64,92 +70,22 @@ public final class Disease implements Model {
         }
     }
 
-    private final String diseaseId;
-    private final String diseaseName;
-
-    private final int associatedGeneId;
-    private final String associateGeneSymbol;
-
-    private final DiseaseType diseaseType;
-    private final InheritanceMode inheritanceMode;
-
-    private final List<String> phenotypeIds;
-
-    private Disease(Builder builder) {
-        this.diseaseId = builder.diseaseId;
-        this.diseaseName = builder.diseaseName;
-        this.associatedGeneId = builder.entrezGeneId;
-        this.associateGeneSymbol = builder.humanGeneSymbol;
-        this.diseaseType = builder.diseaseType;
-        this.inheritanceMode = builder.inheritanceMode;
-        this.phenotypeIds = List.copyOf(builder.phenotypeIds);
-    }
-
-    public String getDiseaseId() {
+    @Override
+    public String id() {
         return diseaseId;
     }
-
-    public String getDiseaseName() {
-        return diseaseName;
-    }
-
-    public int getAssociatedGeneId() {
-        return associatedGeneId;
-    }
-
-    public String getAssociatedGeneSymbol() {
-        return associateGeneSymbol;
-    }
-
-    public DiseaseType getDiseaseType() {
-        return diseaseType;
-    }
-
-    public InheritanceMode getInheritanceMode() {
-        return inheritanceMode;
-    }
-
-    @Override
-    public String getId() {
-        return diseaseId;
-    }
-
-    @Override
-    public List<String> getPhenotypeIds() {
-        return phenotypeIds;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Disease)) return false;
-        Disease that = (Disease) o;
-        return associatedGeneId == that.associatedGeneId &&
-                Objects.equals(diseaseId, that.diseaseId) &&
-                Objects.equals(diseaseName, that.diseaseName) &&
-                Objects.equals(associateGeneSymbol, that.associateGeneSymbol) &&
-                diseaseType == that.diseaseType &&
-                inheritanceMode == that.inheritanceMode &&
-                Objects.equals(phenotypeIds, that.phenotypeIds);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(diseaseId, diseaseName, associatedGeneId, associateGeneSymbol, diseaseType, inheritanceMode, phenotypeIds);
-    }
-
 
     @Override
     public String toString() {
         return "Disease{" +
-                "diseaseId='" + diseaseId + '\'' +
-                ", diseaseName='" + diseaseName + '\'' +
-                ", associatedGeneId=" + associatedGeneId +
-                ", associateGeneSymbol='" + associateGeneSymbol + '\'' +
-                ", diseaseType=" + diseaseType +
-                ", inheritanceMode=" + inheritanceMode +
-                ", phenotypeIds=" + phenotypeIds +
-                '}';
+               "diseaseId='" + diseaseId + '\'' +
+               ", diseaseName='" + diseaseName + '\'' +
+               ", associatedGeneId=" + associatedGeneId +
+               ", associateGeneSymbol='" + associateGeneSymbol + '\'' +
+               ", diseaseType=" + diseaseType +
+               ", inheritanceMode=" + inheritanceMode +
+               ", phenotypeIds=" + phenotypeIds +
+               '}';
     }
 
     public static Builder builder() {
@@ -218,7 +154,15 @@ public final class Disease implements Model {
         }
 
         public Disease build() {
-            return new Disease(this);
+            return new Disease(
+                    this.diseaseId,
+                    this.diseaseName,
+                    this.entrezGeneId,
+                    this.humanGeneSymbol,
+                    this.diseaseType,
+                    this.inheritanceMode,
+                    this.phenotypeIds
+            );
         }
 
     }

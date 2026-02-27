@@ -58,32 +58,32 @@ public class PriorityScoreFilterTest {
 
     private void assertPasses(FilterResult result) {
         assertThat(result.passed(), is(true));
-        assertThat(result.getFilterType(), equalTo(instance.getFilterType()));
+        assertThat(result.filterType(), equalTo(instance.filterType()));
     }
     
     private void assertFails(FilterResult result) {
         assertThat(result.failed(), is(true));
-        assertThat(result.getFilterType(), equalTo(instance.getFilterType()));
+        assertThat(result.filterType(), equalTo(instance.filterType()));
     }
      
     @Test
     public void testGetPriorityType() {
-        assertThat(instance.getPriorityType(), equalTo(priorityType));
+        assertThat(instance.priorityType(), equalTo(priorityType));
     }
     
     @Test
     public void testGetMinPriorityScore() {
-        assertThat(instance.getMinPriorityScore(), equalTo(minPriorityScore));
+        assertThat(instance.minPriorityScore(), equalTo(minPriorityScore));
     }
     
     @Test
-    public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.PRIORITY_SCORE_FILTER));
+    public void testFilterType() {
+        assertThat(instance.filterType(), equalTo(FilterType.PRIORITY_SCORE_FILTER));
     }
 
     @Test
     public void testRunFilterFailsGeneWithWrongPriorityTypeScoreSameAsThreshold() {
-        PriorityResult priorityResult = new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.getEntrezGeneID(), gene.getGeneSymbol(), minPriorityScore);
+        PriorityResult priorityResult = new MockPriorityResult(PriorityType.OMIM_PRIORITY, gene.entrezGeneId(), gene.geneSymbol(), minPriorityScore);
         gene.addPriorityResult(priorityResult);
         
         FilterResult result = instance.runFilter(gene);
@@ -132,11 +132,11 @@ public class PriorityScoreFilterTest {
         
         assertFails(result);
         assertThat(variant.passedFilter(FilterType.PRIORITY_SCORE_FILTER), is(false));
-        assertThat(variant.getFailedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
+        assertThat(variant.failedFilterTypes(), hasItem(FilterType.PRIORITY_SCORE_FILTER));
     }
 
     private PriorityResult makeDefaultPriorityResult(double score) {
-        return new MockPriorityResult(priorityType, gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
+        return new MockPriorityResult(priorityType, gene.entrezGeneId(), gene.geneSymbol(), score);
     }
 
     @Test

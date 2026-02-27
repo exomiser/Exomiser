@@ -11,7 +11,7 @@
         - [Working with the distroless image (no shell)](#working-with-the-distroless-image)
         - [Working with the Docker bash images](#working-with-the-docker-bash-image)
 
-# <a id="the-exomiser"></a>The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Executable
+# <a id="the-exomiser"></a>The Exomiser - A Tool to Annotate and Prioritize Disease Variants: Command Line Interface
 
 The Exomiser is a tool to perform genome-wide prioritisation of genomic variants including non-coding and regulatory
 variants using patient phenotypes as a means of differentiating candidate genes.
@@ -20,13 +20,13 @@ To perform an analysis, Exomiser requires the patient's genome/exome in VCF form
 terms. The exomiser is also capable of analysing trios/small family genomes, so long as a pedigree in PED format is also
 provided. See [Usage](#usage) section for info on running an analysis.
 
-Further information can be found in the [online documentation](https://exomiser.readthedocs.io/en/latest/).
+The most up-to-date information can be found in the [online documentation](https://exomiser.readthedocs.io/en/latest/).
 
 ## <a id="software-requirements"></a>  Software and Hardware requirements
  - For exome analysis of a 30,000 variant sample 4GB RAM should suffice.
  - For genome analysis of a 4,400,000 variant sample 12GB RAM should suffice.
  - Any 64-bit operating system
- - Java 17 or above
+ - Java 21 or above
  - At least 50GB free disk space (SSD preferred for best performance)
  - An internet connection is not required to run the Exomiser, although network access will be required if accessing a
   networked database (optional).
@@ -45,7 +45,7 @@ Further information can be found in the [online documentation](https://exomiser.
    Extract files... 4.1 Extract the files to the exomiser data directory. By default exomiser expects this to
    be ```exomiser-cli-${project.version}/data```, but this can be changed in the ```application.properties```
 5. cd exomiser-cli-${project.version}
-6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+6. java -Xms2g -Xmx4g -jar exomiser-cli-${project.version}.jar analyse --analysis examples/test-analysis-exome.yml
 
 ### <a id="linux"></a>Linux
 
@@ -69,7 +69,7 @@ The following shell script should work-
     
     # run a test exome analysis
     cd exomiser-cli-${project.version}
-    java -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+    java -jar exomiser-cli-${project.version}.jar analyse --analysis examples/test-analysis-exome.yml
 
 This script will download, verify and extract the exomiser files and then run the analysis contained in the file 'test-analysis-exome.yml' from the examples sub-directory. This contains a known pathogenic missense variant in the FGFR2 gene.
 
@@ -86,7 +86,7 @@ If this step is omitted, the application will throw and error and stop any analy
 
 Having done this, run the analysis like this:
 
-    java -Xmx6g -jar exomiser-cli-${project.version}.jar --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml 
+    java -Xmx6g -jar exomiser-cli-${project.version}.jar analyse --analysis examples/NA19722_601952_AUTOSOMAL_RECESSIVE_POMP_13_29233225_5UTR_38.yml 
 
 This is an analysis for an autosomal recessive 5'UTR variant located in POMP gene on chromosome 13. The phenotype HPO terms are taken from the clinical synopsis of
 OMIM #601952 (http://www.omim.org/clinicalSynopsis/601952) 
@@ -120,19 +120,19 @@ and pathogenicity data sources and the ability to tweak the order that analysis 
 
 See the test-analysis-exome.yml and test-analysis-genome.yml files located in the base install directory for details.
 
-    java -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis examples/test-analysis-exome.yml
+    java -Xmx4g -jar exomiser-cli-${project.version}.jar analyse --analysis examples/test-analysis-exome.yml
 
-These files can also be used to run full-genomes, however they will require substantially more RAM to do so. For example
-a 4.4 million variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by 
+These files can also be used to run full-genomes however, they will require substantially more RAM to do so. For example
+a 4.4 million-variant analysis requires approximately 12GB RAM. However, RAM requirements can be greatly reduced by 
 setting the analysisMode option to PASS_ONLY. This will also aid your ability to evaluate the results.
 
 Analyses can be run in batch mode. Simply put the path to each analysis file in the batch file - one file path per line.
 
-    java -Xmx4g -jar exomiser-cli-${project.version}.jar --analysis-batch examples/test-analysis-batch.txt
+    java -Xmx4g -jar exomiser-cli-${project.version}.jar batch examples/test-analysis-batch.txt
     
 If you're running the exomiser from a different directory to the one the jar file is located in, you will need to specify the path to the ```application.properties``` file in the start-up command. For example:
 
-     java -Xmx4g -jar $path_to_exomiser/exomiser-cli-${project.version}.jar --analysis $path_to_exomiser/examples/test-analysis-exome.yml --spring.config.location=$path_to_exomiser/application.properties
+     java -Xmx4g -jar $path_to_exomiser/exomiser-cli-${project.version}.jar analyse --analysis $path_to_exomiser/examples/test-analysis-exome.yml --spring.config.location=$path_to_exomiser/application.properties
 
     
 ### Want help?
@@ -247,7 +247,7 @@ If you choose to run the distroless image use the following command:
  -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
  -v "/path/to/exomiser/results:/results"  \
  ${docker.repository}/exomiser-cli:${project.version}  \
- --analysis /exomiser/test-analysis-exome.yml  \
+ analyse --analysis /exomiser/test-analysis-exome.yml  \
  --spring.config.location=/exomiser/application.properties
 ```
 
@@ -258,7 +258,7 @@ or using Spring configuration arguments instead of the `application.properties`:
  -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
  -v "/path/to/exomiser/results:/results"  \
  ${docker.repository}/exomiser-cli:${project.version}  \
- --analysis /exomiser/test-analysis-exome.yml  \
+ analyse --analysis /exomiser/test-analysis-exome.yml  \
  # minimal requirements for an hg19 exome sample
  --exomiser.data-directory=/exomiser-data \
  --exomiser.hg19.data-version=${genome.data.version} \
@@ -310,7 +310,7 @@ After running the following commands Exomiser will be started from the container
 ```shell
  source enable_exomiser.sh
  bash enable_exomiser.sh
- exomiser --analysis /exomiser/test-analysis-exome.yml \
+ exomiser analyse --analysis /exomiser/test-analysis-exome.yml \
  --spring.config.location=/exomiser/application.properties
 ```
 

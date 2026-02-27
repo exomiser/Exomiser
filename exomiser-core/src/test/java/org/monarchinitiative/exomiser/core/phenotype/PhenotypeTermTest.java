@@ -58,17 +58,17 @@ public class PhenotypeTermTest {
     @Test
     void willAcceptNullLabel() {
         PhenotypeTerm instance = PhenotypeTerm.of("id", null);
-        assertThat(instance.getLabel(), equalTo(""));
+        assertThat(instance.label(), equalTo(""));
     }
 
     @Test
-    public void testGetId() {
-        assertThat(instance.getId(), equalTo(id));
+    public void testId() {
+        assertThat(instance.id(), equalTo(id));
     }
 
     @Test
     public void testGetTerm() {
-        assertThat(instance.getLabel(), equalTo(label));
+        assertThat(instance.label(), equalTo(label));
     }
 
     @Test

@@ -26,6 +26,8 @@ import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.monarchinitiative.exomiser.core.proto.ProtoConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -34,14 +36,16 @@ import java.util.stream.Collectors;
 
 public class AnalysisProtoConverter implements ProtoConverter<Analysis, AnalysisProto.Analysis> {
 
+    private static final Logger logger = LoggerFactory.getLogger(AnalysisProtoConverter.class);
+
     @Override
     public AnalysisProto.Analysis toProto(Analysis analysis) {
         return AnalysisProto.Analysis.newBuilder()
-                .setAnalysisMode(analysis.getAnalysisMode() == AnalysisMode.PASS_ONLY ? AnalysisProto.AnalysisMode.PASS_ONLY : AnalysisProto.AnalysisMode.FULL)
-                .putAllInheritanceModes(analysis.getInheritanceModeOptions().getMaxFreqs().entrySet().stream().collect(Collectors.toMap(subModeOfInheritanceFloatEntry -> subModeOfInheritanceFloatEntry.getKey().toString(), Map.Entry::getValue)))
-                .addAllFrequencySources(analysis.getFrequencySources().stream().map(Objects::toString).toList())
-                .addAllPathogenicitySources(analysis.getPathogenicitySources().stream().map(Objects::toString).toList())
-                .addAllSteps(analysis.getAnalysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).toList())
+                .setAnalysisMode(analysis.analysisMode() == AnalysisMode.PASS_ONLY ? AnalysisProto.AnalysisMode.PASS_ONLY : AnalysisProto.AnalysisMode.FULL)
+                .putAllInheritanceModes(analysis.inheritanceModeOptions().getMaxFreqs().entrySet().stream().collect(Collectors.toMap(subModeOfInheritanceFloatEntry -> subModeOfInheritanceFloatEntry.getKey().toString(), Map.Entry::getValue)))
+                .addAllFrequencySources(analysis.frequencySources().stream().map(Objects::toString).toList())
+                .addAllPathogenicitySources(analysis.pathogenicitySources().stream().map(Objects::toString).toList())
+                .addAllSteps(analysis.analysisSteps().stream().map(analysisStepToProto()).filter(Objects::nonNull).toList())
                 .build();
     }
 
@@ -59,71 +63,55 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
 
     private AnalysisProto.AnalysisStep buildFilterProto(AnalysisStep analysisStep) {
         AnalysisProto.AnalysisStep.Builder stepBuilder = AnalysisProto.AnalysisStep.newBuilder();
-        if (analysisStep instanceof VariantEffectFilter variantEffectFilter) {
-            return stepBuilder
+        return switch (analysisStep) {
+            case VariantEffectFilter variantEffectFilter -> stepBuilder
                     .setVariantEffectFilter(FiltersProto.VariantEffectFilter.newBuilder()
                             .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).toList()))
                     .build();
-        }
-        if (analysisStep instanceof FrequencyFilter frequencyFilter) {
-            return stepBuilder
-                    .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(frequencyFilter.getMaxFreq()))
+            case FrequencyFilter(float maxFreq) -> stepBuilder
+                    .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(maxFreq))
                     .build();
-        }
-        if (analysisStep instanceof PathogenicityFilter pathogenicityFilter) {
-            return stepBuilder
-                    .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(pathogenicityFilter.keepNonPathogenic()))
+            case PathogenicityFilter(boolean keepNonPathogenic) -> stepBuilder
+                    .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(keepNonPathogenic))
                     .build();
-        }
-        if (analysisStep instanceof FailedVariantFilter) {
-            return stepBuilder
+            case FailedVariantFilter failedVariantFilter -> stepBuilder
                     .setFailedVariantFilter(FiltersProto.FailedVariantFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof KnownVariantFilter) {
-            return stepBuilder
+            case KnownVariantFilter knownVariantFilter -> stepBuilder
                     .setKnownVariantFilter(FiltersProto.KnownVariantFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof QualityFilter qualityFilter) {
-            return stepBuilder
-                    .setQualityFilter(FiltersProto.QualityFilter.newBuilder().setMinQuality((float) qualityFilter.getMimimumQualityThreshold()))
+            case QualityFilter(double mimimumQualityThreshold) -> stepBuilder
+                    .setQualityFilter(FiltersProto.QualityFilter.newBuilder().setMinQuality((float) mimimumQualityThreshold))
                     .build();
-        }
-        if (analysisStep instanceof IntervalFilter intervalFilter) {
-            return stepBuilder
+            case AlleleBalanceFilter alleleBalanceFilter -> stepBuilder
+                    .setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.newBuilder())
+                    .build();
+            case IntervalFilter intervalFilter -> stepBuilder
                     .setIntervalFilter(FiltersProto.IntervalFilter.newBuilder()
                             .addAllIntervals(intervalFilter.getChromosomalRegions().stream().map(region -> region.contigId() + ":" + region.start() + "-" + region.end()).toList()))
                     .build();
-        }
-        if (analysisStep instanceof GeneSymbolFilter geneSymbolFilter) {
-            return stepBuilder
+            case GeneSymbolFilter geneSymbolFilter -> stepBuilder
                     .setGenePanelFilter(FiltersProto.GenePanelFilter.newBuilder().addAllGeneSymbols(geneSymbolFilter.getGeneSymbols()))
                     .build();
-        }
-
-        if (analysisStep instanceof GeneBlacklistFilter geneBlacklistFilter) {
-           return stepBuilder
-                   .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
-                   .build();
-        }
-
-        if (analysisStep instanceof InheritanceFilter) {
-            return stepBuilder
-                    .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder().build())
+            case GeneBlacklistFilter geneBlacklistFilter -> stepBuilder
+                    .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof RegulatoryFeatureFilter) {
-            return stepBuilder.setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()).build();
-        }
-        if (analysisStep instanceof PriorityScoreFilter priorityScoreFilter) {
-            return stepBuilder
+            case InheritanceFilter inheritanceFilter -> stepBuilder
+                    .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder())
+                    .build();
+            case RegulatoryFeatureFilter regulatoryFeatureFilter -> stepBuilder
+                    .setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder())
+                    .build();
+            case PriorityScoreFilter(PriorityType priorityType, double minPriorityScore) -> stepBuilder
                     .setPriorityScoreFilter(FiltersProto.PriorityScoreFilter.newBuilder()
-                            .setMinPriorityScore((float) priorityScoreFilter.getMinPriorityScore())
-                            .setPriorityType(priorityScoreFilter.getPriorityType().toString()))
+                            .setMinPriorityScore((float) minPriorityScore)
+                            .setPriorityType(priorityType.toString()))
                     .build();
-        }
-        return null;
+            default -> {
+                logger.warn("Unknown analysis step type: {}", analysisStep);
+                yield null;
+            }
+        };
     }
 
     private AnalysisProto.AnalysisStep buildPrioritiserProto(AnalysisStep analysisStep) {
@@ -138,8 +126,8 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
             return stepBuilder
                     .setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder()
                             .setRunParams(hiPhiveOptions.getRunParams())
-                            .setDiseaseId(hiPhiveOptions.getDiseaseId())
-                            .setCandidateGeneSymbol(hiPhiveOptions.getCandidateGeneSymbol()))
+                            .setDiseaseId(hiPhiveOptions.diseaseId())
+                            .setCandidateGeneSymbol(hiPhiveOptions.candidateGeneSymbol()))
                     .build();
         }
         if (analysisStep instanceof PhenixPriority) {

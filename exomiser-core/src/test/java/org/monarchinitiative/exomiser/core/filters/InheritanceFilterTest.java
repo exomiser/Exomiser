@@ -68,7 +68,7 @@ public class InheritanceFilterTest {
     public void testGetModeOfInheritance() {
         Set<ModeOfInheritance> desiredInheritanceMode = EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         InheritanceFilter instance = new InheritanceFilter(desiredInheritanceMode);
-        assertThat(instance.getCompatibleModes(), equalTo(desiredInheritanceMode));
+        assertThat(instance.compatibleModes(), equalTo(desiredInheritanceMode));
     }
     
     @Test
@@ -135,10 +135,10 @@ public class InheritanceFilterTest {
     }
 
     @Test
-    public void testGetFilterType() {
+    public void testFilterType() {
         InheritanceFilter instance = new InheritanceFilter(EnumSet.of(ModeOfInheritance.X_DOMINANT));
 
-        assertThat(instance.getFilterType(), equalTo(FilterType.INHERITANCE_FILTER));
+        assertThat(instance.filterType(), equalTo(FilterType.INHERITANCE_FILTER));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class InheritanceFilterTest {
 
     @Test
     public void testEquals() {
-        InheritanceFilter dominantFilter = new InheritanceFilter(ModeOfInheritance.AUTOSOMAL_DOMINANT);
+        InheritanceFilter dominantFilter =  InheritanceFilter.of(ModeOfInheritance.AUTOSOMAL_DOMINANT);
         InheritanceFilter otherDominantFilter = new InheritanceFilter(EnumSet.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
 
 

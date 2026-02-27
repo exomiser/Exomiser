@@ -243,7 +243,7 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
      * Flag to output results of filtering against Uberpheno data.
      */
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return PRIORITY_TYPE;
     }
 
@@ -271,7 +271,7 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
                     Gene gene = entry.getKey();
                     PhenixScore phenixScore = entry.getValue();
                     double score = phenixScore.getSemanticSimilarityScore() * normalisationFactor;
-                    return new PhenixPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, phenixScore.getSemanticSimilarityScore(), phenixScore.getNegativeLogP());
+                    return new PhenixPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score, phenixScore.getSemanticSimilarityScore(), phenixScore.getNegativeLogP());
                 });
     }
 
@@ -286,12 +286,13 @@ public class PhenixPriority implements Prioritiser<PhenixPriorityResult> {
                 })
                 .filter(Objects::nonNull)
                 .distinct()
-                .collect(Collectors.toList());
+                // ArrayList is specifically required later, although it is not mutated
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private Function<Gene, PhenixScore> scoreGene(List<Term> queryTerms, ScoreDistributionContainer scoredistributionContainer) {
         return gene -> {
-            int entrezGeneId = gene.getEntrezGeneID();
+            int entrezGeneId = gene.entrezGeneId();
             String geneIdString = Integer.toString(entrezGeneId);
 
             if (!geneId2annotations.containsKey(geneIdString)) {

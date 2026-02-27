@@ -20,8 +20,8 @@
 
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +102,7 @@ public class PedigreeSampleValidator {
 
     private static void checkOnlyOneFamilyIsPresent(Pedigree pedigree) {
         List<String> familyNames = pedigree.getIndividuals().stream()
-                .map(Individual::getFamilyId)
+                .map(Individual::familyId)
                 .distinct()
                 .collect(toList());
         if (familyNames.size() > 1) {

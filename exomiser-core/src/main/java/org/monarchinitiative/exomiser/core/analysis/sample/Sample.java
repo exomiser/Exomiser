@@ -26,12 +26,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
-import org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -42,16 +42,16 @@ import java.util.Objects;
  */
 @JsonDeserialize(builder = Sample.Builder.class)
 @JsonPropertyOrder({"genomeAssembly", "vcf", "proband", "age", "sex", "hpoIds", "pedigree"})
-public class Sample {
-
-    private final GenomeAssembly genomeAssembly;
-    private final Path vcfPath;
-    private final String probandSampleName;
-    private final Age age;
-    private final Sex sex;
-    private final Pedigree pedigree;
-    private final List<String> hpoIds;
-
+public record Sample(GenomeAssembly genomeAssembly,
+                     @JsonProperty("vcf")
+                     @Nullable Path vcfPath,
+                     @JsonProperty("proband")
+                     String probandSampleName,
+                     Age age,
+                     Sex sex,
+                     Pedigree pedigree,
+                     List<String> hpoIds
+) {
     public static Sample from(Family family) {
         return PhenopacketConverter.toSample(family);
     }
@@ -64,14 +64,14 @@ public class Sample {
         return new SampleProtoConverter().toDomain(sampleProto);
     }
 
-    private Sample(Builder builder) {
-        this.genomeAssembly = builder.genomeAssembly;
-        this.vcfPath = builder.vcfPath;
-        this.probandSampleName = builder.probandSampleName;
-        this.age = builder.age;
-        this.sex = checkSex(builder.probandSampleName, builder.sex, builder.pedigree);
-        this.pedigree = builder.pedigree;
-        this.hpoIds = List.copyOf(builder.hpoIds);
+    public Sample {
+        Objects.requireNonNull(genomeAssembly);
+//        Objects.requireNonNull(vcfPath);
+        Objects.requireNonNull(probandSampleName);
+        Objects.requireNonNull(age);
+        sex = checkSex(probandSampleName, sex, pedigree);
+        Objects.requireNonNull(pedigree);
+        hpoIds = List.copyOf(hpoIds);
     }
 
     private Sex checkSex(String sampleName, Sex sex, Pedigree pedigree) {
@@ -82,7 +82,7 @@ public class Sample {
         if (proband == null) {
             throw new IllegalArgumentException("Proband '" + sampleName + "' not present in pedigree");
         }
-        Sex probandSexInPedigree = proband.getSex();
+        Sex probandSexInPedigree = proband.sex();
         if (sex == Sex.UNKNOWN && probandSexInPedigree != Sex.UNKNOWN) {
             return probandSexInPedigree;
         }
@@ -93,71 +93,22 @@ public class Sample {
         return sex;
     }
 
-    public GenomeAssembly getGenomeAssembly() {
-        return genomeAssembly;
-    }
-
-    @JsonProperty("vcf")
-    @Nullable
-    public Path getVcfPath() {
-        return vcfPath;
-    }
-
     @JsonIgnore
     public boolean hasVcf() {
         return vcfPath != null;
     }
 
-    @JsonProperty("proband")
-    public String getProbandSampleName() {
-        return probandSampleName;
-    }
-
-    public Age getAge() {
-        return age;
-    }
-
-    public Sex getSex() {
-        return sex;
-    }
-
-    public Pedigree getPedigree() {
-        return pedigree;
-    }
-
-    public List<String> getHpoIds() {
-        return hpoIds;
-    }
-
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Sample)) return false;
-        Sample sample = (Sample) o;
-        return genomeAssembly == sample.genomeAssembly &&
-                Objects.equals(vcfPath, sample.vcfPath) &&
-                Objects.equals(probandSampleName, sample.probandSampleName) &&
-                age.equals(sample.age) &&
-                sex == sample.sex &&
-                pedigree.equals(sample.pedigree) &&
-                hpoIds.equals(sample.hpoIds);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(genomeAssembly, vcfPath, probandSampleName, age, sex, pedigree, hpoIds);
-    }
-
     @Override
     public String toString() {
         return "Sample{" +
-                "genomeAssembly=" + genomeAssembly +
-                ", vcfPath=" + vcfPath +
-                ", probandSampleName='" + probandSampleName + '\'' +
-                ", age=" + age +
-                ", sex=" + sex +
-                ", pedigree=" + pedigree +
-                ", hpoIds=" + hpoIds +
-                '}';
+               "genomeAssembly=" + genomeAssembly +
+               ", vcfPath=" + vcfPath +
+               ", probandSampleName='" + probandSampleName + '\'' +
+               ", age=" + age +
+               ", sex=" + sex +
+               ", pedigree=" + pedigree +
+               ", hpoIds=" + hpoIds +
+               '}';
     }
 
     public static Builder builder() {
@@ -222,7 +173,7 @@ public class Sample {
         }
 
         public Sample build() {
-            return new Sample(this);
+            return new Sample(genomeAssembly, vcfPath, probandSampleName, age, sex, pedigree, hpoIds);
         }
     }
 }

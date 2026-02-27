@@ -34,7 +34,7 @@ public class GeneScoreRankerTest {
 
         GeneScoreRanker instance = new GeneScoreRanker(analysisResults, OutputSettings.defaults());
 
-        Map<GeneIdentifier, Gene> expected = Map.of(fgfr2.getGeneIdentifier(), fgfr2, gnrhr2.getGeneIdentifier(), gnrhr2);
+        Map<GeneIdentifier, Gene> expected = Map.of(fgfr2.geneIdentifier(), fgfr2, gnrhr2.geneIdentifier(), gnrhr2);
         assertThat(instance.mapGenesByGeneIdentifier(), equalTo(expected));
     }
 
@@ -43,7 +43,7 @@ public class GeneScoreRankerTest {
         var fgfr2 = TestFactory.newGeneFGFR2();
         var topGeneScore = GeneScore.builder()
                 .combinedScore(1.0)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         fgfr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
@@ -52,7 +52,7 @@ public class GeneScoreRankerTest {
         var gnrhr2 = TestFactory.newGeneGNRHR2();
         var secondGeneScore = GeneScore.builder()
                 .combinedScore(0.9)
-                .geneIdentifier(gnrhr2.getGeneIdentifier())
+                .geneIdentifier(gnrhr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         gnrhr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
@@ -73,7 +73,7 @@ public class GeneScoreRankerTest {
         var fgfr2 = TestFactory.newGeneFGFR2();
         var topGeneScore = GeneScore.builder()
                 .combinedScore(1.0)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         fgfr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
@@ -87,7 +87,7 @@ public class GeneScoreRankerTest {
 
         var failedGeneScore = GeneScore.builder()
                 .combinedScore(0.0)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .build();
 
@@ -101,7 +101,7 @@ public class GeneScoreRankerTest {
         gnrhr2.addVariant(passedVariant);
         var secondGeneScore = GeneScore.builder()
                 .combinedScore(0.9)
-                .geneIdentifier(gnrhr2.getGeneIdentifier())
+                .geneIdentifier(gnrhr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .contributingVariants(List.of(passedVariant))
                 .build();
@@ -124,11 +124,11 @@ public class GeneScoreRankerTest {
         var fgfr2 = TestFactory.newGeneFGFR2();
         var topGeneScore = GeneScore.builder()
                 .combinedScore(1.0)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         fgfr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, fgfr2.getEntrezGeneID(), fgfr2.getGeneSymbol(), 1.0));
+        fgfr2.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, fgfr2.entrezGeneId(), fgfr2.geneSymbol(), 1.0));
         fgfr2.addGeneScore(topGeneScore);
 
         VariantEvaluation fgfr2TopRankedVariant = VariantEvaluation.builder()
@@ -149,8 +149,8 @@ public class GeneScoreRankerTest {
 
         var failedGeneScore = GeneScore.builder()
                 .combinedScore(0.0)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
-                .phenotypeScore(fgfr2.getPriorityScore())
+                .geneIdentifier(fgfr2.geneIdentifier())
+                .phenotypeScore(fgfr2.priorityScore())
                 .modeOfInheritance(ModeOfInheritance.ANY)
                 .build();
 
@@ -158,7 +158,7 @@ public class GeneScoreRankerTest {
         var gnrhr2 = TestFactory.newGeneGNRHR2();
         var secondGeneScore = GeneScore.builder()
                 .combinedScore(0.9)
-                .geneIdentifier(gnrhr2.getGeneIdentifier())
+                .geneIdentifier(gnrhr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         gnrhr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
@@ -189,11 +189,11 @@ public class GeneScoreRankerTest {
         var fgfr2 = TestFactory.newGeneFGFR2();
         var topGeneScore = GeneScore.builder()
                 .combinedScore(1.0)
-                .geneIdentifier(fgfr2.getGeneIdentifier())
+                .geneIdentifier(fgfr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         fgfr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));
-        fgfr2.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, fgfr2.getEntrezGeneID(), fgfr2.getGeneSymbol(), 1.0));
+        fgfr2.addPriorityResult(new MockPriorityResult(PriorityType.HIPHIVE_PRIORITY, fgfr2.entrezGeneId(), fgfr2.geneSymbol(), 1.0));
         fgfr2.addGeneScore(topGeneScore);
 
         VariantEvaluation fgfr2TopRankedVariant = VariantEvaluation.builder()
@@ -216,7 +216,7 @@ public class GeneScoreRankerTest {
         var gnrhr2 = TestFactory.newGeneGNRHR2();
         var secondGeneScore = GeneScore.builder()
                 .combinedScore(0.9)
-                .geneIdentifier(gnrhr2.getGeneIdentifier())
+                .geneIdentifier(gnrhr2.geneIdentifier())
                 .modeOfInheritance(ModeOfInheritance.AUTOSOMAL_DOMINANT)
                 .build();
         gnrhr2.setCompatibleInheritanceModes(Set.of(ModeOfInheritance.AUTOSOMAL_DOMINANT));

@@ -20,7 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.analysis.sample;
 
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 

@@ -39,8 +39,8 @@ public class RegulatoryFeatureFilterTest {
     RegulatoryFeatureFilter instance = new RegulatoryFeatureFilter();
 
     @Test
-    public void testGetFilterType() {
-        assertThat(instance.getFilterType(), equalTo(FilterType.REGULATORY_FEATURE_FILTER));
+    public void testFilterType() {
+        assertThat(instance.filterType(), equalTo(FilterType.REGULATORY_FEATURE_FILTER));
     }
 
     @Test

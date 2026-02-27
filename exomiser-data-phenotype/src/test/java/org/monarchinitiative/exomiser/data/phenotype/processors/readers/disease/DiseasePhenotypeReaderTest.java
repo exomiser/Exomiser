@@ -61,4 +61,15 @@ class DiseasePhenotypeReaderTest {
         assertThat(output.get(0), equalTo(first));
         assertThat(output.get(output.size() - 1), equalTo(last));
     }
+
+    @Test
+    void testExcludedPhenotypesAreExcluded() {
+        Resource phenotypeAnnotationResource = Resource.of("src/test/resources/data/phenotype_test.hpoa");
+
+        DiseasePhenotypeReader instance = new DiseasePhenotypeReader(phenotypeAnnotationResource);
+        List<DiseasePhenotype> output = instance.read();
+
+        DiseasePhenotype hasExcluded = new DiseasePhenotype("OMIM:616265", Set.of("HP:0003621", "HP:0000007", "HP:0040190"));
+        assertThat(output.contains(hasExcluded), equalTo(true));
+    }
 }

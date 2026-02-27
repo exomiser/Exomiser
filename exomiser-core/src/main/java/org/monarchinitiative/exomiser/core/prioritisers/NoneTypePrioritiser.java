@@ -49,7 +49,7 @@ public class NoneTypePrioritiser implements Prioritiser<PriorityResult> {
     }
 
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return PriorityType.NONE;
     }
 

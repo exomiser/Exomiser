@@ -24,7 +24,7 @@ package org.monarchinitiative.exomiser.core.model.pathogenicity;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class MutationTasterScore extends BasePathogenicityScore {
+public record MutationTasterScore(float score) implements PathogenicityScore {
     
     public static final float MTASTER_THRESHOLD = 0.94f;
 
@@ -32,8 +32,9 @@ public class MutationTasterScore extends BasePathogenicityScore {
         return new MutationTasterScore(score);
     }
 
-    private MutationTasterScore(float score) {
-        super(PathogenicitySource.MUTATION_TASTER, score);
+    @Override
+    public PathogenicitySource source() {
+        return PathogenicitySource.MUTATION_TASTER;
     }
 
     @Override
@@ -45,5 +46,4 @@ public class MutationTasterScore extends BasePathogenicityScore {
         }
     }
 
-    
 }

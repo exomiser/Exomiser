@@ -20,6 +20,7 @@
 
 package org.monarchinitiative.exomiser.core.filters;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.Filterable;
@@ -27,6 +28,7 @@ import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -105,7 +107,7 @@ class FilterResultsCounterTest {
         gene.addVariant(variant);
 
         FilterResultsCounter instance = new FilterResultsCounter();
-        instance.logResultsForFilter(new VariantEffectFilter(Set.of()), gene);
+        instance.logResultsForFilter(new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class)), gene);
         instance.logResultsForFilter(new FrequencyFilter(0.1f), gene);
 
         instance.filterResultCounts().forEach(System.out::println);

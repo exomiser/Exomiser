@@ -75,34 +75,34 @@ public class HiPhivePriorityResultTest {
     }
         
     @Test
-    public void testGetPriorityType() {
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
+    public void testPriorityType() {
+        assertThat(instance.priorityType(), equalTo(PriorityType.HIPHIVE_PRIORITY));
     }
 
     @Test
-    public void testGetGeneSymbol() {
-        assertThat(instance.getGeneSymbol(), equalTo(geneSymbol));
+    public void testGeneSymbol() {
+        assertThat(instance.geneSymbol(), equalTo(geneSymbol));
     }
 
     @Test
-    public void testGetScore() {
+    public void testScore() {
 //        assertThat(instance.getScore(), closeTo(score, 0.0001));
-        assertThat(instance.getScore(), equalTo(score));
+        assertThat(instance.score(), equalTo(score));
     }
 
     @Test
-    public void testGetQueryPhenotypeTerms() {
-        assertThat(instance.getQueryPhenotypeTerms(), equalTo(queryPhenotypeTerms));
+    public void testQueryPhenotypeTerms() {
+        assertThat(instance.queryPhenotypeTerms(), equalTo(queryPhenotypeTerms));
     }
 
     @Test
-    public void testGetPhenotypeEvidence() {
-        assertThat(instance.getPhenotypeEvidence(), equalTo(phenotypeEvidence));
+    public void testPhenotypeEvidence() {
+        assertThat(instance.phenotypeEvidence(), equalTo(phenotypeEvidence));
     }
 
     @Test
-    public void testGetPpiEvidence() {
-        assertThat(instance.getPpiEvidence(), equalTo(ppiEvidence));
+    public void testPpiEvidence() {
+        assertThat(instance.ppiEvidence(), equalTo(ppiEvidence));
     }
 
     @Test
@@ -111,22 +111,22 @@ public class HiPhivePriorityResultTest {
     }
 
     @Test
-    public void testGetHumanScoreIsZeroWithNoDiseaseEvidence() {
-        assertThat(instance.getHumanScore(), equalTo(0d));
+    public void testHumanScoreIsZeroWithNoDiseaseEvidence() {
+        assertThat(instance.humanScore(), equalTo(0d));
     }
 
     @Test
-    public void testGetHumanScoreMatchesModelScore() {
+    public void testHumanScoreMatchesModelScore() {
         GeneModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.HUMAN, 1d);
 
         List<GeneModelPhenotypeMatch> models = List.of(geneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
 
-        assertThat(instance.getHumanScore(), equalTo(geneModel.getScore()));
+        assertThat(instance.humanScore(), equalTo(geneModel.score()));
     }
 
     @Test
-    public void testGetHumanScoreMatchesTopModelScore() {
+    public void testHumanScoreMatchesTopModelScore() {
         GeneModelPhenotypeMatch topGeneModel = stubGeneModelPhenotypeMatch(Organism.HUMAN, 1d);
         GeneModelPhenotypeMatch poorMatchModel = stubGeneModelPhenotypeMatch(Organism.HUMAN, 0.5);
 
@@ -134,44 +134,44 @@ public class HiPhivePriorityResultTest {
         List<GeneModelPhenotypeMatch> models = List.of(poorMatchModel, topGeneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
 
-        assertThat(instance.getHumanScore(), equalTo(topGeneModel.getScore()));
-        assertThat(instance.getPhenotypeEvidence(), equalTo(List.of(topGeneModel)));
-        assertThat(instance.getDiseaseMatches(), equalTo(List.of(topGeneModel, poorMatchModel)));
+        assertThat(instance.humanScore(), equalTo(topGeneModel.score()));
+        assertThat(instance.phenotypeEvidence(), equalTo(List.of(topGeneModel)));
+        assertThat(instance.diseaseMatches(), equalTo(List.of(topGeneModel, poorMatchModel)));
     }
 
     @Test
-    public void testGetMouseScoreIsZeroWithNoDiseaseEvidence() {
-        assertThat(instance.getMouseScore(), equalTo(0d));
+    public void testMouseScoreIsZeroWithNoDiseaseEvidence() {
+        assertThat(instance.mouseScore(), equalTo(0d));
     }
 
     @Test
-    public void testGetMouseScoreMatchesModelScore() {
+    public void testMouseScoreMatchesModelScore() {
         GeneModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.MOUSE, 1d);
 
         List<GeneModelPhenotypeMatch> models = List.of(geneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
 
-        assertThat(instance.getMouseScore(), equalTo(geneModel.getScore()));
+        assertThat(instance.mouseScore(), equalTo(geneModel.score()));
     }
     
     @Test
-    public void testGetFishScoreIsZeroWithNoDiseaseEvidence() {
-        assertThat(instance.getFishScore(), equalTo(0d));
+    public void testFishScoreIsZeroWithNoDiseaseEvidence() {
+        assertThat(instance.fishScore(), equalTo(0d));
     }
 
     @Test
-    public void testGetFishScoreMatchesModelScore() {
+    public void testFishScoreMatchesModelScore() {
         GeneModelPhenotypeMatch geneModel = stubGeneModelPhenotypeMatch(Organism.FISH, 1d);
 
         List<GeneModelPhenotypeMatch> models = List.of(geneModel);
         instance = new HiPhivePriorityResult(geneId, geneSymbol, score, queryPhenotypeTerms, models, ppiEvidence, ppiScore, false);
 
-        assertThat(instance.getFishScore(), equalTo(geneModel.getScore()));
+        assertThat(instance.fishScore(), equalTo(geneModel.score()));
     }
 
     @Test
     public void testGetWalkerScore() {
-        assertThat(instance.getPpiScore(), equalTo(ppiScore));
+        assertThat(instance.ppiScore(), equalTo(ppiScore));
     }
     
     @Test
@@ -180,7 +180,7 @@ public class HiPhivePriorityResultTest {
     }
 
     @Test
-    void testGetPhenotypeEvidenceText() {
+    void testPhenotypeEvidenceText() {
         System.out.println(instance.getPhenotypeEvidenceText());
     }
 

@@ -196,8 +196,8 @@ class SvFrequencyDaoTest {
                 new MVRTreeMap.Builder<SvFrequencyDao.SvResult>().dimensions(2));
 
 
-// add two key-value pairs
-// the first value is the key id (to make the key unique)
+// add two key-frequency pairs
+// the first frequency is the key id (to make the key unique)
 // then the min x, max x, min y, max y
 //        r.add(new SpatialKey(0, -3f, -2f, 2f, 3f), "left");
 //        r.add(new SpatialKey(1, 3f, 4f, 4f, 5f), "right");

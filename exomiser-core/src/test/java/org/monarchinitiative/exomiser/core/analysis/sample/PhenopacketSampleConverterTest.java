@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.phenopackets.schema.v1.Family;
 import org.phenopackets.schema.v1.Phenopacket;
 import org.phenopackets.schema.v1.core.*;
@@ -68,12 +68,12 @@ class PhenopacketSampleConverterTest {
     void wellFormedPhenopacket() {
         Sample instance = PhenopacketSampleConverter.toExomiserSample(phenopacket);
 
-        assertThat(instance.getGenomeAssembly(), equalTo(GenomeAssembly.HG19));
-        assertThat(instance.getVcfPath(), equalTo(vcfFile.toAbsolutePath()));
-        assertThat(instance.getProbandSampleName(), equalTo(subjectId));
-        assertThat(instance.getPedigree(), equalTo(Pedigree.justProband(subjectId)));
-        assertThat(instance.getAge(), equalTo(Age.of(3, 0, 0)));
-        assertThat(instance.getHpoIds(), equalTo(List.of("HP:0001363")));
+        assertThat(instance.genomeAssembly(), equalTo(GenomeAssembly.HG19));
+        assertThat(instance.vcfPath(), equalTo(vcfFile.toAbsolutePath()));
+        assertThat(instance.probandSampleName(), equalTo(subjectId));
+        assertThat(instance.pedigree(), equalTo(Pedigree.justProband(subjectId)));
+        assertThat(instance.age(), equalTo(Age.of(3, 0, 0)));
+        assertThat(instance.hpoIds(), equalTo(List.of("HP:0001363")));
     }
 
     @Test
@@ -159,6 +159,6 @@ class PhenopacketSampleConverterTest {
                 .build();
 
         Sample sample = PhenopacketSampleConverter.toExomiserSample(phenopacket);
-        assertThat(sample.getVcfPath(), equalTo(vcfFile));
+        assertThat(sample.vcfPath(), equalTo(vcfFile));
     }
 }

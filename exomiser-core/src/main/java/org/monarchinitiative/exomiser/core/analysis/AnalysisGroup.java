@@ -35,16 +35,22 @@ import java.util.Objects;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  * @since 13.0.0
  */
-class AnalysisGroup {
+record AnalysisGroup(AnalysisStep.AnalysisStepType analysisStepType, List<AnalysisStep> analysisSteps) {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalysisGroup.class);
 
-    private final AnalysisStep.AnalysisStepType analysisStepType;
-    private final List<AnalysisStep> analysisSteps;
-
-    private AnalysisGroup(AnalysisStep.AnalysisStepType analysisStepType, List<AnalysisStep> analysisSteps) {
-        this.analysisStepType = analysisStepType;
-        this.analysisSteps = analysisSteps;
+    public AnalysisGroup {
+        Objects.requireNonNull(analysisStepType);
+        if (analysisSteps == null || analysisSteps.isEmpty()) {
+            throw new IllegalArgumentException("analysisSteps cannot be null or empty");
+        }
+        for (AnalysisStep step : analysisSteps) {
+            if (analysisStepType != step.getType()) {
+                throw new IllegalArgumentException("analysisSteps must all be of same analysisStepType - " + analysisStepType + " != " + step
+                        .getType());
+            }
+        }
+        analysisSteps = List.copyOf(analysisSteps);
     }
 
     /**
@@ -88,17 +94,11 @@ class AnalysisGroup {
         if (analysisSteps == null || analysisSteps.isEmpty()) {
             throw new IllegalArgumentException("analysisSteps cannot be null or empty");
         }
-        AnalysisStep.AnalysisStepType analysisStepType = analysisSteps.get(0).getType();
-        for (AnalysisStep step : analysisSteps) {
-            if (analysisStepType != step.getType()) {
-                throw new IllegalArgumentException("analysisSteps must all be of same analysisStepType - " + analysisStepType + " != " + step
-                        .getType());
-            }
-        }
+        AnalysisStep.AnalysisStepType analysisStepType = analysisSteps.getFirst().getType();
         return new AnalysisGroup(analysisStepType, analysisSteps);
     }
 
-    public AnalysisStep.AnalysisStepType getAnalysisStepType() {
+    public AnalysisStep.AnalysisStepType analysisStepType() {
         return analysisStepType;
     }
 
@@ -110,7 +110,7 @@ class AnalysisGroup {
         return analysisSteps.stream().anyMatch(AnalysisStep::isGenePrioritiser);
     }
 
-    public List<AnalysisStep> getAnalysisSteps() {
+    public List<AnalysisStep> analysisSteps() {
         return analysisSteps;
     }
 

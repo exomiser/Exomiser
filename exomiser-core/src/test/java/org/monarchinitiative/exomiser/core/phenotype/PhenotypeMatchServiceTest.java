@@ -45,7 +45,7 @@ public class PhenotypeMatchServiceTest {
         PhenotypeMatchService instance = new PhenotypeMatchService(ontologyService);
         List<String> hpoIds = TestPriorityServiceFactory.pfeifferSyndromePhenotypes()
                 .stream()
-                .map(PhenotypeTerm::getId)
+                .map(PhenotypeTerm::id)
                 .collect(toList());
 
         List<PhenotypeTerm> queryTerms = instance.makePhenotypeTermsFromHpoIds(hpoIds);
@@ -62,12 +62,12 @@ public class PhenotypeMatchServiceTest {
                 .collect(toList());
 
         ModelPhenotypeMatch topScore = matches.get(0);
-        assertThat(topScore.getScore(), equalTo(1d));
-        assertThat(topScore.getModel(), equalTo(exactMatch));
+        assertThat(topScore.score(), equalTo(1d));
+        assertThat(topScore.model(), equalTo(exactMatch));
 
         ModelPhenotypeMatch bottomScore = matches.get(1);
-        assertThat(bottomScore.getScore(), equalTo(0d));
-        assertThat(bottomScore.getModel(), equalTo(noMatch));
+        assertThat(bottomScore.score(), equalTo(0d));
+        assertThat(bottomScore.model(), equalTo(noMatch));
 
     }
 
@@ -85,12 +85,12 @@ public class PhenotypeMatchServiceTest {
         }
 
         @Override
-        public String getId() {
+        public String id() {
             return id;
         }
 
         @Override
-        public List<String> getPhenotypeIds() {
+        public List<String> phenotypeIds() {
             return phenotypes;
         }
 

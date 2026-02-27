@@ -174,13 +174,13 @@ public class VariantFactoryPerformanceTest {
         return variantEvaluation -> System.out.printf("%d:%d-%d %s>%s length:%d %s %s %s  %s %s score:%f freq:%f (max AF:%f) path:%f (%s)%n",
                 variantEvaluation.contigId(), variantEvaluation.start(), variantEvaluation.end(),
                 variantEvaluation.ref(), variantEvaluation.alt(),
-                variantEvaluation.changeLength(), variantEvaluation.variantType(), variantEvaluation.getVariantEffect(),
-                variantEvaluation.getGeneSymbol(),
-                variantEvaluation.getTranscriptAnnotations().get(0).getAccession(),
-                variantEvaluation.getTranscriptAnnotations().get(0).getHgvsCdna(),
-                variantEvaluation.getVariantScore(),
-                variantEvaluation.getFrequencyScore(), variantEvaluation.getFrequencyData().maxFreq(),
-                variantEvaluation.getPathogenicityScore(), variantEvaluation.getPathogenicityData().pathogenicityScores()
+                variantEvaluation.changeLength(), variantEvaluation.variantType(), variantEvaluation.variantEffect(),
+                variantEvaluation.geneSymbol(),
+                variantEvaluation.transcriptAnnotations().get(0).accession(),
+                variantEvaluation.transcriptAnnotations().get(0).hgvsCdna(),
+                variantEvaluation.variantScore(),
+                variantEvaluation.frequencyScore(), variantEvaluation.frequencyData().maxFreq(),
+                variantEvaluation.pathogenicityScore(), variantEvaluation.pathogenicityData().pathogenicityScores()
         );
     }
 

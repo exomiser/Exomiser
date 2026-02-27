@@ -25,6 +25,7 @@
  */
 package org.monarchinitiative.exomiser.core.writers;
 
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,13 +39,14 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.filters.FilterType;
-import org.monarchinitiative.exomiser.core.filters.PassAllVariantEffectsFilter;
+import org.monarchinitiative.exomiser.core.filters.VariantEffectFilter;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -83,7 +85,7 @@ public class ResultsWriterUtilsTest {
     @Test
     void testNullVcfAndEmptyOutputPrefixUsesVcfFileName() {
         String result = ResultsWriterUtils.makeOutputFilename(null, "", OutputFormat.JSON, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo("results/exomiser.json"));
+        assertThat(result, equalTo("results/exomiser.jsonl"));
     }
 
     @Test
@@ -112,7 +114,7 @@ public class ResultsWriterUtilsTest {
     })
     void testDirectoryOutputPrefixUsesVcfFileName(String outputPrefix, String vcfPath, String expected) {
         String result = ResultsWriterUtils.makeOutputFilename(vcfPath.isEmpty() ? null : Path.of(vcfPath), outputPrefix, TSV_VARIANT, ModeOfInheritance.AUTOSOMAL_DOMINANT);
-        assertThat(result, equalTo(expected + "." + TSV_VARIANT.getFileExtension()));
+        assertThat(result, equalTo(expected + "." + TSV_VARIANT.fileExtension()));
     }
 
     @Test
@@ -185,8 +187,8 @@ public class ResultsWriterUtilsTest {
         assertThat(variantTypeCounters.isEmpty(), is(false));
         
         VariantEffectCount firstVariantTypeCount = variantTypeCounters.get(0);
-        assertThat(firstVariantTypeCount.getVariantType(), notNullValue());
-        assertThat(firstVariantTypeCount.getSampleVariantTypeCounts().isEmpty(), is(true));
+        assertThat(firstVariantTypeCount.variantEffect(), notNullValue());
+        assertThat(firstVariantTypeCount.sampleVariantEffectCounts().isEmpty(), is(true));
     }
     
     @Test
@@ -206,7 +208,7 @@ public class ResultsWriterUtilsTest {
     public void canMakeFilterReportsFromAnalysis() {
         Sample sample = Sample.builder().build();
         Analysis analysis = Analysis.builder()
-                .addStep(new PassAllVariantEffectsFilter())
+                .addStep(new VariantEffectFilter(EnumSet.noneOf(VariantEffect.class)))
                 .build();
 
         AnalysisResults analysisResults = AnalysisResults.builder()

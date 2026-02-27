@@ -23,34 +23,10 @@ import java.util.Objects;
 
 /**
  * Bean class to represent an HTML select option.
- * 
+ *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class SelectOption implements Comparable<SelectOption>{
-
-    private final String text;
-    private final String value;
-
-    public SelectOption(String value, String text) {
-        this.value = value;
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + Objects.hashCode(this.text);
-        hash = 97 * hash + Objects.hashCode(this.value);
-        return hash;
-    }
+public record SelectOption(String value, String text) implements Comparable<SelectOption> {
 
     @Override
     public boolean equals(Object obj) {

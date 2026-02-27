@@ -33,8 +33,8 @@ public class RevelScoreTest {
     @Test
     public void testRevel() {
         RevelScore instance = RevelScore.of(1.0f);
-        assertThat(instance.getScore(), equalTo(1.0f));
-        assertThat(instance.getRawScore(), equalTo(1.0f));
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.REVEL));
+        assertThat(instance.score(), equalTo(1.0f));
+        assertThat(instance.rawScore(), equalTo(1.0f));
+        assertThat(instance.source(), equalTo(PathogenicitySource.REVEL));
     }
 }

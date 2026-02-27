@@ -28,17 +28,14 @@ package org.monarchinitiative.exomiser.core.writers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.monarchinitiative.exomiser.core.model.Gene;
-import org.monarchinitiative.exomiser.core.writers.OutputSettings.Builder;
 
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 
 /**
@@ -46,29 +43,25 @@ import static java.util.stream.Collectors.toUnmodifiableList;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-@JsonDeserialize(builder = Builder.class)
-public class OutputSettings {
+public record OutputSettings(
+        boolean outputContributingVariantsOnly,
+        @JsonProperty("numGenes")
+        int numberOfGenesToShow,
+        float minExomiserGeneScore,
+        Path outputDirectory,
+        String outputFileName,
+        Set<OutputFormat> outputFormats
+) {
 
     public static final Path DEFAULT_OUTPUT_DIR = Path.of("results");
 
     private static final OutputSettings DEFAULTS = OutputSettings.builder().build();
 
-    @JsonProperty
-    private final boolean outputContributingVariantsOnly;
-    @JsonProperty("numGenes")
-    private final int numberOfGenesToShow;
-    private final float minExomiserGeneScore;
-    private final Path outputDirectory;
-    private final String outputFileName;
-    private final Set<OutputFormat> outputFormats;
-
-    private OutputSettings(Builder builder) {
-        this.outputContributingVariantsOnly = builder.outputContributingVariantsOnly;
-        this.numberOfGenesToShow = builder.numberOfGenesToShow;
-        this.minExomiserGeneScore = builder.minExomiserGeneScore;
-        this.outputDirectory = builder.outputDirectory.normalize();
-        this.outputFileName = builder.outputFileName;
-        this.outputFormats = Collections.unmodifiableSet(EnumSet.copyOf(builder.outputFormats));
+    public OutputSettings {
+        outputDirectory = Objects.requireNonNullElse(outputDirectory, DEFAULT_OUTPUT_DIR);
+        outputDirectory = outputDirectory.normalize();
+        outputFileName = Objects.requireNonNullElse(outputFileName, "");
+        outputFormats = outputFormats == null || outputFormats.isEmpty() ? EnumSet.noneOf(OutputFormat.class) : Collections.unmodifiableSet(EnumSet.copyOf(outputFormats));
     }
 
     @JsonIgnore
@@ -76,26 +69,9 @@ public class OutputSettings {
         return DEFAULTS;
     }
 
-    public boolean outputContributingVariantsOnly() {
-        return outputContributingVariantsOnly;
-    }
-
-    public int getNumberOfGenesToShow() {
-        return numberOfGenesToShow;
-    }
-
-    public float getMinExomiserGeneScore() {
-        return minExomiserGeneScore;
-    }
-
-    public Set<OutputFormat> getOutputFormats() {
-        return outputFormats;
-    }
-
     /**
-     *
-     * @deprecated Use {@link OutputSettings#makeOutputFilePath(Path, OutputFormat)} as a replacement.
      * @return a String
+     * @deprecated Use {@link OutputSettings#makeOutputFilePath(Path, OutputFormat)} as a replacement.
      */
     @Deprecated(forRemoval = true)
     @JsonIgnore
@@ -111,26 +87,6 @@ public class OutputSettings {
     }
 
     /**
-     * Returns a Path to the directory where the output files are to be written.
-     *
-     * @return a Path to the directory where the output files are to be written.
-     * @since 13.2.0
-     */
-    public Path getOutputDirectory() {
-        return outputDirectory;
-    }
-
-    /**
-     * Returns the output file name prefix to be used for the output files.
-     *
-     * @return a name for the output files.
-     * @since 13.2.0
-     */
-    public String getOutputFileName() {
-        return outputFileName;
-    }
-
-    /**
      * <p>
      * Determines the correct file extension for a file given that was specified by the user, or a sensible default if
      * not. Where the filename has not been specified the input VCF filename will be used as a base and the .vcf
@@ -139,7 +95,7 @@ public class OutputSettings {
      * <p>
      * For example, in the case of no user-specified output filename a VCF file named <pre>'sample-1.vcf.gz'</pre> will be
      * returned as <pre>'sample-1-exomiser.variants.tsv'</pre> when combined with the {@link OutputFormat#TSV_VARIANT} input.
-     *</p>
+     * </p>
      * <p>The output directory will be as specified by the value of {@link OutputSettings#outputDirectory}</p>
      *
      * @param vcfPath      Path to the input VCF file
@@ -156,7 +112,7 @@ public class OutputSettings {
             String vcfFileName = vcfPath.getFileName().toString().replace(".vcf", "").replace(".gz", "");
             baseFileName = vcfFileName + "-exomiser";
         }
-        return outputDirectory.resolve(baseFileName + '.' + outputFormat.getFileExtension());
+        return outputDirectory.resolve(baseFileName + '.' + outputFormat.fileExtension());
     }
 
     /**
@@ -197,7 +153,7 @@ public class OutputSettings {
      */
     public Stream<Gene> applyOutputSettings(List<Gene> genes) {
         return genes.stream()
-                .filter(gene -> gene.getCombinedScore() >= minExomiserGeneScore)
+                .filter(gene -> gene.combinedScore() >= minExomiserGeneScore)
                 .filter(withinNumberOfGenesToShow(numberOfGenesToShow));
     }
 
@@ -217,20 +173,27 @@ public class OutputSettings {
 
     public static class Builder {
 
-        private static final String FILE_SEPERATOR = System.getProperty("file.separator");
-
+        private static final String FILE_SEPERATOR = FileSystems.getDefault().getSeparator();
 
         private boolean outputContributingVariantsOnly = false;
         private int numberOfGenesToShow = 0;
         private float minExomiserGeneScore = 0f;
         private Path outputDirectory = DEFAULT_OUTPUT_DIR;
         private String outputFileName = "";
-        private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON);
+        private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.PARQUET);
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public OutputSettings build() {
-            return new OutputSettings(this);
+            return new OutputSettings(
+                    outputContributingVariantsOnly,
+                    numberOfGenesToShow,
+                    minExomiserGeneScore,
+                    outputDirectory,
+                    outputFileName,
+                    outputFormats
+            );
         }
 
         @JsonSetter
@@ -252,11 +215,10 @@ public class OutputSettings {
         }
 
         /**
-         *
-         * @deprecated  Use {@link OutputSettings.Builder#outputDirectory(Path)} and/or
-         *              {@link OutputSettings.Builder#outputFileName(String)} instead.
-         * @param outputPrefix  A string representing the absolute or relative directory or filename path for the output files.
+         * @param outputPrefix A string representing the absolute or relative directory or filename path for the output files.
          * @return this builder instance with the outputDirectory and outputFileName parsed from the outputPrefix
+         * @deprecated Use {@link OutputSettings.Builder#outputDirectory(Path)} and/or
+         * {@link OutputSettings.Builder#outputFileName(String)} instead.
          */
         @JsonSetter
         @Deprecated(forRemoval = true)
@@ -292,7 +254,7 @@ public class OutputSettings {
         /**
          * Sets the output directory to be used for the analysis results. Will provide a default if not set.
          *
-         * @param outputDirectory   A path to the desired output directory
+         * @param outputDirectory A path to the desired output directory
          * @return this builder instance with the outputDirectory set
          * @since 13.2.0
          */
@@ -305,7 +267,7 @@ public class OutputSettings {
         /**
          * Sets the output file name to be used for the analysis results.
          *
-         * @param outputFileName    A string to be used for the output filename
+         * @param outputFileName A string to be used for the output filename
          * @return this builder instance with the outputFileName set
          * @since 13.2.0
          */
@@ -323,27 +285,14 @@ public class OutputSettings {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        OutputSettings that = (OutputSettings) o;
-        return outputContributingVariantsOnly == that.outputContributingVariantsOnly && numberOfGenesToShow == that.numberOfGenesToShow && Float.compare(that.minExomiserGeneScore, minExomiserGeneScore) == 0 && outputDirectory.equals(that.outputDirectory) && outputFileName.equals(that.outputFileName) && outputFormats.equals(that.outputFormats);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(outputContributingVariantsOnly, numberOfGenesToShow, minExomiserGeneScore, outputDirectory, outputFileName, outputFormats);
-    }
-
-    @Override
     public String toString() {
         return "OutputSettings{" +
-                "outputContributingVariantsOnly=" + outputContributingVariantsOnly +
-                ", numberOfGenesToShow=" + numberOfGenesToShow +
-                ", minExomiserGeneScore=" + minExomiserGeneScore +
-                ", outputDirectory=" + outputDirectory +
-                ", outputFileName='" + outputFileName + '\'' +
-                ", outputFormats=" + outputFormats +
-                '}';
+               "outputContributingVariantsOnly=" + outputContributingVariantsOnly +
+               ", numberOfGenesToShow=" + numberOfGenesToShow +
+               ", minExomiserGeneScore=" + minExomiserGeneScore +
+               ", outputDirectory=" + outputDirectory +
+               ", outputFileName='" + outputFileName + '\'' +
+               ", outputFormats=" + outputFormats +
+               '}';
     }
 }

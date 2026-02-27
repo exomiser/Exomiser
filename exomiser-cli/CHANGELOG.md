@@ -1,4 +1,41 @@
-# The Exomiser Command Line Executable - Changelog
+# The Exomiser Command Line Interface - Changelog
+
+## 15.0.0 2026-02-28
+[![Rare Disease Day](https://www.rarediseaseday.org/wp-content/uploads/Rare-disease-day-logo.svg
+)](https://www.rarediseaseday.org)
+- Minimum Java version is now **Java 21**
+- The CLI is now handled by PicoCLI and has new `analyse` and `batch` commands.
+  - The `analyse` command works with the same options as before, but will fail before loading resources if no samples have been provided in the command input.
+  - The `batch` command replaces the `--batch` option and now has a `--dry-run` option to check the input commands and samples before running and will write out an error file.
+    
+  Run `exomiser --help` for details or see the docs about how to migrate your scripts. However, the snippet below should be enough to get you started:
+  ```shell
+  # Running the `analyse` command:
+  ## Exomiser < 15.0.0
+  java -jar exomiser-cli-14.1.0.jar --analysis examples/exome-analysis.yml --output-directory exomiser-results/exome-analysis --output-format HTML
+  # Exomiser 15.0.0
+  java -jar exomiser-cli-15.0.0.jar analyse --analysis examples/exome-analysis.yml --output-directory exomiser-results/exome-analysis --output-format HTML
+  
+  # Running the `batch` command:
+  ## Exomiser < 15.0.0
+  java -jar exomiser-cli-14.1.0.jar --batch examples/test-analysis-batch-commands.txt
+  # Exomiser 15.0.0
+  java -jar exomiser-cli-15.0.0.jar batch examples/test-analysis-batch-commands.txt
+  ```
+
+- Updated logistic regression model which will take into account the ACMG assignment data which leads to improved accuracy of the results. _!!! WARNING - THIS SIGNIFICANTLY CHANGES THE EXOMISER COMBINED SCORES, SO IF YOU USE ANY CUTOFFS TO FILTER YOUR RESULTS IN YOUR PIPELINE, YOU WILL NEED TO RE-CALIBRATE THEM !!!_.
+- New `alleleBalanceFilter: {}` analysis step to filter variants based on allele balance (see docs for details).
+- Updated `examples/preset-exome-analysis.yml` and `examples/preset-genome-analysis.yml` to use new defaults. _UPDATE YOUR SCRIPTS TO USE THESE FOR IMPROVED ACCURACY_.
+- Added `examples/preset-exome-analysis-human-only.yml`
+- Added `examples/preset-exome-analysis-with-introns.yml`
+- Added `examples/preset-phenotype-only-analysis.yml`
+- New `PARQUET` output file format. This is a much more efficient format for storing results. It is an amalgamation of the `TSV_VARIANT` and `TSV_GENE` data with added fields and should be considered as a replacement for the JSON output.
+- `JSON` output has been replaced with `JSONL` output which is a line-delimited JSON format (https://jsonlines.org/). Note that the file suffix is now `.jsonl` rather than `.json`.
+- New `HTML` output format. This is a much more compact and readable format for displaying results.
+- Fix for issue #621 in `VCF` output where ACMG categories were being concatenated with `,` which broke parsers. These are now replaced with `&`.
+- Removed use of BS4 category in ACMG assignments as this was being applied too stringently, leading to lost diagnoses in DDD cohort.
+- Fixed PM4 assignment to include disruptive_inframe_deletion/insertion variants 
+- Updated Exomiser CLI startup configuration to _not_ write the `results` directory to the installation directory by default.
 
 ## 14.1.0 2024-11-14
 

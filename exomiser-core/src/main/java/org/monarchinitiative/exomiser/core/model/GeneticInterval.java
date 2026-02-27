@@ -26,8 +26,6 @@
 package org.monarchinitiative.exomiser.core.model;
 
 import org.monarchinitiative.exomiser.core.genome.Contigs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
@@ -40,21 +38,12 @@ import java.util.regex.Pattern;
  *
  * @author Jules Jacobsen
  */
-public class GeneticInterval implements ChromosomalRegion {
+public record GeneticInterval(int contigId, int start, int end) implements ChromosomalRegion {
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneticInterval.class);
-
-    private final int chromosome;
-    private final int start;
-    private final int end;
-
-    public GeneticInterval(int chromosome, int start, int end) {
+    public GeneticInterval {
         if (start > end) {
             throw new IllegalArgumentException(String.format("Start %d position defined as occurring after end position %d. Please check your positions", start, end));
         }
-        this.chromosome = chromosome;
-        this.start = start;
-        this.end = end;
     }
 
     /**
@@ -64,9 +53,9 @@ public class GeneticInterval implements ChromosomalRegion {
      * @param interval
      * @return
      */
-    public static GeneticInterval parseString(String interval) {
+    public static GeneticInterval parseGeneticInterval(String interval) {
 
-        String intervalPattern = "(chr)?(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|X|Y|M|MT):[0-9]+-[0-9]+";
+        String intervalPattern = "(chr)?(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|X|Y|M|MT):[\\d]+-[\\d]+";
         if (!Pattern.matches(intervalPattern, interval)) {
             throw new IllegalArgumentException(String.format("Genetic interval %s does not match expected pattern %s", interval, intervalPattern));
         }
@@ -83,50 +72,8 @@ public class GeneticInterval implements ChromosomalRegion {
     }
 
     @Override
-    public int contigId() {
-        return chromosome;
-    }
-
-    @Override
-    public int start() {
-        return start;
-    }
-
-    @Override
-    public int end() {
-        return end;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + this.chromosome;
-        hash = 97 * hash + this.start;
-        hash = 97 * hash + this.end;
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final GeneticInterval other = (GeneticInterval) obj;
-        if (this.chromosome != other.chromosome) {
-            return false;
-        }
-        if (this.start != other.start) {
-            return false;
-        }
-        return this.end == other.end;
-    }
-
-    @Override
     public String toString() {
-        return String.format("chr%s:%d-%d", toChrString(chromosome), start, end);
+        return String.format("chr%s:%d-%d", toChrString(contigId), start, end);
     }
 
     private String toChrString(int chromosome) {

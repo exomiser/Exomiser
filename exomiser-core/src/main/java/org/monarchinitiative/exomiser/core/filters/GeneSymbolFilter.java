@@ -21,8 +21,6 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.Set;
@@ -37,19 +35,15 @@ import java.util.Set;
  * @author Damian Smedley
  * @author Jules Jacobsen
  */
-public class GeneSymbolFilter implements VariantFilter {
-
-    private static final Logger logger = LoggerFactory.getLogger(GeneSymbolFilter.class);
+public record GeneSymbolFilter(Set<String> genesToKeep) implements VariantFilter {
 
     private static final FilterType filterType = FilterType.ENTREZ_GENE_ID_FILTER;
 
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
 
-    private final Set<String> genesToKeep;
-
-    public GeneSymbolFilter(Set<String> genesToKeep) {
-        this.genesToKeep = genesToKeep;
+    public GeneSymbolFilter {
+        Objects.requireNonNull(genesToKeep);
     }
 
     public Set<String> getGeneSymbols() {
@@ -57,36 +51,16 @@ public class GeneSymbolFilter implements VariantFilter {
     }
 
     @Override
-    public FilterType getFilterType() {
+    public FilterType filterType() {
         return filterType;
     }
 
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        if (genesToKeep.contains(variantEvaluation.getGeneSymbol())) {
+        if (genesToKeep.contains(variantEvaluation.geneSymbol())) {
             return PASS;
         }
         return FAIL;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + Objects.hashCode(GeneSymbolFilter.filterType);
-        hash = 97 * hash + Objects.hashCode(this.genesToKeep);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final GeneSymbolFilter other = (GeneSymbolFilter) obj;
-        return Objects.equals(this.genesToKeep, other.genesToKeep);
     }
 
     @Override

@@ -48,12 +48,12 @@ public class SelectOptionTest {
 
     @Test
     public void testGetText() {
-        assertThat(instance.getText(), equalTo(text));
+        assertThat(instance.text(), equalTo(text));
     }
 
     @Test
     public void testGetValue() {
-        assertThat(instance.getValue(), equalTo(value));
+        assertThat(instance.value(), equalTo(value));
     }
 
     @Test

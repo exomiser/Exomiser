@@ -25,19 +25,17 @@ package org.monarchinitiative.exomiser.core.prioritisers;
  * @author Sebastian Köhler <dr.sebastian.koehler@gmail.com>
  * @version 0.06 (6 January, 2014).
  */
-public class ExomeWalkerPriorityResult extends AbstractPriorityResult {
+public record ExomeWalkerPriorityResult(int geneId, String geneSymbol, double score) implements PriorityResult {
 
-    /**
-     * @param score The similarity score assigned by the random walk.
-     */
-    public ExomeWalkerPriorityResult(int geneId, String geneSymbol, double score) {
-        super(PriorityType.EXOMEWALKER_PRIORITY, geneId, geneSymbol, score);
+    @Override
+    public PriorityType priorityType() {
+        return PriorityType.EXOMEWALKER_PRIORITY;
     }
 
     /**
      * @return An HTML list with an entry representing the GeneWanderer (Random
      * walk) similarity score.
-     * 
+     *
      */
     @Override
     public String getHTMLCode() {

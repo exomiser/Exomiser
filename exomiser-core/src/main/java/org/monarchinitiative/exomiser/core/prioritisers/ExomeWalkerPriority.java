@@ -120,7 +120,7 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
      * Flag to output results of filtering against Genewanderer.
      */
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return PRIORITY_TYPE;
     }
 
@@ -167,8 +167,8 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
 
     private Function<Gene, ExomeWalkerPriorityResult> prioritiseGene() {
         return gene -> {
-            double score = calculateGeneScore(gene.getEntrezGeneID());
-            return new ExomeWalkerPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score);
+            double score = calculateGeneScore(gene.entrezGeneId());
+            return new ExomeWalkerPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score);
         };
     }
 
@@ -187,7 +187,7 @@ public class ExomeWalkerPriority implements Prioritiser<ExomeWalkerPriorityResul
         double min = Double.MAX_VALUE;
         for (Gene gene : geneList) {
             ExomeWalkerPriorityResult relScore = prioritiseGene().apply(gene);
-            double score = relScore.getScore();
+            double score = relScore.score();
             if (score > max) {
                 max = score;
             }

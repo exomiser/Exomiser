@@ -65,15 +65,15 @@ public class MockPrioritiser implements Prioritiser<MockPriorityResult> {
 
     private Function<Gene, MockPriorityResult> prioritiseGene() {
         return gene -> {
-            String geneSymbol = gene.getGeneSymbol();
+            String geneSymbol = gene.geneSymbol();
             Double score = expectedScores.getOrDefault(geneSymbol, 0d);
-            int geneId = gene.getEntrezGeneID();
+            int geneId = gene.entrezGeneId();
             return new MockPriorityResult(priorityType, geneId, geneSymbol, score);
         };
     }
 
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return priorityType;
     }
 

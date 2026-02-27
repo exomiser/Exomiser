@@ -114,7 +114,7 @@ public class HgncParser {
     private String getField(String[] tokens, String fieldName) {
         int index = columnIndex.getOrDefault(fieldName, Integer.MAX_VALUE - 1);
         if (tokens.length < index + 1) {
-            return GeneIdentifier.EMPTY_FIELD;
+            return "";
         }
         return tokens[index];
     }

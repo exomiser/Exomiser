@@ -29,8 +29,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 
@@ -56,20 +54,6 @@ public class MainConfig {
         ApplicationHome home = new ApplicationHome(Main.class);
         logger.info("Exomiser home: {}", home.getDir());
         return home.getDir().toPath();
-    }
-
-    @Bean
-    public Path resultsDir(Path exomiserHome) {
-        Path defaultOutputDir = exomiserHome.resolve("results");
-        try {
-            if (!defaultOutputDir.toFile().exists()) {
-                Files.createDirectory(defaultOutputDir);
-            }
-        } catch (IOException ex) {
-            logger.error("Unable to create default output directory for results {}", defaultOutputDir, ex);
-        }
-        logger.info("Default results directory set to: {}", defaultOutputDir.toAbsolutePath());
-        return defaultOutputDir;
     }
 
     @Bean

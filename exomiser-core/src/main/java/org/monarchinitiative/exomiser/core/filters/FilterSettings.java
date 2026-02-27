@@ -26,9 +26,9 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
-import org.monarchinitiative.exomiser.core.filters.FilterSettingsImpl.FilterSettingsBuilder;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -36,27 +36,100 @@ import java.util.Set;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public interface FilterSettings {
+record FilterSettings(
+        float maximumFrequency,
+        float minimumQuality,
+        GeneticInterval geneticInterval,
+        boolean keepNonPathogenicVariants,
+        boolean removeFailedVariants,
+        boolean removeKnownVariants,
+        boolean keepOffTargetVariants,
+        Set<String> genesToKeep,
+        ModeOfInheritance modeOfInheritance) {
 
-    static FilterSettingsBuilder builder() {
-        return FilterSettingsImpl.builder();
+
+    public static FilterSettingsBuilder builder() {
+        return new FilterSettingsBuilder();
     }
 
-    float getMaximumFrequency();
+    public static class FilterSettingsBuilder {
 
-    float getMinimumQuality();
+        private float maximumFrequency = 100.00f;
+        private float minimumQuality = 0;
+        private GeneticInterval geneticInterval = null;
+        private boolean keepNonPathogenicVariants = false;
+        private boolean removeFailedVariants = false;
+        private boolean removeKnownVariants = false;
+        private boolean keepOffTargetVariants = false;
+        private Set<String> geneIdsToKeep = Collections.emptySet();
+        private ModeOfInheritance modeOfInheritance = ModeOfInheritance.ANY;
 
-    GeneticInterval getGeneticInterval();
+        private FilterSettingsBuilder() {
+        }
 
-    boolean keepOffTargetVariants();
+        FilterSettings build() {
+            return new FilterSettings(
+                    maximumFrequency,
+                    minimumQuality,
+                    geneticInterval,
+                    keepNonPathogenicVariants,
+                    removeFailedVariants,
+                    removeKnownVariants,
+                    keepOffTargetVariants,
+                    geneIdsToKeep,
+                    modeOfInheritance
+            );
+        }
 
-    boolean removeFailedVariants();
+        public FilterSettingsBuilder maximumFrequency(float maximumFrequency) {
+            this.maximumFrequency = maximumFrequency;
+            return this;
+        }
 
-    boolean removeKnownVariants();
+        public FilterSettingsBuilder minimumQuality(float minimumQuality) {
+            this.minimumQuality = minimumQuality;
+            return this;
+        }
 
-    boolean keepNonPathogenicVariants();
+        public FilterSettingsBuilder geneticInterval(GeneticInterval geneticInterval) {
+            this.geneticInterval = geneticInterval;
+            return this;
+        }
 
-    ModeOfInheritance getModeOfInheritance();
+        public FilterSettingsBuilder keepNonPathogenic(boolean keepNonPathogenic) {
+            this.keepNonPathogenicVariants = keepNonPathogenic;
+            return this;
+        }
 
-    Set<String> getGenesToKeep();
+        public FilterSettingsBuilder removeFailedVariants(boolean removeFailedVariants) {
+            this.removeFailedVariants = removeFailedVariants;
+            return this;
+        }
+
+        public FilterSettingsBuilder removeKnownVariants(boolean removeKnownVariants) {
+            this.removeKnownVariants = removeKnownVariants;
+            return this;
+        }
+
+        public FilterSettingsBuilder keepOffTargetVariants(boolean keepOffTargetVariants) {
+            this.keepOffTargetVariants = keepOffTargetVariants;
+            return this;
+        }
+
+        public FilterSettingsBuilder genesToKeep(Set<String> geneIds) {
+            this.geneIdsToKeep = geneIds;
+            return this;
+        }
+
+        public FilterSettingsBuilder modeOfInheritance(ModeOfInheritance modeOfInheritance) {
+            this.modeOfInheritance = modeOfInheritance;
+            return this;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "FilterSettings{" + "maximumFrequency=" + maximumFrequency + ", minimumQuality=" + minimumQuality + ", geneticInterval=" + geneticInterval + ", keepNonPathogenicVariants=" + keepNonPathogenicVariants + ", removeKnownVariants=" + removeKnownVariants + ", keepOffTargetVariants=" + keepOffTargetVariants + ", genesToKeep=" + genesToKeep + ", modeOfInheritance=" + modeOfInheritance + '}';
+    }
+
 }

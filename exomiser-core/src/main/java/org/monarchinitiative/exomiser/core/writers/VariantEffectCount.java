@@ -34,35 +34,11 @@ import java.util.Objects;
  *
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class VariantEffectCount {
-    private final VariantEffect variantEffect;
-    private final List<Integer> sampleVariantEffectCounts;
+public record VariantEffectCount(VariantEffect variantEffect, List<Integer> sampleVariantEffectCounts) {
 
-    public VariantEffectCount(VariantEffect variantType, List<Integer> sampleVariantTypeCounts) {
-        this.variantEffect = variantType;
-        this.sampleVariantEffectCounts = sampleVariantTypeCounts;
-    }
-
-    public VariantEffect getVariantType() {
-        return variantEffect;
-    }
-
-    public List<Integer> getSampleVariantTypeCounts() {
-        return sampleVariantEffectCounts;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VariantEffectCount that = (VariantEffectCount) o;
-        return variantEffect == that.variantEffect &&
-                Objects.equals(sampleVariantEffectCounts, that.sampleVariantEffectCounts);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(variantEffect, sampleVariantEffectCounts);
+    public VariantEffectCount {
+        Objects.requireNonNull(variantEffect);
+        Objects.requireNonNull(sampleVariantEffectCounts);
     }
 
     @Override

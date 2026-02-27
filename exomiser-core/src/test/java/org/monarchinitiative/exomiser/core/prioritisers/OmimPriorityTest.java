@@ -52,11 +52,11 @@ public class OmimPriorityTest {
     }
 
     private OmimPriorityResult omimResultForGene(Gene gene, double score, Map<ModeOfInheritance, Double> scoresByMode) {
-        return new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, getDiseasesForGene(gene), scoresByMode);
+        return new OmimPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score, getDiseasesForGene(gene), scoresByMode);
     }
 
     private List<Disease> getDiseasesForGene(Gene gene) {
-        return priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
+        return priorityService.getDiseaseDataAssociatedWithGeneId(gene.entrezGeneId());
     }
 
     private Map<ModeOfInheritance, Double> allModesScoreOne() {
@@ -70,8 +70,8 @@ public class OmimPriorityTest {
     }
 
     @Test
-    public void getPriorityType() {
-        assertThat(instance.getPriorityType(), equalTo(PriorityType.OMIM_PRIORITY));
+    public void priorityType() {
+        assertThat(instance.priorityType(), equalTo(PriorityType.OMIM_PRIORITY));
     }
 
     @Test

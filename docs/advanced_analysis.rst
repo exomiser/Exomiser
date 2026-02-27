@@ -22,7 +22,7 @@ These fields define all the input data, analysis steps and output requirements f
 be used as a record of how a sample was analysed. Alternatively the various sections can all be defined at runtime using
 the CLI arguments as explained in the :ref:`inputandoptions` section.
 
-which defines run mode, :ref:`filters<variantfilters>` and :ref:`prioritisers<prioritisers>`, and the :ref:`output options<outputoptions>` section that defines the output format,
+The :ref:`preset<preset>` or :ref:`analysis<analysis>` section define the run mode, :ref:`filters<variantfilters>` and :ref:`prioritisers<prioritisers>`, and the :ref:`output options<outputoptions>` section that defines the output format,
 output file and number of results that should be returned. Each of these sections can be defined independently on the
 command line or provided as a single file as shown in the `job`_ section.
 
@@ -68,9 +68,18 @@ Preset
 
 .. code-block:: yaml
 
-    # one of EXOME or GENOME. GENOME will require REMM to be available. Default is EXOME.
+    # one of EXOME, GENOME or PHENOTYPE_ONLY. GENOME will require REMM to be available. Default is EXOME.
     preset: EXOME
 
+The presets are also provided as a set of analysis YAML files in the ``examples/`` directory:
+
+.. csv-table:: Preset option YAML file equivalents
+    :header: "Preset", "YAML file"
+    :widths: auto
+
+    EXOME          ,  examples/preset-exome-analysis.yml
+    GENOME         ,  examples/preset-genome-analysis.yml
+    PHENOTYPE_ONLY , examples/preset-phenotype-only-analysis.yml
 
 
 .. _analysis:
@@ -127,11 +136,11 @@ requires anything different, it is possible to manually define the data sources 
         GNOMAD_G_OTH,
         GNOMAD_G_SAS
     ]
-    # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP), CADD, REMM
+    # Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP, ALPHA_MISSENSE), CADD, REMM
     # REMM is trained on non-coding regulatory regions
     # *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
     # and updated their location in the application.properties. Exomiser will not run without this.
-    pathogenicitySources: [ REVEL, MVP ]
+    pathogenicitySources: [ REVEL, MVP, ALPHA_MISSENSE ]
     #this is the standard exomiser order.
     steps: [
         failedVariantFilter: { },
@@ -278,15 +287,16 @@ the population frequency for the ACMG assignments, even if used in the filtering
 pathogenicitySources:
 ---------------------
 Possible pathogenicitySources: ``POLYPHEN``, ``MUTATION_TASTER``, ``SIFT``, ``REVEL``, ``MVP``, ``ALPHA_MISSENSE``,
-``SPLICE_AI`` (derived from gnomAD 4.0, so only available for hg38),  ``CADD``, ``REMM``. ``REMM`` is trained on
+``SPLICE_AI``,  ``CADD``, ``REMM``. ``REMM`` is trained on
 non-coding regulatory regions. **WARNING** if you enable ``CADD``, ensure that you have downloaded and installed the CADD
-tabix files and updated their location in the ``application.properties`` (see :ref:`cadd-install`). Exomiser will not run
-without this.
+tabix files and updated their location in the ``application.properties`` (see :ref:`cadd-install`). Similarly, REMM
+requires an optional data download (see :ref:`remm`). Exomiser will not run without these if specified.
 
-We recommend using either  ``[REVEL, MVP]`` **OR** ``[POLYPHEN, MUTATION_TASTER, SIFT]`` as REVEL and MVP are newer
-predictors which have been shown to have better performance and are more nuanced. Mixing them with the Polyphen2,
-MutationTaster or SIFT will give worse performance. Testing on GEL solved cases with AlphaMissense slightly increased
-performance when combined with MVP. We advise testing on local cohorts for assessing local performance.
+We recommend using either ``[REVEL, MVP, ALPHA_MISSENSE]`` **OR** ``[POLYPHEN, MUTATION_TASTER, SIFT]`` as REVEL, MVP
+and ALPHA_MISSENSE are newer predictors which have been shown to have better performance and are more nuanced. Mixing
+them with the Polyphen2, MutationTaster or SIFT will give worse performance. Testing on GEL solved cases with
+AlphaMissense slightly increased performance when combined with MVP. We advise testing on local cohorts for assessing
+local performance.
 
 `REVEL scores are freely available for non-commercial use. For other uses, please contact Weiva Sieh.`
 
@@ -348,31 +358,79 @@ Removes variants with VCF `QUAL` scores lower than the given `minQuality`.
     qualityFilter: {minQuality: 50.0}
 
 
+alleleBalanceFilter:
+....................
+
+The allele balance AB, also known as the Variant Allele Frequency VAF, filter uses the ratio of reads at a variant locus
+supporting the alternate allele. This is a variant quality metric used, along with the genotype quality score (GQ) and
+allele depth (DP) found in the VCF file. Based on the `Undiagnosed Diseases Network (UDN)
+paper on optimising Exomiser and Genomiser <https://doi.org/10.1186/s13073-025-01546-1>`_, we implemented their
+recommendation of 15%>=VAF<=85% for heterozygous variants and GQ>=20. Additionally we placed a requirement for a DP>=10
+as recommended in `Effective variant filtering and expected candidate variant yield in studies of rare human disease DOI:10.1038/s41525-021-00227-3 <https://doi.org/10.1038/s41525-021-00227-3>`_
+and for mitochondrial variants we used an AB cutoff of >= 0.05 in line with the `Genomics England Tiering pipeline <https://pipeline-rd-help.genomicsengland.co.uk/Lyra/variant-prioritisation-approaches/small-variant-tiering/segregation-with-disease/#mitochondrialgenome>`_.
+
+This filter is set to run as a default, from version 15.0.0, yet users may wish to disable it to perform their own
+pre-filtering as this is a very stringent filter and may remove some low-quality diagnostic variants.
+
+.. code-block:: yaml
+
+    alleleBalanceFilter: {}
+
+
+Refs:
+ 1. `Effective variant filtering and expected candidate variant yield in studies of rare human disease DOI:10.1038/s41525-021-00227-3 <https://doi.org/10.1038/s41525-021-00227-3>`_
+ 2. `Gene prioritisation for enhancing molecular diagnosis in rare skeletal muscle disease cohort DOI:10.1136/jmg-2024-110212 <https://doi.org/10.1136/jmg-2024-110212>`_
+ 3. `An optimized variant prioritization process for rare disease diagnostics: recommendations for Exomiser and Genomiser DOI:10.1186/s13073-025-01546-1 <https://doi.org/10.1186/s13073-025-01546-1>`_
+
+
 intervalFilter:
 ...............
-Defines an interval of interest. Only variants within this interval will be passed. Currently only single intervals are
-possible.
+Defines an interval(s) of interest. Only variants within an interval will be passed.
 
 .. code-block:: yaml
 
     intervalFilter: {interval: 'chr10:123256200-123256300'}
+    # or for multiple intervals:
+    intervalFilter: {intervals: ['chr10:123256200-123256300', 'chr10:123256290-123256350']}
 
 
-geneIdFilter:
+genePanelFilter:
 .............
-You can define `entrez-gene-ids <http://www.ncbi.nlm.nih.gov/gene/>`_ for genes of interest. Only variants associated with
+You can define `HGNC <https://genenames.org>`_ gene symbols for genes of interest. Only variants associated with
 these genes will be analyzed.
 
 .. code-block:: yaml
 
-    geneIdFilter: {geneIds: [12345, 34567, 98765]}
+    genePanelFilter: {geneSymbols: ["FGFR1", "FGFR2"]}
+
+
+geneBlacklistFilter:
+....................
+
+Removes variants from the analysis which are assigned to a set of blacklisted genes.
+
+Blacklisted genes are removed to reduce the noise level. These are 56 pseudogenes, HLA genes, and others that have a
+high degree of variants called in healthy individuals:
+
+.. parsed-literal::
+
+    COL4A2-AS2, CRIPAK, FCGBP, GOLGA6L2, GOLGA8N, HLA-A, HLA-B, HLA-C, HLA-DMA, HLA-DMB, HLA-DOA, HLA-DOB, HLA-DPA1,
+    HLA-DPB1, HLA-DPB2, HLA-DQA1, HLA-DQA2, HLA-DQB1, HLA-DQB1-AS1, HLA-DQB2, HLA-DRA, HLA-DRB1, HLA-DRB5, HLA-DRB6,
+    HLA-E, HLA-F, HLA-F-AS1, HLA-G, HLA-H, HLA-J, HLA-L, KRTAP4-7, KRTAP4-8, KRTAP9-6, LILRA6, LILRB3, LINC02081,
+    LRRC37A2, MUC12, MUC16, MUC17, MUC19, MUC2, MUC20, MUC21, MUC3A, MUC4, MUC6, PDE4DIP, PRAMEF2, PRAMEF9, SIRPA, TBC1D3I,
+    UGT1A7, USP17L1
+
+
+.. code-block:: yaml
+
+    geneBlacklistFilter: {}
 
 
 variantEffectFilter:
 ....................
 If you are interested only in specific functional classes of variants you can define a set of classes you want to remove
-from the output. Variant effects are generated by `Jannovar <http://charite.github.io/jannovar/>`_. Jannovar uses
-`Sequence Ontology (SO) <http://www.sequenceontology.org/>`_ terms and are listed in their `manual <http://jannovar.readthedocs.io/en/master/var_effects.html>`_.
+from the output. Variant effects are generated by `Jannovar <http://charite.github.io/jannovar/>`_ and reported as
+`Sequence Ontology (SO) <http://www.sequenceontology.org/>`_ terms.
 
 .. code-block:: yaml
 
@@ -435,7 +493,13 @@ pathogenicityFilter:
 Will apply the pathogenicity scores defined in the :ref:`pathogenicitySources<pathogenicitysources>` section to variants.
 If the ``keepNonPathogenic`` field is set to ``true`` then all variants will be kept. Setting this to ``false`` will set
 the filter to fail non-missense variants with pathogenicity scores lower than a score cutoff of 0.5.
-This filter is meant to be quite permissive and we recommend it be set to true.
+
+This filter is meant to be quite permissive and we recommend it be set to ``true`` unless running genomiser
+(i.e. including REMM/CADD/SPLICE_AI and all non-coding regions), in which case setting ``keepNonPathogenic: false`` is
+recommended as Exomiser will use a stringent cutoff to remove variants with a `CADD <https://cadd.bihealth.org/info>`_
+raw score <= 15.0 a `REMM score <https://doi.org/10.1093/gigascience/giad024>`_ <= 0.914
+or a `SpliceAI <https://doi.org/10.1016/j.cell.2018.12.015>`_ <= 0.1 These thresholds were chosen based on the
+recommendations of the authors of the scores.
 
 .. code-block:: yaml
 
@@ -537,6 +601,14 @@ protein-protein interaction proximities ``ppi``. e.g. only using human and mouse
 
     hiPhivePrioritiser: {runParams: 'human,mouse'}
 
+For a clinical diagnostic pipeline we advise running HiPhive in human-only mode as this will only prioritise genes with
+known disease associations but there will be no potential for strong mouse model hits if a causative variant lies in a
+novel disease causing gene.
+
+.. code-block:: yaml
+
+    hiPhivePrioritiser: {runParams: 'human'}
+
 
 phenixPrioritiser:
 ..................
@@ -619,15 +691,6 @@ The mimimum gene (combined phenotype and variant) score required to be returned.
 good score however, depending on the proband phenotype and the phenotype of best matching condition although it is not a
 hard-and-fast number. In our testing 0.7 gave the best performance in terms or recall and sensitivity. Not enabled by
 default.
-
-outputPrefix:
--------------
-Specify the path/filename without an extension and this will be added according to the
-:ref:`outputFormats<outputformats>` option. If unspecified this will default to the following:
-``{exomiserDir}/results/input-vcf-name-exomiser-results.html``. Alternatively, specify a fully qualified path
-only. e.g. ``/home/jules/exomes/analysis``.
-**DEPRECATED** - replaced by explicit ``outputDirectory`` and ``outputFileName`` options. Users are strongly advised to
-migrate any existing scripts to use the new options (below), as this will be removed in a future version.
 
 
 .. _outputdirectory:

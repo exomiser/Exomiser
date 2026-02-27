@@ -40,19 +40,19 @@ public class GeneMatchTest {
     @Test
     public void queryGeneId() throws Exception {
         instance = GeneMatch.builder().queryGeneId(1234).build();
-        assertThat(instance.getQueryGeneId(), equalTo(1234));
+        assertThat(instance.queryGeneId(), equalTo(1234));
     }
 
     @Test
     public void matchGeneId() throws Exception {
         instance = GeneMatch.builder().matchGeneId(4321).build();
-        assertThat(instance.getMatchGeneId(), equalTo(4321));
+        assertThat(instance.matchGeneId(), equalTo(4321));
     }
 
     @Test
     public void score() throws Exception {
         instance = GeneMatch.builder().score(1.0).build();
-        assertThat(instance.getScore(), equalTo(1.0));
+        assertThat(instance.score(), equalTo(1.0));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class GeneMatchTest {
                 .emptyList()), Collections.emptyList());
         List<GeneModelPhenotypeMatch> models = Lists.newArrayList(geneModelPhenotypeMatch);
         instance = GeneMatch.builder().bestMatchModels(models).build();
-        assertThat(instance.getBestMatchModels(), equalTo(models));
+        assertThat(instance.bestMatchModels(), equalTo(models));
     }
 
     @Test

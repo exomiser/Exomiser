@@ -34,8 +34,8 @@ public class RemmScoreTest {
     RemmScore instance = RemmScore.of(1f);
     
     @Test
-    public void testGetSource() {
-        assertThat(instance.getSource(), equalTo(PathogenicitySource.REMM));
+    public void testSource() {
+        assertThat(instance.source(), equalTo(PathogenicitySource.REMM));
     }
     
     @Test

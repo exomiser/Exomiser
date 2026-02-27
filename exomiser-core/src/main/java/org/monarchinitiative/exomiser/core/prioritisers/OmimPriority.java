@@ -55,7 +55,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
      * Flag for output field representing OMIM.
      */
     @Override
-    public PriorityType getPriorityType() {
+    public PriorityType priorityType() {
         return PriorityType.OMIM_PRIORITY;
     }
 
@@ -88,14 +88,14 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
      **/
     private Function<Gene, OmimPriorityResult> prioritiseGene() {
         return gene -> {
-            List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.getEntrezGeneID());
+            List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.entrezGeneId());
             // This is a non-punitive prioritiser. We're relying on the other prioritisers to do the main ranking
             // and this class to add in the known diseases associated with the gene.
             // Arguably this shouldn't even exist as a prioritiser any more.
             Map<ModeOfInheritance, Double> scoresByMode = calculateScoresForModes(gene, diseases);
             double score = scoresByMode.values().stream().max(Comparator.naturalOrder()).orElse(0d);
 
-            return new OmimPriorityResult(gene.getEntrezGeneID(), gene.getGeneSymbol(), score, diseases, scoresByMode);
+            return new OmimPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score, diseases, scoresByMode);
         };
     }
 
@@ -111,7 +111,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
     }
 
     private double calculateknownDiseaseInheritanceModeModifier(Gene gene, ModeOfInheritance modeOfInheritance, List<Disease> knownAssociatedDiseases) {
-        if (gene.getCompatibleInheritanceModes().isEmpty() || modeOfInheritance == ModeOfInheritance.ANY) {
+        if (gene.compatibleInheritanceModes().isEmpty() || modeOfInheritance == ModeOfInheritance.ANY) {
             return 1;
         }
 
@@ -122,7 +122,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
         // if we're still here check the compatibility of the gene against the known modes for the disease
         // under the current mode of inheritance
         return knownAssociatedDiseases.stream()
-                .map(Disease::getInheritanceMode)
+                .map(Disease::inheritanceMode)
                 .filter(inheritanceMode -> inheritanceMode != InheritanceMode.UNKNOWN)
                 .mapToDouble(scoreInheritanceMode(gene, modeOfInheritance))
                 .max()
@@ -161,7 +161,7 @@ public class OmimPriority implements Prioritiser<OmimPriorityResult> {
 
     private boolean geneCompatibleWithInheritanceMode(Gene gene, InheritanceMode inheritanceMode, ModeOfInheritance currentMode) {
         /* inheritance unknown (not mentioned in OMIM or not annotated correctly in HPO */
-        if (gene.getCompatibleInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
+        if (gene.compatibleInheritanceModes().isEmpty() || inheritanceMode == InheritanceMode.UNKNOWN) {
             return true;
         }
         return gene.isCompatibleWith(currentMode) && inheritanceMode.isCompatibleWith(currentMode);
