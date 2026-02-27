@@ -168,7 +168,7 @@ public class FilterReportFactory {
     }
 
     private List<String> messages(AlleleBalanceFilter alleleBalanceFilter) {
-        return List.of(String.format("Variants filtered for all alleles having GQ > %d, DP > %d, and AB (0/1 [0.2, 0.8], 0/0 <= 0.02, 1/1 >= 0.98)", alleleBalanceFilter.minimumGenotypeQuality(), alleleBalanceFilter.minimumDepth()));
+        return List.of(String.format("Variants filtered for all alleles having GQ > %d, DP > %d, and AB (0/1 [0.15, 0.85])", alleleBalanceFilter.minimumGenotypeQuality(), alleleBalanceFilter.minimumDepth()));
     }
 
     private List<String> messages(PathogenicityFilter pathogenicityFilter) {

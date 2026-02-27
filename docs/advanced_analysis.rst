@@ -365,7 +365,8 @@ The allele balance AB, also known as the Variant Allele Frequency VAF, filter us
 supporting the alternate allele. This is a variant quality metric used, along with the genotype quality score (GQ) and
 allele depth (DP) found in the VCF file. Based on the `Undiagnosed Diseases Network (UDN)
 paper on optimising Exomiser and Genomiser <https://doi.org/10.1186/s13073-025-01546-1>`_, we implemented their
-recommendation of 15%>=VAF<=85% for heterozygous variants and GQ>=20. Additionally we placed a requirement for a DP>=20
+recommendation of 15%>=VAF<=85% for heterozygous variants and GQ>=20. Additionally we placed a requirement for a DP>=10
+as recommended in `Effective variant filtering and expected candidate variant yield in studies of rare human disease DOI:10.1038/s41525-021-00227-3 <https://doi.org/10.1038/s41525-021-00227-3>`_
 and for mitochondrial variants we used an AB cutoff of >= 0.05 in line with the `Genomics England Tiering pipeline <https://pipeline-rd-help.genomicsengland.co.uk/Lyra/variant-prioritisation-approaches/small-variant-tiering/segregation-with-disease/#mitochondrialgenome>`_.
 
 This filter is set to run as a default, from version 15.0.0, yet users may wish to disable it to perform their own
