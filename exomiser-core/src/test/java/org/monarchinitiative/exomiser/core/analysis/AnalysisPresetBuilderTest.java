@@ -37,7 +37,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.*;
 
-public class AnalysisPresetBuilderTest {
+class AnalysisPresetBuilderTest {
 
     private static final Set<FrequencySource> FREQUENCY_SOURCES = Set.copyOf(FrequencySource.NON_FOUNDER_POPS);
 
@@ -46,7 +46,7 @@ public class AnalysisPresetBuilderTest {
 
     // presets
     @Test
-    public void testBuildExomePreset() {
+    void testBuildExomePreset() {
         Analysis analysis = instance.buildExomePreset();
         assertThat(analysis.analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
@@ -54,8 +54,10 @@ public class AnalysisPresetBuilderTest {
         assertThat(analysis.pathogenicitySources(), equalTo(Set.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI)));
         assertThat(analysis.analysisSteps().stream().map(AnalysisStep::getClass).toList(),
                 equalTo(List.of(
-                        VariantEffectFilter.class,
+                        GeneBlacklistFilter.class,
                         FailedVariantFilter.class,
+                        AlleleBalanceFilter.class,
+                        VariantEffectFilter.class,
                         FrequencyFilter.class,
                         PathogenicityFilter.class,
                         InheritanceFilter.class,
@@ -65,7 +67,7 @@ public class AnalysisPresetBuilderTest {
     }
 
     @Test
-    public void testBuildGenomePreset() {
+    void testBuildGenomePreset() {
         Analysis analysis = instance.buildGenomePreset();
         assertThat(analysis.analysisMode(), equalTo(AnalysisMode.PASS_ONLY));
         assertThat(analysis.inheritanceModeOptions(), equalTo(InheritanceModeOptions.defaults()));
@@ -75,7 +77,9 @@ public class AnalysisPresetBuilderTest {
                 equalTo(List.of(
                         HiPhivePriority.class,
                         PriorityScoreFilter.class,
+                        GeneBlacklistFilter.class,
                         FailedVariantFilter.class,
+                        AlleleBalanceFilter.class,
                         RegulatoryFeatureFilter.class,
                         FrequencyFilter.class,
                         PathogenicityFilter.class,

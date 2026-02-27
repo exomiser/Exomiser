@@ -117,10 +117,12 @@ class AnalysisPresetBuilder {
                 .pathogenicitySources(EnumSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI, REMM))
                 .addHiPhivePrioritiser(HI_PHIVE_OPTIONS)
                 .addPriorityScoreFilter(PriorityType.HIPHIVE_PRIORITY, 0.5f)// will remove a lot of the weak PPI hits
+                .addGeneBlacklistFilter()
                 .addFailedVariantFilter()
+                .addAlleleBalanceFilter()
                 .addRegulatoryFeatureFilter()
                 .addFrequencyFilter()
-                .addPathogenicityFilter(true)
+                .addPathogenicityFilter(false)
                 .addInheritanceFilter()
                 .addOmimPrioritiser()
                 .build();
@@ -132,6 +134,9 @@ class AnalysisPresetBuilder {
                 .inheritanceModes(DEFAULT_INHERITANCE_MODE_OPTIONS)
                 .frequencySources(DEFAULT_FREQUENCY_SOURCES)
                 .pathogenicitySources(EnumSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI))
+                .addGeneBlacklistFilter()
+                .addFailedVariantFilter()
+                .addAlleleBalanceFilter()
                 .addVariantEffectFilter(EnumSet.of(
                         VariantEffect.FIVE_PRIME_UTR_EXON_VARIANT,
                         VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT,
@@ -145,7 +150,6 @@ class AnalysisPresetBuilder {
                         VariantEffect.INTERGENIC_VARIANT,
                         VariantEffect.REGULATORY_REGION_VARIANT
                 ))
-                .addFailedVariantFilter()
                 .addFrequencyFilter()
                 .addPathogenicityFilter(true)
                 .addInheritanceFilter()
