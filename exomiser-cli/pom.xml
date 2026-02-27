@@ -210,7 +210,7 @@
         <profile>
             <id>docker:bash</id>
             <properties>
-                <docker.base.image>eclipse-temurin:17.0.6_10-jre</docker.base.image>
+                <docker.base.image>eclipse-temurin:25.0.2_10-jre</docker.base.image>
             </properties>
             <build>
                 <plugins>

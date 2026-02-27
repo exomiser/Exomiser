@@ -107,7 +107,7 @@
         <!-- flway needs to be limited for it to support migrations on the H2 version used above -->
         <flyway.version>10.6.0</flyway.version>
         <docker.base.image>
-            gcr.io/distroless/java17-debian11@sha256:d5a7bb2b1bcd09d9b7ba7f7b13df39cbb2ab2ff73a0ab834a5769e59229af2f8
+            gcr.io/distroless/java25-debian13@sha256:4eadd00d3bff73e6a7491dd36653c1d318ac93fb1fb2cd5eef768fd2b4238408
         </docker.base.image>
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
