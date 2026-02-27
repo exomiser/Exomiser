@@ -1,5 +1,37 @@
 # The Exomiser - Core Library Changelog
 
+## 15.0.0 2026-02-28
+[![Rare Disease Day](https://www.rarediseaseday.org/wp-content/uploads/Rare-disease-day-logo.svg
+)](https://www.rarediseaseday.org)
+
+- Minimum Java version is now **Java 21**
+
+API-breaking changes: 
+- Overhaul of the entire codebase to migrate to using Java records where possible, which has led to API-breaking changes across the entire codebase where the Java Bean style `Foo.getFoo()` has been refactored to a less 'getty' `Foo.foo()` 
+- Changed `JsonResultsWriter` to write results to JSONLines files JOSN files now have the `.jsonl` suffix
+- Moving and re-organising packages in exomiser/core/analysis 
+
+New APIs:
+- Add new `ParquetResultsWriter` class to write results to `.parquet` files
+- Add new `AlleleBalanceFilter`
+
+Updates:
+- Updated `PathogenicityFilter` to remove non-coding variants with CADD raw < 15.0, SpliceAI score < 0.1 and REMM < 0.914 when `keepNonPathogenic` is set to `false`
+- Overhauled HTML output to use Bootstrap 5 and a (hopefully!) clearer layout. 
+- Added a newly trained logistic regression model to the `GeneScorer.calculateCombinedScore()` which includes the Exomiser ACMG assignments in the score.
+- Added `GeneBlackListFilter` and `AlleleBalanceFilter` to `AnalysisPresetBuilder` for both the `buildExomePreset()` and `buildGenomePreset()` methods.
+
+Bug fixes:
+- Issue [#620](https://github.com/exomiser/Exomiser/issues/620) - Switched VCF INFO `EXOMISER_ACMG_EVIDENCE` delimiter from `,` to `&`
+- Issue [#609](https://github.com/exomiser/Exomiser/issues/609) - Ensure only observed phenotypic features are being imported from the hpoa file.
+- Issue [#588](https://github.com/exomiser/Exomiser/issues/588) - Add missing ALPHA_MISSENSE to preset.yml files
+
+Other changes:
+- Update protobuf 3.21.12 -> 4.28.2
+- Update spring-boot 33.2.3 -> 3.4.3
+- Update svart 2.0.0-RC6 -> 2.0.0-RC7
+
+
 ## 14.1.0 2024-11-14
 
 Further updates to ACMG assignment categories, including implementation of a new AcmgSpliceEvidenceAssigner class which
