@@ -67,7 +67,7 @@ Exomiser consists of two parts you need to download:
 
 Both are available from:
 
-- https://github.com/exomiser/Exomiser/releases/
+- https://github.com/exomiser/Exomiser/releases/latest
 - https://data.monarchinitiative.org/exomiser/latest
 
 
@@ -80,7 +80,7 @@ Windows' built-in zip tool cannot handle Exomiser's large files. Download
 and install 7-Zip from http://www.7-zip.org before proceeding.
 
 **Step 2: Download the files**
-Go to https://data.monarchinitiative.org/exomiser/latest and download:
+Go to https://github.com/exomiser/Exomiser/releases/latest and download:
 
 - ``exomiser-cli-|version|-distribution.zip`` (the program)
 - ``2512_phenotype.zip`` (required for all analyses)
@@ -146,13 +146,13 @@ internet speed.
 .. parsed-literal::
 
     # Download the Exomiser program (small, fast)
-    wget https://data.monarchinitiative.org/exomiser/latest/exomiser-cli-\ |version|\-distribution.zip
+    wget https://github.com/exomiser/Exomiser/releases/download/exomiser-cli-\ |version|\-distribution.zip
 
     # Download the data files (large — allow several hours)
     # If you only need one genome assembly, download only the relevant file.
-    wget https://data.monarchinitiative.org/exomiser/latest/2512_phenotype.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2512_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2512_hg19.zip
+    wget https://g-879a9f.f5dc97.75bc.dn.glob.us/data/2512_phenotype.zip
+    wget https://g-879a9f.f5dc97.75bc.dn.glob.us/data/2512_hg38.zip
+    wget https://g-879a9f.f5dc97.75bc.dn.glob.us/data/2512_hg19.zip
 
     # Extract the program
     unzip exomiser-cli-\ |version|\-distribution.zip
@@ -205,7 +205,7 @@ with a single command:
 
 This will install the Exomiser program. You will still need to download the
 data files separately (see the :ref:`linux-install` instructions above for the
-list of files to download from https://data.monarchinitiative.org/exomiser/latest).
+list of files to download from https://github.com/exomiser/Exomiser/releases/latest).
 
 When installed via Homebrew, the first time it is run Exomiser will automatically create the following folders in your
 home directory:
