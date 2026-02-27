@@ -42,9 +42,9 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 
-public class ParquetVariantResultsWriter implements ResultsWriter {
+public class ParquetResultsWriter implements ResultsWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ParquetVariantResultsWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ParquetResultsWriter.class);
 
     private static final VariantEvaluation EMPTY_VARIANT = VariantEvaluation.builder()
             .variant(GenomicVariant.of(Contig.unknown(), Strand.POSITIVE, Coordinates.empty(), "", ""))

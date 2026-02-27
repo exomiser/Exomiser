@@ -75,7 +75,7 @@ class ResultsWriterFactoryTest {
     void testGetParquetResultsWriter() {
         OutputFormat outputFormat = OutputFormat.PARQUET;
         ResultsWriter result = ResultsWriterFactory.getResultsWriter(outputFormat);
-        assertThat(result, instanceOf(ParquetVariantResultsWriter.class));
+        assertThat(result, instanceOf(ParquetResultsWriter.class));
     }
 
 }
