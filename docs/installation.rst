@@ -328,13 +328,13 @@ Optional: Genomiser / REMM Data
     This section is only needed if you intend to use the **Genomiser** for
     non-coding variant analysis. Skip this section for standard exome analysis.
 
-Download the REMM data file from https://remm.bihealth.org/download.
+Download the REMM data file and tabix index (.tbi) from https://remm.bihealth.org/download
 
 Once downloaded, add the path to the file in ``application.properties``:
 
 .. parsed-literal::
 
-    exomiser.hg19.remm-path=${exomiser.hg19.data-directory}/ReMM.v0.4.tsv.gz
+    exomiser.hg19.remm-path=${exomiser.hg19.data-directory}/ReMM.v0.4.hg19.tsv.gz
 
 If you include ``REMM`` as a ``pathogenicitySources`` value in your analysis
 YAML file without completing this step, Exomiser will stop with an error.
@@ -352,21 +352,22 @@ Optional: CADD Data
 
 Download CADD files from https://cadd.gs.washington.edu/download. Exomiser
 only requires the score files (not the full annotation files). Download the
-files for each genome assembly you use:
+files for each genome assembly you use. Note that there is also a European mirror site
+hosted at the Kircher lab in Berlin (https://cadd.bihealth.org/download):
 
 .. parsed-literal::
 
     # hg38
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh38/whole_genome_SNVs.tsv.gz
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh38/whole_genome_SNVs.tsv.gz.tbi
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh38/InDels.tsv.gz
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh38/InDels.tsv.gz.tbi
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh38/whole_genome_SNVs.tsv.gz.tbi
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh38/gnomad.genomes.r4.0.indel.tsv.gz
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh38/gnomad.genomes.r4.0.indel.tsv.gz.tbi
 
     # hg19
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/whole_genome_SNVs.tsv.gz
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/whole_genome_SNVs.tsv.gz.tbi
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/InDels.tsv.gz
-    wget https://krishna.gs.washington.edu/download/CADD/v1.4/GRCh37/InDels.tsv.gz.tbi
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh37/whole_genome_SNVs.tsv.gz
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh37/whole_genome_SNVs.tsv.gz.tbi
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh37/gnomad.genomes-exomes.r4.0.indel.tsv.gz
+    wget https://krishna.gs.washington.edu/download/CADD/v1.7/GRCh37/gnomad.genomes-exomes.r4.0.indel.tsv.gz.tbi
 
 Then update ``application.properties`` to enable CADD:
 
@@ -375,11 +376,11 @@ Then update ``application.properties`` to enable CADD:
     cadd.version=1.4
 
     exomiser.hg19.cadd-snv-path=${exomiser.data-directory}/cadd/${cadd.version}/hg19/whole_genome_SNVs.tsv.gz
-    exomiser.hg19.cadd-in-del-path=${exomiser.data-directory}/cadd/${cadd.version}/hg19/InDels.tsv.gz
+    exomiser.hg19.cadd-in-del-path=${exomiser.data-directory}/cadd/${cadd.version}/hg19/gnomad.genomes-exomes.r4.0.indel.tsv.gz
 
     # and/or for hg38:
     exomiser.hg38.cadd-snv-path=${exomiser.data-directory}/cadd/${cadd.version}/whole_genome_SNVs.tsv.gz
-    exomiser.hg38.cadd-in-del-path=${exomiser.data-directory}/cadd/${cadd.version}/InDels.tsv.gz
+    exomiser.hg38.cadd-in-del-path=${exomiser.data-directory}/cadd/${cadd.version}/gnomad.genomes.r4.0.indel.tsv.gz
 
 The ``.tbi`` index files must be in the same directory as the ``.tsv.gz``
 files. To activate CADD in an analysis, include ``CADD`` in the
