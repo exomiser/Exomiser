@@ -99,7 +99,7 @@ analysis
 
 .. important::
 
-    The exome and genome analyses found in the `test-analysis-exome.yml` and `test-analysis-genome.yml` files are
+    The exome and genome analyses found in the `examples/preset-exome-analysis.yml` and `examples/preset-genome-analysis.yml` files are
     recommended for use in most situations, and removing steps from the analysis is likely to negatively impact
     performance. It is *strongly* recommended to test any changes against the standard setup on the example samples and
     your own solved cases to check the impact of any changes you might want to make. If you want to score all variants
@@ -126,19 +126,20 @@ output
 
 By default Exomiser will write out any result files to the exomiser-cli-|version|/results sub-directory of the
 Exomiser installation directory. Unless specified in the `output.yml` or `outputOptions` section of the analysis YAML
-file, Exomiser will write out a `.json` and a `.html` file. These are for machine (JSON) and human (HTML) use. The
+file, Exomiser will write out a `.jsonl`, a `.parquet` and a `.html` file. These are for machine (JSON) and human (HTML) use. The
 filenames will match the input VCF filename. For example
 
 .. parsed-literal::
 
     java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-phenopacket.yml --vcf path/to/manuel.vcf.gz --assembly hg19
 
-Would result in two files being output with the filename 'manuel_exomiser' and the '.json' and '.html' extensions:
+Would result in three files being output with the filename 'manuel_exomiser' and the '.jsonl', `.parquet` and '.html' extensions:
 
 .. parsed-literal::
 
   exomiser-cli-|version|/results/manuel_exomiser.html
   exomiser-cli-|version|/results/manuel_exomiser.json
+  exomiser-cli-|version|/results/manuel_exomiser.parquet
 
 
 Users requiring more control over their output can use either the ``outputOptions`` section of an analysis file or a
@@ -156,8 +157,8 @@ file:
     outputDirectory: results/
     # outputFileName: (optional) (default: 'input-vcf-name-exomiser')
 	outputFileName: NA12345-exomiser-results
-    # out-format options: HTML, JSON, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
-    outputFormats: [HTML, JSON, TSV_GENE]
+    # out-format options: HTML, JSON, PARQUET, TSV_GENE, TSV_VARIANT, VCF (default: HTML)
+    outputFormats: [HTML, PARQUET]
 
 
 This file is passed to Exomiser using the ``--output`` switch:

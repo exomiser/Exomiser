@@ -207,13 +207,23 @@ This will install the Exomiser program. You will still need to download the
 data files separately (see the :ref:`linux-install` instructions above for the
 list of files to download from https://data.monarchinitiative.org/exomiser/latest).
 
-After downloading and extracting the data files, configure
-``application.properties`` as described in the Linux section above.
+When installed via Homebrew, the first time it is run Exomiser will automatically create the following folders in your
+home directory:
 
-Given the nature of how Homebrew manages the application, you might want to consider
-installing the data in a separate data directory (see :ref:`data-directory`) and
-providing the variables needed in the ``application.properties`` via environment
-variables (see :ref:`overriding-settings`).
+.. code-block:: bash
+
+    $ tree ~/.exomiser
+    /home/user/.exomiser
+    ├── application.properties
+    └── data
+
+If they are not present run `exomiser --version` and this should create them. By default, Exomiser will expect the data
+to be in the `~.exomiser/data` directory but this can be changed in the `~.exomiser/application.properties` file to suit
+your needs (see :ref:`data-directory`). For the most part, when using Exomiser installed via Homebrew, once configured,
+you can replace the `java -jar exomiser-cli-|version|.jar` incantation used in this manual with just `exomiser` and it
+should just work, however you will need to specify explicitly where to write the results as they will default to being
+written to the current working directory you are calling the `exomiser` command from (see :ref:`outputdirectory`)
+
 
 .. _data-directory:
 
@@ -224,7 +234,7 @@ By default, Exomiser expects its data files to be in a ``data`` subfolder
 inside the Exomiser program folder. If you store your data elsewhere, you
 must tell Exomiser where to find it.
 
-Open ``application.properties`` and set the ``exomiser.data-directory`` to
+Edit the ``application.properties`` file and set the ``exomiser.data-directory`` to
 the full path of your data folder. For example:
 
 .. code-block:: properties
@@ -398,8 +408,46 @@ and try again.
 
 **Wrong Java version**
 
-Run ``java -version``. If the version shown is below 21, install a newer
-version from https://adoptium.net.
+Exomiser requires Java 21 or higher. This can be checked by running:
+
+.. code-block:: console
+
+    $ java -version
+
+You should see something like this in response:
+
+.. code-block:: console
+
+    openjdk 21.0.6 2025-01-21
+    OpenJDK Runtime Environment (build 21.0.6+7-Ubuntu-124.04.1)
+    OpenJDK 64-Bit Server VM (build 21.0.6+7-Ubuntu-124.04.1, mixed mode, sharing)
+
+
+Versions lower than 21 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10...) will not run exomiser.
+You can install the latest version from https://adoptium.net or https://jdk.java.net/ for
+example. On linux your distribution should provide a packaged version. MacOS users might prefer to use a homebrew version
+via ``brew install openjdk``
+
+If you get the following error message:
+
+.. code-block:: console
+
+    Exception in thread "main" java.lang.UnsupportedClassVersionError:
+    org/monarchinitiative/exomiser/cli/Main : Unsupported major.minor version
+
+
+or
+
+.. code-block:: console
+
+    Error: A JNI error has occurred, please check your installation and try again
+    Exception in thread "main" java.lang.UnsupportedClassVersionError: org/monarchinitiative/exomiser/cli/Main has been
+    compiled by a more recent version of the Java Runtime (class file version 55.0), this version of the Java Runtime
+    only recognizes class file versions up to 52.0
+
+
+You are running an older unsupported version of Java, update your java installation.
+
 
 **"Permission denied" errors (Linux/macOS)**
 
