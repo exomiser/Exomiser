@@ -112,8 +112,8 @@
         <docker.registry>docker.io</docker.registry>
         <docker.repository>exomiser</docker.repository>
         <!--    These properties are used for the README.md and updating the application.properties -->
-        <genome.data.version>2502</genome.data.version>
-        <phenotype.data.version>2502</phenotype.data.version>
+        <genome.data.version>2512</genome.data.version>
+        <phenotype.data.version>2512</phenotype.data.version>
     </properties>
 
     <dependencyManagement>

@@ -51,9 +51,9 @@ Before you begin, here are a few terms used throughout this guide:
   Exomiser where your data files are stored and which versions to use.
   You will edit this file as part of setup.
 
-- **Data version (e.g. 2402):** Exomiser data files are released
+- **Data version (e.g. 2512):** Exomiser data files are released
   periodically. The number refers to the year and month of release
-  (e.g. 2402 = February 2024). Your ``application.properties`` must
+  (e.g. 2512 = February 2024). Your ``application.properties`` must
   reference the version you downloaded.
 
 
@@ -83,8 +83,8 @@ and install 7-Zip from http://www.7-zip.org before proceeding.
 Go to https://data.monarchinitiative.org/exomiser/latest and download:
 
 - ``exomiser-cli-|version|-distribution.zip`` (the program)
-- ``2402_phenotype.zip`` (required for all analyses)
-- ``2402_hg19.zip`` and/or ``2402_hg38.zip`` (download whichever matches
+- ``2512_phenotype.zip`` (required for all analyses)
+- ``2512_hg19.zip`` and/or ``2512_hg38.zip`` (download whichever matches
   your VCF file; download both if unsure)
 
 **Step 3: Extract the program**
@@ -95,8 +95,8 @@ Right-click ``exomiser-cli-|version|-distribution.zip`` and choose
 
 **Step 4: Extract the data files**
 
-Right-click each data ``.zip`` file (e.g. ``2402_phenotype.zip``,
-``2402_hg19.zip``) and choose **7-Zip > Extract files...**. Extract them
+Right-click each data ``.zip`` file (e.g. ``2512_phenotype.zip``,
+``2512_hg19.zip``) and choose **7-Zip > Extract files...**. Extract them
 into the ``data`` subfolder inside your Exomiser folder, e.g.:
 
 .. parsed-literal::
@@ -107,18 +107,18 @@ into the ``data`` subfolder inside your Exomiser folder, e.g.:
 
 Open the file ``exomiser-cli-|version|\application.properties`` in a text
 editor (e.g. Notepad). Find the data version lines and make sure they match
-the version you downloaded (e.g. ``2402``):
+the version you downloaded (e.g. ``2512``):
 
 .. code-block:: properties
 
-    exomiser.hg19.data-version=2402
-    exomiser.phenotype.data-version=2402
+    exomiser.hg19.data-version=2512
+    exomiser.phenotype.data-version=2512
 
 If you downloaded hg38 instead of (or as well as) hg19, also add or update:
 
 .. code-block:: properties
 
-    exomiser.hg38.data-version=2402
+    exomiser.hg38.data-version=2512
 
 Save the file.
 
@@ -150,15 +150,15 @@ internet speed.
 
     # Download the data files (large — allow several hours)
     # If you only need one genome assembly, download only the relevant file.
-    wget https://data.monarchinitiative.org/exomiser/latest/2402_phenotype.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2402_hg38.zip
-    wget https://data.monarchinitiative.org/exomiser/latest/2402_hg19.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2512_phenotype.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2512_hg38.zip
+    wget https://data.monarchinitiative.org/exomiser/latest/2512_hg19.zip
 
     # Extract the program
     unzip exomiser-cli-\ |version|\-distribution.zip
 
     # Extract the data files into the data subdirectory
-    unzip 2402_*.zip -d exomiser-cli-\ |version|\/data
+    unzip 2512_*.zip -d exomiser-cli-\ |version|\/data
 
     # Navigate into the Exomiser folder
     cd exomiser-cli-\ |version|
@@ -170,14 +170,14 @@ and confirm the data version lines match what you downloaded:
 
 .. code-block:: properties
 
-    exomiser.hg19.data-version=2402
-    exomiser.phenotype.data-version=2402
+    exomiser.hg19.data-version=2512
+    exomiser.phenotype.data-version=2512
 
 Add or update the hg38 line if you downloaded that assembly:
 
 .. code-block:: properties
 
-    exomiser.hg38.data-version=2402
+    exomiser.hg38.data-version=2512
 
 Save and close the file.
 
@@ -246,34 +246,34 @@ Your data directory should look something like this (using ``tree -L 1 /data/exo
 .. code-block:: bash
 
     /data/exomiser-data/
-    ├── 2402_hg19
-    ├── 2402_hg38
-    └── 2402_phenotype
+    ├── 2512_hg19
+    ├── 2512_hg38
+    └── 2512_phenotype
 
 A minimal ``application.properties`` for hg19 exome analysis:
 
 .. code-block:: properties
 
     exomiser.data-directory=/data/exomiser-data
-    exomiser.hg19.data-version=2402
-    exomiser.phenotype.data-version=2402
+    exomiser.hg19.data-version=2512
+    exomiser.phenotype.data-version=2512
 
 For hg38 only:
 
 .. code-block:: properties
 
     exomiser.data-directory=/data/exomiser-data
-    exomiser.hg38.data-version=2402
-    exomiser.phenotype.data-version=2402
+    exomiser.hg38.data-version=2512
+    exomiser.phenotype.data-version=2512
 
 For both assemblies:
 
 .. code-block:: properties
 
     exomiser.data-directory=/data/exomiser-data
-    exomiser.hg19.data-version=2402
-    exomiser.hg38.data-version=2402
-    exomiser.phenotype.data-version=2402
+    exomiser.hg19.data-version=2512
+    exomiser.hg38.data-version=2512
+    exomiser.phenotype.data-version=2512
 
 .. note::
 
@@ -304,7 +304,7 @@ with the JAVA_TOOL_OPTIONS environment variable e.g.
 
 .. code-block:: bash
 
-    export JAVA_TOOL_OPTIONS="-Dexomiser.data-directory=/full/path/to/exomiser-data -Dexomiser.hg38.data-version=2402"
+    export JAVA_TOOL_OPTIONS="-Dexomiser.data-directory=/full/path/to/exomiser-data -Dexomiser.hg38.data-version=2512"
 
 Alternatively, Exomiser will recognise exomiser-specific environment variables, as named in the
 ``application.properties`` file e.g.
@@ -484,8 +484,8 @@ allocation by raising the ``-Xmx`` value. For genome analysis, try
 **Exomiser cannot find data files**
 
 Double-check that the version numbers in ``application.properties``
-(e.g. ``exomiser.hg19.data-version=2402``) exactly match the folder names
-in your data directory (e.g. ``2402_hg19``). Even a small mismatch will
+(e.g. ``exomiser.hg19.data-version=2512``) exactly match the folder names
+in your data directory (e.g. ``2512_hg19``). Even a small mismatch will
 cause Exomiser to fail.
 
 **Analysis produces no results**
