@@ -10,8 +10,12 @@ variants: a joint consensus recommendation of the American College of Medical Ge
 for Molecular Pathology <https://doi.org/10.1038/gim.2015.30>`_. The criteria are assigned according to the
 `UK ACGS 2020 guidelines <https://www.acgs.uk.com/media/11631/uk-practice-guidelines-for-variant-classification-v4-01-2020.pdf>`_
 and scored according to the
-`ClinGen SVI <https://clinicalgenome.org/working-groups/sequence-variant-interpretation/>`_
+`ClinGen Variant Classification Guidance <https://clinicalgenome.org/tools/clingen-variant-classification-guidance>`_
 `updated 2020 guidelines <https://clinicalgenome.org/docs/fitting-a-naturally-scaled-point-system-to-the-acmg-amp-variant-classification-guidelines/>`_.
+
+Additionally, splice variants are scored according to `Using the ACMG/AMP framework to capture evidence related to
+predicted and observed impact on splicing: Recommendations from the ClinGen SVI Splicing Subgroup <https://doi.org/10.1016/j.ajhg.2023.06.002>`_.
+In this case Exomiser will assign the PVS1, PS1, PP3, BP4, BP7 categories.
 
 It is important to be aware that these scores are not a substitute for manual assignment by a qualified clinical geneticist
 or clinician - The scores displayed utilise the data found in the Exomiser database and are a subset of the possible
@@ -25,62 +29,12 @@ recall from 91% to 75%).
 
 Exomiser is capable of assigning the following ACMG categories:
 
-Computational and Predictive Data
-=================================
-PVS1
-----
-Variants must have a predicted loss of function effect, be in a gene with known disease associations and have a gene
-constraint LOF O/E < 0.7635 (gnomAD 4.0) to suggest that a gene is LoF intolerant. Variants not predicted to lead to
-NMD (those located in the last exon) will have the modifier downgraded to Strong.
+Variant Classification Evidence
+===============================
 
-PS1
----
-Variants with the same amino acid change as previously reported P/LP missense or in-frame indel ClinVar variants will be
-assigned `PS1` with a strength of `Strong` for variants >= 2 stars, `Moderate` for variants with 1 star or `Supporting`
-for those without a ClinVar start rating.
+These categories are taken from Figure 1. of `Richards et al. 2015 <https://doi.org/10.1038/gim.2015.30>`_, those in **bold**
+are assigned by Exomiser.
 
-PM4
----
-Stop-loss and in-frame insertions or deletions, not previously assigned a `PVS1` criterion are assigned `PM4`.
-
-PM5
----
-Variants having a novel missense change to an amino acid where a previously reported ClinVar P/LP variant has been seen
-will be assigned `PM5` with a strength of `Moderate` for those with >=2 stars or `Supporting` otherwise.
-
-PP3 / BP4
----------
-If REVEL is chosen as a pathogenicity predictor for missense variants, `PP3` and `BP4` are assigned using the modifiers
-according to table 2 of `Evidence-based calibration of computational tools for missense variant pathogenicity classification
-and ClinGen recommendations for clinical use of PP3/BP4 criteria <https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1>`_.
-Note that this suggests the use of modifiers up to Strong in the case of pathogenic or Very Strong in the case of benign predictions.
-Otherwise, an ensemble-based approach will be used for other pathogenicity predictors as per the original 215 guidelines.
-It should be noted we found better performance using the REVEL-based approach when testing against the 100K genomes data.
-
-Functional Data
-===============
-PM1
----
-Missense and inframe indels are assigned `PM1` if the surrounding region of 25 nucleotides either side of the variant
-contain at least 4 reported P/LP variants in ClinVar and no B/LB variants. If the number of P/LP variants is greater
-than the number of VUS in the region the strength will be assigned `Moderate` but regions containing P/LP <= VUS
-(and no B/BL) will have the strength downgraded to `Supporting`.
-
-
-Segregation Data
-================
-BS4
----
-If a pedigree with two or more members, including the proband is provided, Exomiser will assign `BS4` for variants not
-segregating with affected members of the family.
-
-De novo Data
-===========
-
-PS2
----
-Exomiser assigns the `PS2` criterion for variants compatible with a dominant mode of inheritance, with a pedigree containing
-at least two ancestors of the proband, none of whom are affected and none of whom share the same allele as the proband.
 
 Population Data
 ===============
@@ -93,21 +47,197 @@ addition the LOCAL frequency will also not be used.
 
 BA1
 ---
+    `MAF is too high for disorder`
+
 Given Exomiser will filter out alleles with an allele frequency of >= 2.0%, this is unlikely to be seen. However, alleles
 with a maximum frequency >= 5.0% in the frequency sources specified will be assigned the `BA1` criterion. Variants listed
 as being excluded from this category by the ClinGen SVI working group `BA1 exclusion list <https://www.clinicalgenome.org/site/assets/files/3460/ba1_exception_list_07_30_2018.pdf>`_
 will not be marked as `BA1`, assuming they survived variant filtering.
 
+
+BS1
+---
+    `MAF is too high for disorder`
+
+Assigned to autosomal variants with a maximum non-founder population allele frequency >= 1.5% or mitochondrial variants
+with MAF >= 5%
+
+
+BS2
+---
+    `Observation in controls inconsistent with disease penetrance`
+
+Variants with a MAF < 5%  (not BA1) which have a gnomAD non-founder population `hom` count > 5 when considered under an
+autosomal dominant model (gene score) or > 2 when considered under autosomal recessive, X-recessive or X-dominant are
+assigned a `BS2`.
+
+
 PM2
 ---
+    `Absent in population databases`
+
 In accordance with the `updated PM2 guidance <https://clinicalgenome.org/site/assets/files/5182/pm2_-_svi_recommendation_-_approved_sept2020.pdf>`_, variants absent from all of the user-defined :ref:`frequencysources`
 will be assigned the `PM2_Supporting` criterion. Additionally, for variants considered under a recessive mode of inheritance they
 can have a frequency of < 0.01% (0.0001) in all non-bottlenecked populations to be assigned `PM2_Supporting`.
+
+
+PS4
+---
+    `Prevalence in affecteds statistically increased over controls`
+
+Not assigned
+
+Computational and Predictive Data
+=================================
+PVS1
+----
+    `Predicted null variant in a gene where LOF is a known mechanism of disease`
+
+Variants must have a predicted loss of function effect, be in a gene with known disease associations and have a gene
+constraint LOF O/E < 0.7635 (gnomAD 4.0) to suggest that a gene is LoF intolerant. Variants not predicted to lead to
+NMD (those located in the last exon) will have the modifier downgraded to Strong.
+
+PS1
+---
+    `Same amino acid change as an established pathogenic variant`
+
+Variants with the same amino acid change as previously reported P/LP missense or in-frame indel ClinVar variants will be
+assigned `PS1` with a strength of `Strong` for variants >= 2 stars, `Moderate` for variants with 1 star or `Supporting`
+for those without a ClinVar start rating.
+
+Splice variants will be assigned PS1 with Strong, Moderate or Supporting modifiers,
+according to table 2 of `Using the ACMG/AMP framework to capture evidence related to
+predicted and observed impact on splicing: Recommendations from the ClinGen SVI Splicing Subgroup <https://doi.org/10.1016/j.ajhg.2023.06.002>`_.
+
+PM4
+---
+    `Protein length changing variant`
+
+Stop-loss and in-frame insertions or deletions, not previously assigned a `PVS1` criterion are assigned `PM4`.
+
+PM5
+---
+    `Novel missense change at an amino acid residue where a different pathogenic missense change has been seen before`
+
+Variants having a novel missense change to an amino acid where a previously reported ClinVar P/LP variant has been seen
+will be assigned `PM5` with a strength of `Moderate` for those with >=2 stars or `Supporting` otherwise.
+
+PP3 / BP4
+---------
+    `Multiple lines of computational evidence support a deleterious effect on the gene/gene product (PP3)`
+    `Multiple lines of computational evidence suggest no impact on gene product (BP4)`
+
+If REVEL is chosen as a pathogenicity predictor for missense variants, `PP3` and `BP4` are assigned using the modifiers
+according to table 2 of `Evidence-based calibration of computational tools for missense variant pathogenicity classification
+and ClinGen recommendations for clinical use of PP3/BP4 criteria <https://www.biorxiv.org/content/10.1101/2022.03.17.484479v1>`_.
+Note that this suggests the use of modifiers up to Strong in the case of pathogenic or Very Strong in the case of benign predictions.
+Otherwise, an ensemble-based approach will be used for other pathogenicity predictors as per the original 215 guidelines.
+It should be noted we found better performance using the REVEL-based approach when testing against the 100K genomes data.
+
+For splice variants outside of the +/-1,2 canonical splice donor/acceptor site are assigned `PP3` with a SpliceAI score
+>= 0.2 or `BP4` with a SpliceAI score < 0.1
+
+
+BP1
+---
+    `Missense in gene where only truncating cause disease`
+
+Missense or inframe indels found in a gene in which >=75% of ClinVar P/LP variants are loss of function variants are
+assigned `BP1`.
+
+BP7
+---
+    `Silent variant with non predicted splice impact`
+
+For synonymous variants, `BP7` is assigned if the variant is not reported as P/LP in ClinVar, with a 1+ star rating and
+has a SpliceAI score < 0.1
+
+For splice region variants Exomiser follows the recommendations made in `Using the ACMG/AMP framework to capture evidence related to
+predicted and observed impact on splicing: Recommendations from the ClinGen SVI Splicing Subgroup <https://doi.org/10.1016/j.ajhg.2023.06.002>`_
+
+In this case, non-donor/acceptor splice region variants with a SpliceAI score < 0.1 which have been assigned BP4 at or
+beyond the +7 and −21 positions (conservative designation for donor/acceptor splice region) are also assigned a `BP7`.
+
+
+Functional Data
+===============
+
+PS3
+---
+    `Well-established functional studies show a deleterious effect`
+
+Not assigned
+
+
+PM1
+---
+    `Mutational hot spot or well-studied functional domain without benign variation`
+
+Missense and inframe indels are assigned `PM1` if the surrounding region of 25 nucleotides either side of the variant
+contain at least 4 reported P/LP variants in ClinVar and no B/LB variants. If the number of P/LP variants is greater
+than the number of VUS in the region the strength will be assigned `Moderate` but regions containing P/LP <= VUS
+(and no B/BL) will have the strength downgraded to `Supporting`.
+
+
+PP2
+---
+    `Missense in gene with low rate of benign missense variants and path. missenses common`
+
+Missense or inframe indels in genes where >= 75% of ClinVar P/LP variants are missense and ClinVar benign missense
+variants make up <=5% of all reported missense ClinVar variants (P/LP/VUS/B/LB) in that gene are assigned a `PP2`
+
+
+BS3
+---
+    `Well-established functional studies show no deleterious effect`
+
+Not assigned
+
+
+Segregation Data
+================
+
+PP1
+---
+    `Co-segregation with disease in multiple affected family members`
+
+Not assigned
+
+
+BS4
+---
+    `Non-segregation with disease`
+
+Not assigned. Previously this was assigned but the pedigree assignment of 'affected' status was not always reliable so
+this is no longer applied automatically.
+
+
+De novo Data
+============
+
+PS2
+---
+    `*De novo* (paternity & maternity confirmed)`
+
+Exomiser assigns the `PS2` criterion for variants compatible with a dominant mode of inheritance, with a pedigree containing
+at least two ancestors of the proband, none of whom are affected and none of whom share the same allele as the proband.
+
+PM6
+---
+    `*De novo* (without paternity & maternity confirmed)`
+
+Not assigned
+
 
 Allelic Data
 ============
 PM3 / BP2
 ---------
+    `Observed in *trans* with a dominant variant`
+    `Observed in *cis* with a pathogenic variant`
+
+    For recessive disorders, detected in *trans* with a pathogenic variant *PM3*
+
 If Exomiser is provided with a phased VCF and a variant is found to be *in-trans* with a ClinVar Pathogenic variant and
 associated with a recessive disorder, the `PM3` criterion will be applied. However, in cases where variant is being
 considered for a recessive disorder and is *in-cis* or a dominant disorder and *in-trans* with another pathogenic variant
@@ -118,14 +248,26 @@ Phenotype
 =========
 PP4
 ---
+    `Patient's phenotype or FH highly specific for gene`
+
 Given Exomiser's focus on phenotype-driven variant prioritisation, variants in a gene associated with a disorder with a
 phenotype match score > 0.6 to the patient's phenotype are assigned the `PP4` criterion at the Moderate, rather than
 Supporting level.
 
+
+BP5
+---
+    `Found in case with an alternate cause`
+
+Not assigned
+
 Clinical
 ========
 PP5 / BP6
---------
+---------
+    `Reputable source w/out shared data = benign (BP6)`
+    `Reputable source = pathogenic (PP5)`
+
 If a variant is previously reported as P/LP in ClinVar with a 1-start rating, it will be assigned `PP5`, those with >= 2
 stars (multiple submitters, criteria provided, no conflicts / reviewed by expert panel / practice guideline) will be
 assigned a Strong level. Conversely, if the variant is previously reported as B/LB it will be assigned `BP6` with the same
@@ -138,7 +280,8 @@ Transcript Selection
 
 Transcripts will be selected using the most deleterious predicted variant effect from `Jannovar <https://doi.org/10.1002/humu.22531>`_
 according to the `transcript-source` property set in the `application.properties`. We recommend using the Ensembl
-transcript datasource as the Exomiser build uses the GENCODE basic set of transcripts. Future versions should use MANE transcripts.
+transcript datasource as the Exomiser build uses the GENCODE basic transcripts for hg19/GRCh37 and MANE transcripts for
+hg38/GRCh38.
 
 ACMG assignments will be reported for a variant on a transcript consistent with a particular mode of inheritance in
 conjunction with a disorder, the assigned criteria with any modifiers and the final classification e.g.
