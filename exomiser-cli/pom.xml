@@ -234,10 +234,11 @@
                                                 <os>linux</os>
                                                 <architecture>arm64</architecture>
                                             </platform>
-                                            <platform>
-                                                <os>linux</os>
-                                                <architecture>arm</architecture>
-                                            </platform>
+                                            <!-- No longer provided was this for MacOS? -->
+<!--                                            <platform>-->
+<!--                                                <os>linux</os>-->
+<!--                                                <architecture>arm</architecture>-->
+<!--                                            </platform>-->
                                             <platform>
                                                 <os>linux</os>
                                                 <architecture>amd64</architecture>
