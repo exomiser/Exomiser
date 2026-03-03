@@ -43,4 +43,6 @@ public interface PriorityFactory {
 
     HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions);
 
+    BoqaPrioritiser makeBoqaPrioritiser();
+
 }

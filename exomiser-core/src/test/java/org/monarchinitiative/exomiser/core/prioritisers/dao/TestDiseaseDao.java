@@ -52,4 +52,9 @@ public class TestDiseaseDao implements DiseaseDao {
     public List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId) {
         return geneDiseaseAssociations.getOrDefault(geneId, Collections.emptyList());
     }
+
+    @Override
+    public List<Disease> getAllDiseases() {
+        return List.copyOf(diseases);
+    }
 }

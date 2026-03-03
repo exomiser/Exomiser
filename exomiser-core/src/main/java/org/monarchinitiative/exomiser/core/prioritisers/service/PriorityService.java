@@ -98,4 +98,8 @@ public class PriorityService {
         return diseaseDao.getDiseaseDataAssociatedWithGeneId(geneId);
     }
 
+    public List<Disease> getAllDiseaseData() {
+        return diseaseDao.getAllDiseases();
+    }
+
 }

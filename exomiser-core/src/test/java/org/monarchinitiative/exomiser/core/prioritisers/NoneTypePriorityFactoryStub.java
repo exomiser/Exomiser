@@ -60,4 +60,9 @@ public class NoneTypePriorityFactoryStub implements PriorityFactory {
     public HiPhivePriority makeHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions) {
         return new HiPhivePriority(hiPhiveOptions, DataMatrix.empty(), TestPriorityServiceFactory.stubPriorityService());
     }
+
+    @Override
+    public BoqaPrioritiser makeBoqaPrioritiser() {
+        return new BoqaPrioritiser(TestPriorityServiceFactory.stubPriorityService(), new BoqaCounterStub());
+    }
 }

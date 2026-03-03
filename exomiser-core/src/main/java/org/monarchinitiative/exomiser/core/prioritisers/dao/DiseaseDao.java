@@ -35,7 +35,9 @@ import java.util.Set;
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
 public interface DiseaseDao {
-        
+
+    List<Disease> getAllDiseases();
+
     Set<String> getHpoIdsForDiseaseId(String diseaseId);
 
     List<Disease> getDiseaseDataAssociatedWithGeneId(int geneId);

@@ -95,7 +95,7 @@ class AnalysisSampleValidator {
         if (analysisStep instanceof Prioritiser<? extends PriorityResult> prioritiser) {
             PriorityType priorityType = prioritiser.priorityType();
             return switch (priorityType) {
-                case HIPHIVE_PRIORITY, PHENIX_PRIORITY, PHIVE_PRIORITY -> true;
+                case HIPHIVE_PRIORITY, PHENIX_PRIORITY, PHIVE_PRIORITY, BOQA_PRIORITY -> true;
                 case EXOMEWALKER_PRIORITY, OMIM_PRIORITY, NONE -> false;
             };
         }

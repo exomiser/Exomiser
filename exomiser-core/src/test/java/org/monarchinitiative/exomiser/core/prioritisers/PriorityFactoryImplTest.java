@@ -38,8 +38,10 @@ import org.monarchinitiative.exomiser.core.prioritisers.config.TestDataSourceCon
 import org.monarchinitiative.exomiser.core.prioritisers.dao.DefaultDiseaseDao;
 import org.monarchinitiative.exomiser.core.prioritisers.service.ModelServiceImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
+import org.p2gx.boqa.core.Counter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -78,6 +80,9 @@ public class PriorityFactoryImplTest {
 
     @Autowired
     private PriorityFactoryImpl instance;
+
+    @MockitoBean
+    private Counter counter;
 
     @Test
     public void testMakeOmimPrioritiser() {

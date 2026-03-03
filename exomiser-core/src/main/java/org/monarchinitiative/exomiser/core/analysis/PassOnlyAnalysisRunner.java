@@ -71,7 +71,7 @@ class PassOnlyAnalysisRunner extends AbstractAnalysisRunner {
                 .map(removeFailedVariants())
                 .filter(Gene::hasVariants)
                 .filter(Gene::passedFilters)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
     private UnaryOperator<Gene> removeFailedVariants() {
