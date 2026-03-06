@@ -215,63 +215,28 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.google.cloud.tools</groupId>
-                        <artifactId>jib-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
                         <executions>
                             <execution>
                                 <id>build-docker-image</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>build</goal>
+                                    <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <from>
-                                        <image>
-                                            ${docker.base.image}
-                                        </image>
-                                        <platforms>
-                                            <platform>
-                                                <os>linux</os>
-                                                <architecture>arm64</architecture>
-                                            </platform>
-                                            <!-- No longer provided was this for MacOS? -->
-<!--                                            <platform>-->
-<!--                                                <os>linux</os>-->
-<!--                                                <architecture>arm</architecture>-->
-<!--                                            </platform>-->
-                                            <platform>
-                                                <os>linux</os>
-                                                <architecture>amd64</architecture>
-                                            </platform>
-                                        </platforms>
-                                    </from>
-                                    <to>
-                                        <image>
-                                            ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}-bash
-                                        </image>
-                                        <tags>
-                                            <tag>latest-bash</tag>
-                                            <tag>${project.parent.version}-bash</tag>
-                                        </tags>
-                                    </to>
-                                    <container>
-                                        <entrypoint>
-                                            <arg>/bin/bash</arg>
-                                        </entrypoint>
-                                        <volumes>
-                                            <volume>/exomiser-data</volume>
-                                            <volume>/exomiser</volume>
-                                            <volume>/results</volume>
-                                        </volumes>
-                                    </container>
-                                    <extraDirectories>
-                                        <permissions>
-                                            <permission>
-                                                <file>/entrypoint.sh</file>
-                                                <mode>755</mode>
-                                            </permission>
-                                        </permissions>
-                                    </extraDirectories>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>build</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}-bash</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.registry}/${docker.repository}/${project.artifactId}:latest-bash</argument>
+                                        <argument>-f</argument>
+                                        <argument>exomiser-bash.dockerfile</argument>
+                                        <argument>..</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>
@@ -284,48 +249,32 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.google.cloud.tools</groupId>
-                        <artifactId>jib-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.5.0</version>
                         <executions>
                             <execution>
                                 <id>build-docker-image</id>
                                 <phase>package</phase>
                                 <goals>
-                                    <goal>build</goal>
+                                    <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <from>
-                                        <image>
-                                            ${docker.base.image}
-                                        </image>
-                                        <platforms>
-                                            <platform>
-                                                <os>linux</os>
-                                                <architecture>arm64</architecture>
-                                            </platform>
-                                            <platform>
-                                                <os>linux</os>
-                                                <architecture>amd64</architecture>
-                                            </platform>
-                                        </platforms>
-                                    </from>
-                                    <to>
-                                        <image>
-                                            ${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}
-                                        </image>
-                                        <tags>
-                                            <tag>latest</tag>
-                                            <tag>latest-distroless</tag>
-                                            <tag>${project.parent.version}-distroless</tag>
-                                        </tags>
-                                    </to>
-                                    <container>
-                                        <volumes>
-                                            <volume>/exomiser-data</volume>
-                                            <volume>/exomiser</volume>
-                                            <volume>/results</volume>
-                                        </volumes>
-                                    </container>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>build</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.registry}/${docker.repository}/${project.artifactId}:latest</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.registry}/${docker.repository}/${project.artifactId}:latest-distroless</argument>
+                                        <argument>-t</argument>
+                                        <argument>${docker.registry}/${docker.repository}/${project.artifactId}:${project.parent.version}-distroless</argument>
+                                        <argument>-f</argument>
+                                        <argument>exomiser-distroless.dockerfile</argument>
+                                        <argument>..</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>
