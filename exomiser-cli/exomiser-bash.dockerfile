@@ -28,6 +28,6 @@ WORKDIR /app
 COPY --from=builder /build/exomiser-cli/target/exomiser-cli-*.jar /app/exomiser-cli.jar
 COPY --from=builder /build/exomiser-cli/target/lib /app/lib
 
-# Copy any entrypoint scripts if they exist (based on the original Jib config)
-COPY exomiser-cli/src/main/jib/enable_exomiser.sh /app/enable_exomiser.sh
-RUN chmod 755 /app/enable_exomiser.sh
+# Copy executable exomiser script and make it available on the PATH
+COPY exomiser-cli/exomiser /usr/local/bin/exomiser
+RUN chmod +x /usr/local/bin/exomiser

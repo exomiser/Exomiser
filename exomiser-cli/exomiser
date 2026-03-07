@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# ==========================================
+# Exomiser executable launch script
+# ==========================================
+
+# Determine the Java command to use to start the JVM.
+if [[ -n "$EXOMISER_JAVA_HOME" ]]; then
+  JAVA_CMD="$EXOMISER_JAVA_HOME/bin/java"
+elif [[ -n "$JAVA_HOME" ]]; then
+  JAVA_CMD="$JAVA_HOME/bin/java"
+elif [ -x /usr/libexec/java_home ]; then
+  JAVA_CMD="$(/usr/libexec/java_home -v 17+ 2>/dev/null)/bin/java" || JAVA_CMD=java
+else
+  JAVA_CMD="$(which java)" || JAVA_CMD=java
+fi
+
+if [ ! -x "$JAVA_CMD" ] && ! command -v "$JAVA_CMD" &> /dev/null; then
+    echo "ERROR: Cannot find 'java'. Please make sure Java 17+ is installed." >&2
+    exit 1
+fi
+
+declare -a JVM_OPTS=()
+declare -a ARGS=()
+
+# Parse command line arguments to split JVM options from Exomiser arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    -D*|-X*)
+      JVM_OPTS+=("$1")
+      ;;
+    *)
+      ARGS+=("$1")
+      ;;
+    esac
+    shift
+done
+
+# Mix in global JAVA_OPTS and EXOMISER_OPTS if they are set
+if [[ -n "$JAVA_OPTS" ]]; then
+    read -a GLOBAL_JAVA_OPTS <<< "$JAVA_OPTS"
+    JVM_OPTS+=("${GLOBAL_JAVA_OPTS[@]}")
+fi
+if [[ -n "$EXOMISER_OPTS" ]]; then
+    read -a GLOBAL_EXO_OPTS <<< "$EXOMISER_OPTS"
+    JVM_OPTS+=("${GLOBAL_EXO_OPTS[@]}")
+fi
+
+# Determine the path to the jar
+# It could be explicitly defined by EXOMISER_JAR
+if [ -z "$EXOMISER_JAR" ]; then
+    # Default location inside the Docker container
+    if [ -f "/app/exomiser-cli.jar" ]; then
+        EXOMISER_JAR="/app/exomiser-cli.jar"
+    else
+        # Fallback: resolve relative to this script
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+        if [ -f "$SCRIPT_DIR/../exomiser-cli.jar" ]; then
+            EXOMISER_JAR="$SCRIPT_DIR/../exomiser-cli.jar"
+        elif [ -f "$SCRIPT_DIR/exomiser-cli.jar" ]; then
+            EXOMISER_JAR="$SCRIPT_DIR/exomiser-cli.jar"
+        else
+            echo "ERROR: Cannot find exomiser-cli.jar." >&2
+            echo "Please set EXOMISER_JAR to the location of the jar file." >&2
+            exit 1
+        fi
+    fi
+fi
+
+# Execute the application
+exec "$JAVA_CMD" "${JVM_OPTS[@]}" -jar "$EXOMISER_JAR" "${ARGS[@]}"
