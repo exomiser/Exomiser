@@ -1,10 +1,11 @@
-package org.monarchinitiative.exomiser.cli.commands;
+package org.monarchinitiative.exomiser.cli.commands.batch;
 
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.cli.CommandLineParseError;
-import org.monarchinitiative.exomiser.cli.commands.batch.BatchFileReader;
-import org.monarchinitiative.exomiser.cli.commands.batch.BatchFileValidationResults;
-import org.monarchinitiative.exomiser.cli.commands.batch.SampleValidationError;
+import org.monarchinitiative.exomiser.cli.commands.AnalyseCommand;
+import org.monarchinitiative.exomiser.cli.commands.BatchCommand;
+import org.monarchinitiative.exomiser.cli.commands.CommandRunner;
+import org.monarchinitiative.exomiser.cli.commands.Result;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisDurationFormatter;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
@@ -45,6 +46,7 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
     private final JobParser jobParser;
     private final Exomiser exomiser;
 
+    private int exitCode = 0;
 
     public BatchCommandRunner(JobParser jobParser, Exomiser exomiser) {
         this.jobParser = Objects.requireNonNull(jobParser);
@@ -71,11 +73,17 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                 String formatted = AnalysisDurationFormatter.format(duration);
                 logger.info("Finished batch of {} samples in {} ({} ms)", jobs.size(), formatted, ms);
             }
-            return 0;
+            logger.info("Exomising finished - Bye!");
         } catch (Exception e) {
             System.err.println(e.getMessage());
+            exitCode = 1;
         }
-        return 1;
+        return exitCode;
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
     }
 
     private int doDryRun(BatchCommand batchCommand) {
@@ -101,13 +109,15 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                         });
             } catch (IOException e) {
                 logger.error("Unable to write error file {}", errorFile, e);
-                return 1;
+                exitCode = 1;
+                return exitCode;
             }
             logger.warn("Found {} errors in {} analyses. Written errors to {}", validationResults.errorCount(), validationResults.checkedCount(), errorFile.toAbsolutePath());
-            return 1;
+            exitCode = 1;
+            return exitCode;
         }
         logger.info("Checked {} analyses, with no problems found.", validationResults.checkedCount());
-        return 0;
+        return exitCode;
     }
 
 

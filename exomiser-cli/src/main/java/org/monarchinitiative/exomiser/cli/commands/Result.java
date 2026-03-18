@@ -13,7 +13,7 @@ import java.util.Objects;
  *
  * @since 15.0.0
  */
-record Result<T, E>(T ok, E err) {
+public record Result<T, E>(T ok, E err) {
 
     public Result {
         if (ok != null && err != null) {
