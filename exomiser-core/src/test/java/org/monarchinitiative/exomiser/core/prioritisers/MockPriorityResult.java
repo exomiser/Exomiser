@@ -23,10 +23,15 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  */
-public class MockPriorityResult extends AbstractPriorityResult {
+public record MockPriorityResult(PriorityType priorityType, int geneId, String geneSymbol, double score) implements PriorityResult {
 
-    public MockPriorityResult(PriorityType PriorityType, int geneId, String geneSymbol, double score) {
-        super(PriorityType, geneId, geneSymbol, score);
+    @Override
+    public String toString() {
+        return "MockPriorityResult[" +
+               "priorityType=" + priorityType + ", " +
+               "geneId=" + geneId + ", " +
+               "geneSymbol=" + geneSymbol + ", " +
+               "score=" + score + ']';
     }
 
 }

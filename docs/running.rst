@@ -2,6 +2,14 @@
 Running Exomiser
 ================
 
+Want help?
+==========
+
+.. parsed-literal::
+
+    java -jar exomiser-cli-|version|.jar --help
+
+
 Usage
 =====
 
@@ -29,28 +37,23 @@ Running a multi-sample VCF for trios also requires a `PED <https://gatk.broadins
     java -jar exomiser-cli-|version|.jar analyse --sample examples/pfeiffer-family.yml --vcf examples/Pfeiffer-quartet.vcf.gz --assembly hg19 --ped examples/Pfeiffer-quartet.ped
 
 
-By default there will be two output files written to the ``results`` directory using the same filename as the input VCF file but
-with ``_exomiser`` appended before a file extension of ``.json`` or ``.html`` e.g.
+By default there will be three output files written to the ``results`` directory using the same filename as the input VCF file but
+with ``_exomiser`` appended before a file extension of ``.jsonl``, ``.parquet`` or ``.html`` e.g.
 
 .. parsed-literal::
 
     ls results/Pfeiffer*
-    results/Pfeiffer_exomiser.html  results/Pfeiffer_exomiser.json
+    results/Pfeiffer_exomiser.html  results/Pfeiffer_exomiser.jsonl results/Pfeiffer_exomiser.parquet
 
 The HTML file is for human use, whilst the JSON file is better read by machines, for instance by using `jq <https://stedolan.github.io/jq/>`_.
+The parquet file is a highly efficient binary file format to storing columnar data. It can be accessed using standard
+data tools like `pandas <https://pandas.pydata.org/>`_, `Polars <https://pola.rs/>`_ or `DuckDB <https://duckdb.org/>`_.
 Details on how to interpret the output can be found in the :ref:`result_interpretation` section.
 
 The ``examples`` directory contains a selection of single sample exome and genome analysis files, a multisample (family)
 analysis with an associated pedigree in `PED <https://gatk.broadinstitute.org/hc/en-us/articles/360035531972-PED-Pedigree-format>`_
 format, and the respective `Phenopacket <https://phenopacket-schema.readthedocs.io>`_ representations of the proband or
 family.
-
-Want help?
-==========
-
-.. parsed-literal::
-
-    java -jar exomiser-cli-|version|.jar --help
 
 
 Running from alternate directory
@@ -61,48 +64,11 @@ you will need to specify the path to the ``application.properties`` file in the 
 
 .. parsed-literal::
 
-     java -Xmx4g -Dspring.config.location=/full/path/to/your/exomiser-cli/directory/application.properties -jar /full/path/to/your/exomiser-cli/directory/exomiser-cli-|version|.jar analyse --analysis /full/path/to/your/exomiser-cli/directory/examples/test-analysis-exome.yml
+     java -Dspring.config.location=/full/path/to/your/exomiser-cli/directory/application.properties \
+     -jar /full/path/to/your/exomiser-cli/directory/exomiser-cli-|version|.jar analyse \
+     --sample /full/path/to/your/exomiser-cli/directory/examples/pfeiffer-phenopacket.yml \
+     --vcf /full/path/to/your/exomiser-cli/directory/examples/Pfeiffer.vcf.gz --assembly hg19 \
+     --output-directory full/path/to/your/results/directory
 
 
 *n.b.* the ``spring.config.location`` command **must be provided using `-D` JVM system property before the -jar commands!**
-
-
-Troubleshooting
-===============
-
-java.lang.UnsupportedClassVersionError:
----------------------------------------
-If you get the following error message:
-
-.. code-block:: console
-
-    Exception in thread "main" java.lang.UnsupportedClassVersionError:
-    org/monarchinitiative/exomiser/cli/Main : Unsupported major.minor version
-
-
-or
-
-.. code-block:: console
-
-    Error: A JNI error has occurred, please check your installation and try again
-    Exception in thread "main" java.lang.UnsupportedClassVersionError: org/monarchinitiative/exomiser/cli/Main has been
-    compiled by a more recent version of the Java Runtime (class file version 55.0), this version of the Java Runtime
-    only recognizes class file versions up to 52.0
-
-
-You are running an older unsupported version of Java. Exomiser requires java version 21 or higher. This can be checked by running:
-
-.. code-block:: console
-
-    $ java -version
-
-You should see something like this in response:
-
-.. code-block:: console
-
-    openjdk 21.0.6 2025-01-21
-    OpenJDK Runtime Environment (build 21.0.6+7-Ubuntu-124.04.1)
-    OpenJDK 64-Bit Server VM (build 21.0.6+7-Ubuntu-124.04.1, mixed mode, sharing)
-
-
-Versions lower than 21 (e.g. 1.5, 1.6, 1.7, 1.8, 9, 10...) will not run exomiser, so you will need to install the latest java version.

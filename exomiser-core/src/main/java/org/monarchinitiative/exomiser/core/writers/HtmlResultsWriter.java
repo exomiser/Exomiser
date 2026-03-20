@@ -42,6 +42,7 @@ import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.analysis.sample.SampleProtoConverter;
 import org.monarchinitiative.exomiser.core.filters.FilterReport;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.model.DiseaseIdentifiers;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.model.TranscriptAnnotation;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
@@ -85,7 +86,7 @@ public class HtmlResultsWriter implements ResultsWriter {
         Path outFile = settings.makeOutputFilePath(sample.vcfPath(), OUTPUT_FORMAT);
         try (BufferedWriter writer = Files.newBufferedWriter(outFile, StandardCharsets.UTF_8)) {
             Context context = buildContext(analysisResults, settings);
-            templateEngine.process("results", context, writer);
+            templateEngine.process("results_bootstrap_5", context, writer);
         } catch (IOException ex) {
             logger.error("Unable to write results to file {}", outFile, ex);
         }
@@ -96,7 +97,7 @@ public class HtmlResultsWriter implements ResultsWriter {
     public String writeString(AnalysisResults analysisResults, OutputSettings settings) {
         logger.debug("Writing HTML results");
         Context context = buildContext(analysisResults, settings);
-        return templateEngine.process("results", context);
+        return templateEngine.process("results_bootstrap_5", context);
     }
 
     private Context buildContext(AnalysisResults analysisResults, OutputSettings outputSettings) {
@@ -128,7 +129,9 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("sampleNames", sampleNames);
         context.setVariable("variantTypeCounters", variantTypeCounters);
 
-        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.genes());
+        List<Gene> filteredGenes = outputSettings.filterPassedGenesForOutput(analysisResults.genes())
+                .stream().filter(gene -> gene.combinedScore() != 0)
+                .toList();
         context.setVariable("genes", filteredGenes);
 
         //this will change the links to the relevant resource.
@@ -156,7 +159,14 @@ public class HtmlResultsWriter implements ResultsWriter {
         context.setVariable("variantRankComparator", new VariantEvaluation.RankBasedComparator());
         context.setVariable("pValueFormatter", new ScientificDecimalFormat("0.0E0"));
         context.setVariable("conflictingInterpretationsFormatter", new ConflictingInterpretationsFormatter());
+        context.setVariable("diseaseIdentifiers", new DiseaseIdentifer());
         return context;
+    }
+
+    public static class DiseaseIdentifer {
+        public String toUrl(String diseaseId) {
+            return DiseaseIdentifiers.toURLString(diseaseId);
+        }
     }
 
     /**

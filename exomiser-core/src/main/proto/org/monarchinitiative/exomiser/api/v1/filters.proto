@@ -33,6 +33,10 @@ message QualityFilter {
     float min_quality = 1;
 }
 
+message AlleleBalanceFilter {
+
+}
+
 message VariantEffectFilter {
     repeated string remove = 1;
 }

@@ -22,9 +22,9 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.SampleProto;
-import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
+import org.monarchinitiative.exomiser.core.pedigree.TestPedigrees;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.phenopackets.schema.v1.core.Sex;
 
 import java.util.List;

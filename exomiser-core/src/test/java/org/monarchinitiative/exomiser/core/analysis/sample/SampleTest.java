@@ -22,7 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis.sample;
 
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,8 +33,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.FEMALE;
-import static org.monarchinitiative.exomiser.core.model.Pedigree.Individual.Sex.MALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.FEMALE;
+import static org.monarchinitiative.exomiser.core.pedigree.Pedigree.Individual.Sex.MALE;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>

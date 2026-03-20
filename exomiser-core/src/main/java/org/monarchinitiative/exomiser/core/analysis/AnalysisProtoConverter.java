@@ -26,6 +26,8 @@ import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.monarchinitiative.exomiser.core.proto.ProtoConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +35,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AnalysisProtoConverter implements ProtoConverter<Analysis, AnalysisProto.Analysis> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AnalysisProtoConverter.class);
 
     @Override
     public AnalysisProto.Analysis toProto(Analysis analysis) {
@@ -59,73 +63,55 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
 
     private AnalysisProto.AnalysisStep buildFilterProto(AnalysisStep analysisStep) {
         AnalysisProto.AnalysisStep.Builder stepBuilder = AnalysisProto.AnalysisStep.newBuilder();
-        if (analysisStep instanceof VariantEffectFilter variantEffectFilter) {
-            return stepBuilder
+        return switch (analysisStep) {
+            case VariantEffectFilter variantEffectFilter -> stepBuilder
                     .setVariantEffectFilter(FiltersProto.VariantEffectFilter.newBuilder()
                             .addAllRemove(variantEffectFilter.getOffTargetVariantTypes().stream().map(Objects::toString).toList()))
                     .build();
-        }
-        if (analysisStep instanceof FrequencyFilter(float maxFreq)) {
-            return stepBuilder
+            case FrequencyFilter(float maxFreq) -> stepBuilder
                     .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(maxFreq))
                     .build();
-        }
-        if (analysisStep instanceof PathogenicityFilter(boolean keepNonPathogenic)) {
-            return stepBuilder
+            case PathogenicityFilter(boolean keepNonPathogenic) -> stepBuilder
                     .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(keepNonPathogenic))
                     .build();
-        }
-        if (analysisStep instanceof FailedVariantFilter) {
-            return stepBuilder
+            case FailedVariantFilter failedVariantFilter -> stepBuilder
                     .setFailedVariantFilter(FiltersProto.FailedVariantFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof KnownVariantFilter) {
-            return stepBuilder
+            case KnownVariantFilter knownVariantFilter -> stepBuilder
                     .setKnownVariantFilter(FiltersProto.KnownVariantFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof QualityFilter(double mimimumQualityThreshold)) {
-            return stepBuilder
+            case QualityFilter(double mimimumQualityThreshold) -> stepBuilder
                     .setQualityFilter(FiltersProto.QualityFilter.newBuilder().setMinQuality((float) mimimumQualityThreshold))
                     .build();
-        }
-        if (analysisStep instanceof IntervalFilter intervalFilter) {
-            return stepBuilder
+            case AlleleBalanceFilter alleleBalanceFilter -> stepBuilder
+                    .setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.newBuilder())
+                    .build();
+            case IntervalFilter intervalFilter -> stepBuilder
                     .setIntervalFilter(FiltersProto.IntervalFilter.newBuilder()
                             .addAllIntervals(intervalFilter.getChromosomalRegions().stream().map(region -> region.contigId() + ":" + region.start() + "-" + region.end()).toList()))
                     .build();
-        }
-        if (analysisStep instanceof GeneSymbolFilter geneSymbolFilter) {
-            return stepBuilder
+            case GeneSymbolFilter geneSymbolFilter -> stepBuilder
                     .setGenePanelFilter(FiltersProto.GenePanelFilter.newBuilder().addAllGeneSymbols(geneSymbolFilter.getGeneSymbols()))
                     .build();
-        }
-
-        if (analysisStep instanceof GeneBlacklistFilter geneBlacklistFilter) {
-           return stepBuilder
-                   .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
-                   .build();
-        }
-
-        if (analysisStep instanceof InheritanceFilter) {
-            return stepBuilder
+            case GeneBlacklistFilter geneBlacklistFilter -> stepBuilder
+                    .setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder())
+                    .build();
+            case InheritanceFilter inheritanceFilter -> stepBuilder
                     .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof RegulatoryFeatureFilter) {
-            return stepBuilder
+            case RegulatoryFeatureFilter regulatoryFeatureFilter -> stepBuilder
                     .setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder())
                     .build();
-        }
-        if (analysisStep instanceof PriorityScoreFilter(PriorityType priorityType, double minPriorityScore)) {
-            return stepBuilder
+            case PriorityScoreFilter(PriorityType priorityType, double minPriorityScore) -> stepBuilder
                     .setPriorityScoreFilter(FiltersProto.PriorityScoreFilter.newBuilder()
                             .setMinPriorityScore((float) minPriorityScore)
                             .setPriorityType(priorityType.toString()))
                     .build();
-        }
-        return null;
+            default -> {
+                logger.warn("Unknown analysis step type: {}", analysisStep);
+                yield null;
+            }
+        };
     }
 
     private AnalysisProto.AnalysisStep buildPrioritiserProto(AnalysisStep analysisStep) {

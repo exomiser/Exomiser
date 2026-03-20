@@ -26,14 +26,13 @@ import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.JobProto;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.analysis.util.PedFiles;
+import org.monarchinitiative.exomiser.core.pedigree.PedFiles;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
@@ -407,47 +406,36 @@ public class AnalysisParser {
         private AnalysisBuilder addAnalysisStep(Entry<String, Map> entry, Map analysisMap, AnalysisBuilder analysisBuilder) {
             String key = entry.getKey();
             Map analysisStepOptions = entry.getValue();
-            switch (key) {
-                case "failedVariantFilter":
-                    return analysisBuilder.addFailedVariantFilter();
-                case "intervalFilter":
-                    return makeIntervalFilter(analysisStepOptions, analysisBuilder);
-                case "genePanelFilter":
-                    return makeGeneSymbolFilter(analysisStepOptions, analysisBuilder);
-                case "variantEffectFilter":
-                    return makeVariantEffectFilter(analysisStepOptions, analysisBuilder);
-                case "qualityFilter":
-                    return makeQualityFilter(analysisStepOptions, analysisBuilder);
-                case "knownVariantFilter":
-                    return makeKnownVariantFilter(analysisStepOptions, parseFrequencySources(analysisMap), analysisBuilder);
-                case "frequencyFilter":
-                    return makeFrequencyFilter(analysisStepOptions, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap), analysisBuilder);
-                case "pathogenicityFilter":
-                    return makePathogenicityFilter(analysisStepOptions, parsePathogenicitySources(analysisMap), analysisBuilder);
-                case "inheritanceFilter":
-                    return makeInheritanceFilter(inheritanceModeOptions(analysisMap), analysisBuilder);
-                case "priorityScoreFilter":
-                    return makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
-                case "regulatoryFeatureFilter":
-                    return analysisBuilder.addRegulatoryFeatureFilter();
-                case "geneBlacklistFilter":
-                    return makeGeneBlacklistFilter(analysisStepOptions, analysisBuilder);
-                case "omimPrioritiser":
-                    return analysisBuilder.addOmimPrioritiser();
-                case "hiPhivePrioritiser":
-                    return makeHiPhivePrioritiser(analysisStepOptions, analysisBuilder);
-                case "phivePrioritiser":
-                    return analysisBuilder.addPhivePrioritiser();
-                case "phenixPrioritiser":
+            return switch (key) {
+                case "failedVariantFilter" -> analysisBuilder.addFailedVariantFilter();
+                case "intervalFilter" -> makeIntervalFilter(analysisStepOptions, analysisBuilder);
+                case "genePanelFilter" -> makeGeneSymbolFilter(analysisStepOptions, analysisBuilder);
+                case "variantEffectFilter" -> makeVariantEffectFilter(analysisStepOptions, analysisBuilder);
+                case "qualityFilter" -> makeQualityFilter(analysisStepOptions, analysisBuilder);
+                case "alleleBalanceFilter" -> analysisBuilder.addAlleleBalanceFilter();
+                case "knownVariantFilter" ->
+                        makeKnownVariantFilter(analysisStepOptions, parseFrequencySources(analysisMap), analysisBuilder);
+                case "frequencyFilter" ->
+                        makeFrequencyFilter(analysisStepOptions, parseFrequencySources(analysisMap), inheritanceModeOptions(analysisMap), analysisBuilder);
+                case "pathogenicityFilter" ->
+                        makePathogenicityFilter(analysisStepOptions, parsePathogenicitySources(analysisMap), analysisBuilder);
+                case "inheritanceFilter" -> makeInheritanceFilter(inheritanceModeOptions(analysisMap), analysisBuilder);
+                case "priorityScoreFilter" -> makePriorityScoreFilter(analysisStepOptions, analysisBuilder);
+                case "regulatoryFeatureFilter" -> analysisBuilder.addRegulatoryFeatureFilter();
+                case "geneBlacklistFilter" -> makeGeneBlacklistFilter(analysisStepOptions, analysisBuilder);
+                case "omimPrioritiser" -> analysisBuilder.addOmimPrioritiser();
+                case "hiPhivePrioritiser" -> makeHiPhivePrioritiser(analysisStepOptions, analysisBuilder);
+                case "phivePrioritiser" -> analysisBuilder.addPhivePrioritiser();
+                case "phenixPrioritiser" ->
 //                    throw new IllegalArgumentException("phenixPrioritiser is not supported in this release. Please use hiPhivePrioritiser instead.");
-                    return analysisBuilder.addPhenixPrioritiser();
-                case "exomeWalkerPrioritiser":
-                    return makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
-                default:
+                        analysisBuilder.addPhenixPrioritiser();
+                case "exomeWalkerPrioritiser" -> makeWalkerPrioritiser(analysisStepOptions, analysisBuilder);
+                default -> {
                     //throw exception here?
                     logger.error("Unsupported exomiser step: {}", key);
-                    return analysisBuilder;
-            }
+                    yield analysisBuilder;
+                }
+            };
         }
 
         private AnalysisBuilder makeIntervalFilter(Map<String, Object> options, AnalysisBuilder analysisBuilder) {

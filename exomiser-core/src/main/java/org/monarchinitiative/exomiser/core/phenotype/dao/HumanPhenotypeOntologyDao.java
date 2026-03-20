@@ -93,9 +93,11 @@ public class HumanPhenotypeOntologyDao implements OntologyDao {
 
     public Map<String, PhenotypeTerm> getIdToPhenotypeTerms() {
         String query =
-                "SELECT alt.alt_id, alt.primary_id, hp.lcname AS term " +
-                "FROM hp_alt_ids alt, hpo hp " +
-                "WHERE hp.id = alt.primary_id";
+                """
+                SELECT alt.alt_id, alt.primary_id, hp.lcname AS term
+                FROM hp_alt_ids alt, hpo hp
+                WHERE hp.id = alt.primary_id
+                """;
 
         Map<String, PhenotypeTerm> primaryIdToPhenotypeTerms = new HashMap<>();
         ImmutableMap.Builder<String, PhenotypeTerm> alternateIdToPhenotypeTerms = ImmutableMap.builder();

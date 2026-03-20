@@ -180,7 +180,7 @@ public record OutputSettings(
         private float minExomiserGeneScore = 0f;
         private Path outputDirectory = DEFAULT_OUTPUT_DIR;
         private String outputFileName = "";
-        private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON);
+        private Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.HTML, OutputFormat.JSON, OutputFormat.PARQUET);
 
         private Builder() {
         }

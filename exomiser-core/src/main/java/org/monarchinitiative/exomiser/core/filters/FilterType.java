@@ -41,7 +41,8 @@ public enum FilterType {
     INHERITANCE_FILTER("inheritance", "Inheritance"),
     BED_FILTER("bed", "Gene panel target region (Bed)"),
     PRIORITY_SCORE_FILTER("gene-priority", "Gene priority score"),
-    GENE_BLACKLIST_FILTER("gene-blacklist", "Gene blacklist");
+    GENE_BLACKLIST_FILTER("gene-blacklist", "Gene blacklist"),
+    ALLELE_BALANCE_FILTER("allele-balance", "Allele balance"),;
 
     private final String vcfValue;
     private final String stringValue;

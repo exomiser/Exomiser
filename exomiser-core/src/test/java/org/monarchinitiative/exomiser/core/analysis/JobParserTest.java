@@ -26,13 +26,12 @@ import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.exomiser.api.v1.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
-import org.monarchinitiative.exomiser.core.analysis.util.TestPedigrees;
+import org.monarchinitiative.exomiser.core.pedigree.TestPedigrees;
 import org.monarchinitiative.exomiser.core.filters.*;
 import org.monarchinitiative.exomiser.core.genome.*;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
-import org.monarchinitiative.exomiser.core.model.Pedigree;
+import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
@@ -371,6 +370,16 @@ class JobParserTest {
 
         Analysis analysis = initialiseAnalysisWithStep(analysisStep);
         assertThat(analysis.analysisSteps(), equalTo(List.of(new FailedVariantFilter())));
+    }
+
+    @Test
+    void testAddAlleleBalanceVariantFilter() {
+        AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
+                .setAlleleBalanceFilter(FiltersProto.AlleleBalanceFilter.newBuilder().build())
+                .build();
+
+        Analysis analysis = initialiseAnalysisWithStep(analysisStep);
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new AlleleBalanceFilter())));
     }
 
     @Test

@@ -220,9 +220,7 @@ class OrphanetDiseaseGeneFactoryTest {
 
         OrphanetDiseaseGeneFactory instance = new OrphanetDiseaseGeneFactory(omimDiseaseGenes, orphaOmimMappings, orphaDiseaseGenes, inheritanceModesMap);
 
-        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, "OMIM:UNMATCHED", 9999, "GENE1", AUTOSOMAL_DOMINANT_AND_RECESSIVE));
-
-        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(expected));
+        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(List.of()));
     }
 
     @Test
@@ -246,9 +244,7 @@ class OrphanetDiseaseGeneFactoryTest {
 
         OrphanetDiseaseGeneFactory instance = new OrphanetDiseaseGeneFactory(omimDiseaseGenes, orphaOmimMappings, orphaDiseaseGenes, inheritanceModesMap);
 
-        List<DiseaseGene> expected = List.of(diseaseGene(orphaDiseaseId, "OMIM:UNMATCHED", 9999, "GENE1", X_RECESSIVE));
-
-        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(expected));
+        assertThat(instance.buildDiseaseGeneAssociations(), equalTo(List.of()));
     }
 
     @Test
@@ -318,7 +314,7 @@ class OrphanetDiseaseGeneFactoryTest {
         List<DiseaseGene> omimDiseaseGenes = List.of(
                 diseaseGene("OMIM:617577", "OMIM:603332", 25981, "DNAH1", AUTOSOMAL_RECESSIVE),
                 diseaseGene("OMIM:618801", "OMIM:610732", 54970, "TTC12", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
-                diseaseGene("OMIM:618781", "OMIM:618726", 152110, "NEK10 ", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
+                diseaseGene("OMIM:618781", "OMIM:618726", 152110, "NEK10 ", AUTOSOMAL_DOMINANT),
                 diseaseGene("OMIM:300991", "OMIM:300933", 139212, "DNAAF6 ", X_RECESSIVE)
         );
 
@@ -346,7 +342,7 @@ class OrphanetDiseaseGeneFactoryTest {
         List<DiseaseGene> expected = List.of(
                 diseaseGene(orphaDiseaseId, "OMIM:603332", 25981, "DNAH1", AUTOSOMAL_RECESSIVE),
                 diseaseGene(orphaDiseaseId, "OMIM:610732", 54970, "TTC12", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
-                diseaseGene(orphaDiseaseId, "OMIM:618726", 152110, "NEK10", AUTOSOMAL_DOMINANT_AND_RECESSIVE),
+                diseaseGene(orphaDiseaseId, "OMIM:618726", 152110, "NEK10", AUTOSOMAL_DOMINANT),
                 diseaseGene(orphaDiseaseId, "OMIM:300933", 139212, "DNAAF6", X_RECESSIVE)
         );
 

@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-@Command(name = "analyse", description = "Runs an Exomiser analysis using the parameters provided")
+@Command(name = "analyse", description = "Runs an Exomiser analysis on a single sample")
 public final class AnalyseCommand implements ExomiserCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyseCommand.class);
@@ -90,12 +90,15 @@ public final class AnalyseCommand implements ExomiserCommand {
         }
     }
 
+    @Option(names = "--analysis-mode", hidden=true, description = "Overrides the analysis mode specified in the analysis yaml file.")
+    AnalysisProto.AnalysisMode analysisMode = AnalysisProto.AnalysisMode.UNRECOGNIZED;
+
     @ArgGroup(validate = false, heading = "Output options%n--------------%nSpecifies where and in what format Exomiser should output any analysis results. Optional. Will default to writing output files to the `results` directory of the exomiser installation.%n")
     OutputOptions outputOptions = new OutputOptions();
 
     static class OutputOptions {
 
-        static final List<String> DEFAULT_OUTPUT_FORMATS = List.of(OutputFormat.HTML.toString(), OutputFormat.JSON.toString());
+        static final List<String> DEFAULT_OUTPUT_FORMATS = List.of(OutputFormat.HTML.toString(), OutputFormat.JSON.toString(), OutputFormat.PARQUET.toString());
 
         @Option(names = "--output", description = "Path to outputOptions file. This should be in JSON or YAML format.")
         Path outputOptionsPath;
@@ -107,7 +110,7 @@ public final class AnalyseCommand implements ExomiserCommand {
         String outputFilename;
 
         // Don't specify defaults here as this will break the logic for lots of things. Defaults are set in the readJob() method below.
-        @Option(names = "--output-format", description = "A list of comma separated output format(s) e.g. HTML or HTML,JSON. Valid options include [HTML, JSON, TSV_GENE, TSV_VARIANT, VCF]. Note that HTML is the most human-friendly, JSON is the most detailed. (default: \"HTML,JSON\")", split = ",")
+        @Option(names = "--output-format", description = "A list of comma separated output format(s) e.g. HTML or HTML,JSON. Valid options include [HTML, JSON, PARQUET, TSV_GENE, TSV_VARIANT, VCF]. Note that HTML is the most human-friendly, JSON is the most detailed, but you should consider PARQUET as this is much smaller and easier to query than JSON (default: \"HTML,JSON,PARQUET\")", split = ",")
         List<OutputFormat> outputFormats;
 
         @Option(names = "--output-prefix", hidden = true, description = "Path/filename without an extension to be prepended to the output file format options." +
@@ -202,6 +205,11 @@ public final class AnalyseCommand implements ExomiserCommand {
         // Make sure Exomiser will return some results!
         handleOutputOptions(outputOptions, jobBuilder);
 
+        if (analysisMode != AnalysisProto.AnalysisMode.UNRECOGNIZED) {
+            //the user has specified an override analysis mode
+            handleAnalysisModeOverride(analysisMode, jobBuilder);
+        }
+
         if (!jobBuilder.hasSample() && !jobBuilder.hasPhenopacket() && !jobBuilder.hasFamily()) {
             throw new ParameterException(spec.commandLine(), "Missing --sample option!");
         }
@@ -249,6 +257,11 @@ public final class AnalyseCommand implements ExomiserCommand {
             logger.warn("Use of deprecated --output-prefix option - ignoring value");
         }
         handleOutputFormat(outputOptions.outputFormats, jobBuilder);
+    }
+
+
+    private void handleAnalysisModeOverride(AnalysisProto.AnalysisMode analysisMode, JobProto.Job.Builder jobBuilder) {
+        jobBuilder.getAnalysisBuilder().setAnalysisMode(analysisMode);
     }
 
     private void handleSampleOption(Path samplePath, JobProto.Job.Builder jobBuilder) {

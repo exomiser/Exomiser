@@ -1,0 +1,13 @@
+[project]
+name = "exomiser"
+version = "0.1.0"
+description = "A simple project for building the Exomiser docs using Sphinx"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "sphinx>=8.2.3",
+    "sphinx-rtd-theme>=3.0.2",
+]
+
+[project.scripts]
+build-docs = "sphinx-build -b html docs docs/_build"

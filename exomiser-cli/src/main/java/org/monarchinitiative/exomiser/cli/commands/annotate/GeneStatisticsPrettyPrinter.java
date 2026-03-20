@@ -1,8 +1,8 @@
 package org.monarchinitiative.exomiser.cli.commands.annotate;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
-import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraint;
-import org.monarchinitiative.exomiser.core.analysis.util.GeneConstraints;
+import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraint;
+import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraints;
 import org.monarchinitiative.exomiser.core.model.GeneStatistics;
 
 import static de.charite.compbio.jannovar.annotation.VariantEffect.*;

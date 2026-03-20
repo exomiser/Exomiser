@@ -41,7 +41,8 @@ public enum OutputFormat {
     VCF("vcf"),
     TSV_GENE("genes.tsv"),
     TSV_VARIANT("variants.tsv"),
-    JSON("json");
+    JSON("jsonl"),
+    PARQUET("parquet");
 
     private static final Logger logger = LoggerFactory.getLogger(OutputFormat.class);
 
@@ -61,6 +62,7 @@ public enum OutputFormat {
             case "TSV_VARIANT", "TSV-VARIANT", "TAB-VARIANT" -> OutputFormat.TSV_VARIANT;
             case "VCF" -> OutputFormat.VCF;
             case "JSON" -> OutputFormat.JSON;
+            case "PARQUET" -> OutputFormat.PARQUET;
             case "HTML" -> OutputFormat.HTML;
             default -> {
                 logger.info("Unrecognised output format '{}'. Valid options are {} - defaulting to {}", value, List.of(OutputFormat

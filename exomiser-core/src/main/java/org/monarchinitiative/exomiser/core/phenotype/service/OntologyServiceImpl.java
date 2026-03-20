@@ -141,6 +141,6 @@ public class OntologyServiceImpl implements OntologyService {
         return hpoIds.stream()
                 .map(hpoIdChecker::getCurrentId)
                 .distinct()
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 }

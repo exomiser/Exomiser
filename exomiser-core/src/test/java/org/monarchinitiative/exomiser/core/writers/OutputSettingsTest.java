@@ -43,6 +43,8 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.writers.OutputFormat.*;
+import static org.monarchinitiative.exomiser.core.writers.OutputFormat.PARQUET;
 import static org.monarchinitiative.exomiser.core.writers.OutputFormat.TSV_VARIANT;
 
 /**
@@ -228,12 +230,12 @@ public class OutputSettingsTest {
     @Test
     public void testThatDefaultOutputFormatIsHtml() {
         OutputSettings instance = OutputSettings.builder().build();
-        assertThat(instance.outputFormats(), equalTo(EnumSet.of(OutputFormat.HTML, OutputFormat.JSON)));
+        assertThat(instance.outputFormats(), equalTo(EnumSet.of(HTML, JSON, PARQUET)));
     }
 
     @Test
     public void testThatBuilderProducesSetOutputFormat() {
-        Set<OutputFormat> outputFormats = EnumSet.of(OutputFormat.TSV_GENE);
+        Set<OutputFormat> outputFormats = EnumSet.of(TSV_GENE);
         OutputSettings instance = OutputSettings.builder()
                 .outputFormats(outputFormats)
                 .build();
@@ -267,12 +269,13 @@ public class OutputSettingsTest {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
         OutputSettings createdFromYaml = mapper.readValue(
-                "outputContributingVariantsOnly: false\n"
-                        + "numGenes: 0\n"
-                        + "outputPrefix: \"this/is/ignored\"\n"
-                        + "outputDirectory: \"results\"\n"
-                        + "outputFileName: \"\"\n"
-                        + "outputFormats: [HTML, JSON]",
+                """
+                    outputContributingVariantsOnly: false
+                    numGenes: 0
+                    outputPrefix: "this/is/ignored"
+                    outputDirectory: "results"
+                    outputFileName: ""
+                    outputFormats: [HTML, JSON, PARQUET]""".formatted(),
                 OutputSettings.class);
         assertThat(instance, equalTo(createdFromYaml));
     }
@@ -282,15 +285,18 @@ public class OutputSettingsTest {
         OutputSettings instance = OutputSettings.builder().build();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String output = mapper.writeValueAsString(instance);
-        String expected = "---\n" +
-                "outputContributingVariantsOnly: false\n" +
-                "numGenes: 0\n" +
-                "minExomiserGeneScore: 0.0\n" +
-                "outputDirectory: \"" + OutputSettings.DEFAULT_OUTPUT_DIR.toUri() + "\"\n" +
-                "outputFileName: \"\"\n" +
-                "outputFormats:\n" +
-                "- \"HTML\"\n" +
-                "- \"JSON\"\n";
+        String expected = """
+                ---
+                outputContributingVariantsOnly: false
+                numGenes: 0
+                minExomiserGeneScore: 0.0
+                outputDirectory: "%s"
+                outputFileName: ""
+                outputFormats:
+                - "HTML"
+                - "JSON"
+                - "PARQUET"
+                """.formatted(OutputSettings.DEFAULT_OUTPUT_DIR.toUri());
         assertThat(output, equalTo(expected));
     }
 

@@ -43,7 +43,12 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
 
     static {
         Map<String, ClinSig> temp = new HashMap<>();
+        // ClinVar just seem to make up whatever as they go along. None of this is documented, just found through errors...
         temp.put("Uncertain_significance", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS-high", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS-mid", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS-low", UNCERTAIN_SIGNIFICANCE);
+        temp.put("VUS", UNCERTAIN_SIGNIFICANCE);
 //        temp.put("Uncertain_significance/Uncertain_risk_allele", UNCERTAIN_SIGNIFICANCE);
         temp.put("Benign", BENIGN);
 //        temp.put("Benign/Likely_benign", BENIGN_OR_LIKELY_BENIGN);
@@ -170,7 +175,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
             int openParenIndex = category.indexOf("(");
             ClinSig clinSig = parseClinSig(category.substring(0, openParenIndex));
             int count = Integer.parseInt(category.substring(openParenIndex + 1, category.length() - 1));
-            confMap.put(clinSig, count);
+            confMap.compute(clinSig, (k, v) -> (v == null) ? count : v + count);
         }
         return confMap;
     }
@@ -187,6 +192,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         clinsig = clinsig.replace(",_low_penetrance", "");
         Set<ClinSig> clinSigs = Arrays.stream(clinsig.split("/"))
                 .map(CLINSIG_MAP::get)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(ClinSig.class)));
 
         if (clinSigs.isEmpty()) {

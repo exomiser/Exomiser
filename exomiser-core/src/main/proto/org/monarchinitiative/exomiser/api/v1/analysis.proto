@@ -59,6 +59,7 @@ message AnalysisStep {
         GenePanelFilter gene_panel_filter = 2;
         FailedVariantFilter failed_variant_filter = 3;
         QualityFilter quality_filter = 4;
+        AlleleBalanceFilter allele_balance_filter = 19;
         VariantEffectFilter variant_effect_filter = 5;
         RegulatoryFeatureFilter regulatory_feature_filter = 6;
         FrequencyFilter frequency_filter = 7;

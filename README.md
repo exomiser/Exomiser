@@ -2,8 +2,9 @@ The Exomiser - A Tool to Annotate and Prioritize Exome Variants
 ===============================================================
 
 [![GitHub release](https://img.shields.io/github/release/exomiser/Exomiser.svg)](https://github.com/exomiser/Exomiser/releases)
+[![GitHub Discussions](https://img.shields.io/github/discussions/exomiser/exomiser?label=data%20release&link=https%3A%2F%2Fgithub.com%2Fexomiser%2FExomiser%2Fdiscussions%2Fcategories%2Fdata-release)](https://github.com/exomiser/Exomiser/discussions/categories/data-release)
 [![CircleCI](https://circleci.com/gh/exomiser/Exomiser/tree/development.svg?style=shield)](https://circleci.com/gh/exomiser/Exomiser/tree/development)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b518a9448b5b4889a40b3dc660ef585a)](https://www.codacy.com/app/monarch-initiative/Exomiser?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=exomiser/Exomiser&amp;utm_campaign=Badge_Grade)
+[![Codecov](https://img.shields.io/codecov/c/github/exomiser/exomiser)](https://app.codecov.io/github/exomiser/Exomiser)
 [![Documentation](https://readthedocs.org/projects/exomiser/badge/?version=latest)](http://exomiser.readthedocs.io/en/latest)
 #### Overview:
 
@@ -52,7 +53,7 @@ exomiser.phenotype.data-version=1807
 
 We strongly recommend using the latest versions of both the application and the data for optimum results.
 
-For further instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
+For further instructions on installing and running, please refer to the [online documentation](https://exomiser.readthedocs.io/en/latest/)..
 
 #### Running it
 

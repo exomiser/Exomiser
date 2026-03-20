@@ -24,7 +24,6 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.InheritanceModeOptions;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -249,6 +248,8 @@ public class JobParser {
         } else if (protoAnalysisStep.hasQualityFilter()) {
             double quality = parseQualityFilterOptions(protoAnalysisStep.getQualityFilter());
             analysisBuilder.addQualityFilter(quality);
+        } else if (protoAnalysisStep.hasAlleleBalanceFilter()) {
+            analysisBuilder.addAlleleBalanceFilter();
         } else if (protoAnalysisStep.hasKnownVariantFilter()) {
             if (frequencySources.isEmpty()) {
                 throw new IllegalStateException("Known variant filter requires a list of frequency sources for the analysis e.g. frequencySources: [THOUSAND_GENOMES, ESP_ALL]");

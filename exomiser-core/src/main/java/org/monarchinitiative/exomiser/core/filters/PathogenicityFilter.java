@@ -21,7 +21,13 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
+import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+import org.monarchinitiative.svart.VariantType;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Filters variants according to their predicted pathogenicity.
@@ -50,6 +56,7 @@ public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) imple
         return filterType;
     }
 
+    private static final Set<VariantEffect> INTRONIC_EFFECTS = EnumSet.of(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT, VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT);
     /**
      * VariantFilter variants based on their calculated pathogenicity. Those
      * that pass have a pathogenicity score assigned to them. The failed ones
@@ -57,9 +64,29 @@ public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) imple
      */
     @Override
     public FilterResult runFilter(VariantEvaluation variantEvaluation) {
-        if (keepNonPathogenic) {
+        if (keepNonPathogenic || variantEvaluation.isWhiteListed()) {
             return PASS;
         }
+        if (variantEvaluation.isNonCodingVariant()) {
+            PathogenicityData pathogenicityData = variantEvaluation.pathogenicityData();
+            // CADD, REMM and SPLICE_AI are all optional. However, CADD 1.6+ is a general non-coding model which
+            //  includes splice predictors, so check this first
+            PathogenicityScore caddScore = pathogenicityData.pathogenicityScore(PathogenicitySource.CADD);
+            if (caddScore != null && caddScore.rawScore() >= 15.0) {
+                return PASS;
+            }
+            PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
+            if (INTRONIC_EFFECTS.contains(variantEvaluation.variantEffect()) && (spliceAiScore != null && spliceAiScore.score() > SpliceAiScore.NON_SPLICEOGENIC_SCORE)) {
+                return PASS;
+            }
+            PathogenicityScore remmScore = pathogenicityData.pathogenicityScore(PathogenicitySource.REMM);
+            if (remmScore != null && remmScore.score() > RemmScore.LIKELY_PATHOGENIC_THRESHOLD) {
+                return PASS;
+            }
+            return FAIL;
+        }
+        // this should run after the non-coding check as otherwise lower quality REMM scores will be returned and
+        // potential SpliceAI scores removed.
         if (variantEvaluation.isPredictedPathogenic()) {
             return PASS;
         }

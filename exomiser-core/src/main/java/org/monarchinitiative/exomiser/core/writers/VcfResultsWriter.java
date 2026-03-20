@@ -32,10 +32,10 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgAssignment;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgClassification;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgCriterion;
-import org.monarchinitiative.exomiser.core.analysis.util.acmg.AcmgEvidence;
+import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgAssignment;
+import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgClassification;
+import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgCriterion;
+import org.monarchinitiative.exomiser.core.analysis.acmg.AcmgEvidence;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.model.*;
@@ -249,7 +249,7 @@ public class VcfResultsWriter implements ResultsWriter {
                     AcmgCriterion.Evidence evidence = entry.getValue();
                     return (acmgCriterion.evidence() == evidence) ? acmgCriterion.toString() : acmgCriterion + "_" + evidence.displayString();
                 })
-                .collect(joining(","));
+                .collect(joining("&"));
     }
 
     private String getRepresentativeAnnotation(List<TranscriptAnnotation> annotations) {
