@@ -184,6 +184,9 @@
                                         </tags>
                                     </to>
                                     <container>
+                                        <environment>
+                                            <EXOMISER_DATA_DIRECTORY>/exomiser-data</EXOMISER_DATA_DIRECTORY>
+                                        </environment>
                                         <volumes>
                                             <volume>/exomiser-data</volume>
                                             <volume>/exomiser</volume>

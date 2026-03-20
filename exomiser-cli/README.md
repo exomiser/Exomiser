@@ -235,6 +235,24 @@ ${docker.repository}/exomiser-cli           latest           f39698e3f36b  53 ye
 ${docker.repository}/exomiser-cli           ${project.version} f39698e3f36b  53 years ago   274 MB
 ```
 
+### <a id="docker-environment-variables"></a>Docker environment variables
+
+Exomiser will require at least two environment variables to be set. These can be provided using `-e` or `--env`
+or by creating a `.env` file.
+
+```shell
+ # -e EXOMISER_DATA_DIRECTORY=/exomiser-data # This variable is automatically set in the docker image
+-e EXOMISER_HG19_DATA_VERSION=2512 \
+-e EXOMISER_PHENOTYPE_DATA_VERSION=2512
+```
+
+These variables can also be specified in the `application.properties` file which should be made available via a mounted
+volume. 
+
+```shell
+-e SPRING_CONFIG_LOCATION=/path/to/your/application.properties
+```
+
 ### <a id="working-with-the-distroless-image"></a>Working with the distroless image (no shell)
 
 Distroless images are the default image and come without a shell. These are can be pulled using 
@@ -246,24 +264,14 @@ If you choose to run the distroless image use the following command:
  docker run -v "/path/to/exomiser-data:/exomiser-data" \
  -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
  -v "/path/to/exomiser/results:/results"  \
+ -e SPRING_CONFIG_LOCATION=/exomiser/application.properties
  ${docker.repository}/exomiser-cli:${project.version}  \
- analyse --analysis /exomiser/test-analysis-exome.yml  \
- --spring.config.location=/exomiser/application.properties
+ exomiser analyse --analysis /exomiser/examples/preset-exome-analysis-human-only.yml \
+ --vcf /exomiser/examples/Pfeiffer.vcf.gz --assembly hg19 \
+ --sample /exomiser/examples/pfeiffer-phenopacket.yml \
+ --output-directory /results --output-format=PARQUET --output-filename docker-test
 ```
 
-or using Spring configuration arguments instead of the `application.properties`:
-
-```shell
- docker run -v "/path/to/exomiser-data:/exomiser-data" \
- -v "/path/to/exomiser/exomiser-config/:/exomiser"  \
- -v "/path/to/exomiser/results:/results"  \
- ${docker.repository}/exomiser-cli:${project.version}  \
- analyse --analysis /exomiser/test-analysis-exome.yml  \
- # minimal requirements for an hg19 exome sample
- --exomiser.data-directory=/exomiser-data \
- --exomiser.hg19.data-version=${genome.data.version} \
- --exomiser.phenotype.data-version=${phenotype.data.version}
-```
 -----
 
 In both cases, to run the image you will need the standard Exomiser directory layout to mount as separate volumes as in the CLI and
@@ -281,19 +289,22 @@ exomiser.data-directory=/exomiser-data
 ### <a id="working-with-the-docker-bash-image"></a>Working with the docker bash images
 
 Running the image with the following command will open the shell and create volumes with
-links to the exomiser data and connects the results to your local machine. `/results` should be an empty directory,
-where Exomiser will write the results into.
-
+links to the exomiser data and connect the results to your local machine. `/results` should be a directory,
+where Exomiser will write the results into. The host path `/path/to/exomiser-data` should contain the unpacked data
+directories `2512_hg19` and `2512_phenotype`.
 
 ```shell
 docker run -v "/path/to/exomiser-data:/exomiser-data" \
  -v "/path/to/exomiser/exomiser-config/:/exomiser" \
  -v "/path/to/exomiser/results:/results"  \
- ${docker.repository}/exomiser-cli:${project.version}-bash  
+ -e EXOMISER_HG19_DATA_VERSION=2512 \
+ -e EXOMISER_PHENOTYPE_DATA_VERSION=2512 \
+ -it ${docker.repository}/exomiser-cli:${project.version}-bash  
 ```
 
 Here the contents of `/path/to/exomiser/exomiser-config` is simply the `application.properties` file and the example files
-to test all is working correctly.
+to test all is working correctly. The `application.properties` file can be omitted if the genomic and phenotype data
+versions have been provided as environment variables.
 
 ```shell
 $ tree /path/to/exomiser/exomiser-config/
@@ -301,26 +312,21 @@ exomiser-config/
 ├── application.properties
 ├── Pfeiffer.vcf.gz
 ├── Pfeiffer.vcf.gz.tbi
-└── test-analysis-exome.yml
+├── pfeiffer-phenopacket.yml
+└── preset-exome-analysis-human-only.yml
 ```
 
 #### Running Exomiser from the bash shell
-After running the following commands Exomiser will be started from the containers shell.
+
+The entrypoint for the image is `/bin/bash` and the command to run Exomiser is:
 
 ```shell
- source enable_exomiser.sh
- bash enable_exomiser.sh
- exomiser analyse --analysis /exomiser/test-analysis-exome.yml \
- --spring.config.location=/exomiser/application.properties
+ exomiser analyse --analysis /exomiser/examples/preset-exome-analysis-human-only.yml \
+ --vcf /exomiser/examples/Pfeiffer.vcf.gz --assembly hg19 \
+ --sample /exomiser/examples/pfeiffer-phenopacket.yml \
+ --output-directory /results --output-format=PARQUET --output-filename docker-test
 ```
 
-or using Spring configuration arguments instead of the `application.properties`:
+If successful, the results will be written to `/results/docker-test.parquet`.
 
-```shell
- exomiser --analysis /exomiser/test-analysis-exome.yml  \
- # minimal requirements for an hg19 exome sample
- --exomiser.data-directory=/exomiser-data \
- --exomiser.hg19.data-version=${genome.data.version} \
- --exomiser.phenotype.data-version=${phenotype.data.version}
-```
 -----
