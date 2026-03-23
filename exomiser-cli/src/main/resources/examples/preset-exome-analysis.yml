@@ -1,7 +1,7 @@
-## Exomiser Analysis Template.
-##
+## Exomiser Exome Default Analysis Model
+## exomiser_model_2
 # This is the standard exomiser analysis for coding sequence variants. If you also want to look at non-coding variants,
-# use the preset-genome-analysis.yml
+# use the preset-genome-analysis.yml (exomiser_model_4)
 ---
 analysisMode: PASS_ONLY
 inheritanceModes: {

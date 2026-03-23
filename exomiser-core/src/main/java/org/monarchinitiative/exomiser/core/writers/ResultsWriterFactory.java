@@ -50,7 +50,7 @@ public class ResultsWriterFactory {
             case TSV_VARIANT -> new TsvVariantResultsWriter();
             case VCF -> new VcfResultsWriter();
             case JSON -> new JsonResultsWriter();
-            case PARQUET -> new ParquetVariantResultsWriter();
+            case PARQUET -> new ParquetResultsWriter();
             case HTML -> new HtmlResultsWriter();
         };
     }

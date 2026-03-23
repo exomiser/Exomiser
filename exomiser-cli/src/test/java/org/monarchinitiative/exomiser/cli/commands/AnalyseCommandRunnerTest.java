@@ -4,11 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.monarchinitiative.exomiser.api.v1.AnalysisProto;
-import org.monarchinitiative.exomiser.api.v1.JobProto;
-import org.monarchinitiative.exomiser.cli.commands.batch.BatchFileReader;
+import org.monarchinitiative.exomiser.cli.commands.analyse.AnalyseCommandRunner;
 import org.monarchinitiative.exomiser.core.Exomiser;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
-import org.monarchinitiative.exomiser.core.analysis.JobParser;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
 import org.monarchinitiative.exomiser.core.writers.OutputFormat;
 

@@ -19,14 +19,14 @@
  */
 package org.monarchinitiative.exomiser.cli;
 
-import org.monarchinitiative.exomiser.cli.commands.ExomiserCommand;
+import org.monarchinitiative.exomiser.cli.commands.*;
+import org.monarchinitiative.exomiser.cli.commands.PhenotypeCommand;
+import org.monarchinitiative.exomiser.cli.commands.analyse.AnalyseApplication;
+import org.monarchinitiative.exomiser.cli.commands.annotate.AnnotateApplication;
+import org.monarchinitiative.exomiser.cli.commands.batch.BatchApplication;
+import org.monarchinitiative.exomiser.cli.commands.phenotype.PhenotypeApplication;
 import org.monarchinitiative.exomiser.cli.pico.CommandParser;
-import org.monarchinitiative.exomiser.cli.pico.CommandParserResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 import java.util.Locale;
 
@@ -36,24 +36,35 @@ import java.util.Locale;
  *
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class Main {
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
-
     public static void main(String[] args) {
+        Locale.setDefault(Locale.UK);
         // Parse the input to check for help etc. in order to fail fast before launching the context.
         // This does mean the input needs parsing twice - once here and again in the application CommandLineRunner.
-        CommandParser<ExomiserCommand> commandParser = new CommandParser<>(ExomiserCli.newExomiserCommandLine());
-        CommandParserResult<ExomiserCommand> commandParserResult = commandParser.parseArgs(args);
-        // all ok so far - try launching the app
-        Locale.setDefault(Locale.UK);
-        int exitCode = commandParserResult.isCommand() ? validateAndRun(commandParserResult.command(), args) : commandParserResult.exitCode();
+        var commandParser = new CommandParser<ExomiserCommand>(ExomiserCli.newExomiserCommandLine());
+        var parserResult = commandParser.parseArgs(args);
+        if (!parserResult.isCommand()) {
+            System.exit(parserResult.exitCode());
+        }
+
+        ExomiserCommand command = parserResult.command();
+        if (command == null || !command.validate()) {
+            System.exit(1);
+        }
+
+        // all OK so far - try launching the app
+        // Select application configuration based on command type
+        //  this will selectively load the Spring components and resources
+        //  required by each command.
+        Class<?> configClass = switch (command) {
+            case AnalyseCommand ignored -> AnalyseApplication.class;
+            case AnnotateCommand ignored -> AnnotateApplication.class;
+            case BatchCommand ignored -> BatchApplication.class;
+            case PhenotypeCommand ignored -> PhenotypeApplication.class;
+        };
+
+        int exitCode = SpringApplication.exit(SpringApplication.run(configClass, args));
         System.exit(exitCode);
     }
-
-    private static int validateAndRun(ExomiserCommand exomiserCommand, String[] args) {
-        return exomiserCommand.validate() ? SpringApplication.exit(SpringApplication.run(Main.class, args)) : 1;
-    }
-
 }

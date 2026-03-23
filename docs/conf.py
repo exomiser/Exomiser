@@ -55,13 +55,13 @@
 # -- Project information -----------------------------------------------------
 
 project = u'exomiser'
-copyright = u'2024, Jules Jacobsen, Damian Smedley, Peter Robinson'
+copyright = u'2026, Jules Jacobsen, Damian Smedley, Peter Robinson'
 author = u'Jules Jacobsen, Damian Smedley, Peter Robinson'
 
 # The short X.Y version
 version = u'15.0.0'
-genome_data_version = u'2502'
-phenotype_data_version = u'2502'
+genome_data_version = u'2512'
+phenotype_data_version = u'2512'
 # The full version, including alpha/beta/rc tags
 release = version
 

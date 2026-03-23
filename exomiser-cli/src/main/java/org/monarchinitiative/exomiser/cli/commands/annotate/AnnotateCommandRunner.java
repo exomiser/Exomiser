@@ -1,4 +1,4 @@
-package org.monarchinitiative.exomiser.cli.commands;
+package org.monarchinitiative.exomiser.cli.commands.annotate;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
@@ -7,7 +7,8 @@ import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.apache.commons.csv.CSVPrinter;
-import org.monarchinitiative.exomiser.cli.commands.annotate.AnnotationWriter;
+import org.monarchinitiative.exomiser.cli.commands.AnnotateCommand;
+import org.monarchinitiative.exomiser.cli.commands.CommandRunner;
 import org.monarchinitiative.exomiser.core.analysis.AnalysisDurationFormatter;
 import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraint;
 import org.monarchinitiative.exomiser.core.analysis.score.GeneConstraints;
@@ -51,6 +52,8 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
     private static final Set<PathogenicitySource> PATHOGENICITY_SOURCES = EnumSet.of(REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI);
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider;
     private final DiseaseDao diseaseDao;
+
+    private int exitCode = 0;
 
     public AnnotateCommandRunner(GenomeAnalysisServiceProvider genomeAnalysisServiceProvider, DiseaseDao diseaseDao) {
         this.genomeAnalysisServiceProvider = genomeAnalysisServiceProvider;
@@ -139,7 +142,7 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
                     System.out.printf("%s\t%s\t%s%n", disease1.diseaseId(), formatMoi(disease1.inheritanceMode()), disease1.diseaseName());
                 }
             }
-            return 0;
+            return exitCode;
         }
 
         AcmgEvidenceClassifier acmgClassifier = new Acmg2020PointsBasedClassifier();
@@ -199,10 +202,15 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
                 logger.info("Wrote results to {}", outPath.toAbsolutePath());
             } catch (IOException e) {
                 logger.error("Unable to annotate file {}", vcfPath, e);
-                return -1;
+                exitCode = 1;
             }
         }
-        return 0;
+        return exitCode;
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
     }
 
     private int evPoints(AcmgCriterion.Evidence evidence) {

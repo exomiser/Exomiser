@@ -223,7 +223,7 @@ public class HtmlResultsWriterTest {
         OutputSettings settings = OutputSettings.builder().build();
 
         String output = instance.writeString(analysisResults, settings);
-        assertTrue(output.contains("Exomiser Analysis Results for"));
+        assertTrue(output.contains("Gene Symbol"));
         assertTrue(output.contains("FGFR2"));
     }
 
@@ -246,7 +246,7 @@ public class HtmlResultsWriterTest {
         OutputSettings settings = OutputSettings.builder().build();
 
         String output = instance.writeString(analysisResults, settings);
-        assertTrue(output.contains("Exomiser Analysis Results for"));
+        assertTrue(output.contains("Gene Symbol"));
         assertTrue(output.contains("FGFR2"));
         assertTrue(output.contains("RBM8A"));
     }

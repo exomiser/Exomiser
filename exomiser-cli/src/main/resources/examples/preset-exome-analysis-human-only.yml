@@ -1,0 +1,73 @@
+## Exomiser Exome Human-only Analysis Model
+## exomiser_model_1
+# This is the new exome analysis model, but using HiPhive human only data.
+---
+#FULL or PASS_ONLY
+analysisMode: PASS_ONLY
+inheritanceModes: {
+  AUTOSOMAL_DOMINANT: 0.1,
+  AUTOSOMAL_RECESSIVE_COMP_HET: 2.0,
+  AUTOSOMAL_RECESSIVE_HOM_ALT: 0.1,
+  X_DOMINANT: 0.1,
+  X_RECESSIVE_COMP_HET: 2.0,
+  X_RECESSIVE_HOM_ALT: 0.1,
+  MITOCHONDRIAL: 0.2
+}
+# Possible frequencySources:
+# UK10K - http://www.uk10k.org/ (UK10K)
+# gnomAD - http://gnomad.broadinstitute.org/ (GNOMAD_E, GNOMAD_G)
+# note that as of gnomAD v2.1 1000 genomes, ExAC are part of gnomAD
+# as of gnomAD v4 TOPMed & ESP are also included in gnomAD
+frequencySources: [
+  UK10K,
+
+  GNOMAD_E_AFR,
+  GNOMAD_E_AMR,
+  #        GNOMAD_E_ASJ,
+  GNOMAD_E_EAS,
+  #    GNOMAD_E_FIN,
+  GNOMAD_E_NFE,
+  #    GNOMAD_E_OTH,
+  GNOMAD_E_SAS,
+
+  GNOMAD_G_AFR,
+  GNOMAD_G_AMR,
+  #        GNOMAD_G_ASJ,
+  GNOMAD_G_EAS,
+  #    GNOMAD_G_FIN,
+  GNOMAD_G_NFE,
+  #    GNOMAD_G_OTH,
+  GNOMAD_G_SAS
+]
+# Possible pathogenicitySources: (POLYPHEN, MUTATION_TASTER, SIFT), (REVEL, MVP, ALPHA_MISSENSE), CADD, REMM, SPLICE_AI
+# REMM is trained on non-coding regulatory regions
+# *WARNING* if you enable CADD or REMM ensure that you have downloaded and installed the CADD/REMM tabix files
+# and updated their location in the application.properties. Exomiser will not run without this.
+pathogenicitySources: [ REVEL, MVP, ALPHA_MISSENSE, SPLICE_AI ]
+steps: [
+  geneBlacklistFilter: { },
+  failedVariantFilter: { },
+  alleleBalanceFilter: { },
+  variantEffectFilter: {
+    remove: [
+      FIVE_PRIME_UTR_EXON_VARIANT,
+      FIVE_PRIME_UTR_INTRON_VARIANT,
+      THREE_PRIME_UTR_EXON_VARIANT,
+      THREE_PRIME_UTR_INTRON_VARIANT,
+      NON_CODING_TRANSCRIPT_EXON_VARIANT,
+      UPSTREAM_GENE_VARIANT,
+      INTERGENIC_VARIANT,
+      REGULATORY_REGION_VARIANT,
+      CODING_TRANSCRIPT_INTRON_VARIANT,
+      NON_CODING_TRANSCRIPT_INTRON_VARIANT,
+      DOWNSTREAM_GENE_VARIANT
+    ]
+  },
+  frequencyFilter: { maxFrequency: 2.0 },
+  pathogenicityFilter: { keepNonPathogenic: true },
+  # inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
+  # they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.
+  inheritanceFilter: { },
+  omimPrioritiser: { },
+  hiPhivePrioritiser: { runParams: 'human' },
+]

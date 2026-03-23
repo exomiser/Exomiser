@@ -3,7 +3,7 @@ package org.monarchinitiative.exomiser.cli.commands;
 /**
  * Marker interface for Exomiser Commands
  */
-public sealed interface ExomiserCommand permits AnalyseCommand, AnnotateCommand, BatchCommand {
+public sealed interface ExomiserCommand permits AnalyseCommand, AnnotateCommand, BatchCommand, PhenotypeCommand {
 
     /**
      * The validate function should be used to indicate whether the command is in a valid state to be run. This should

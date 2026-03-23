@@ -1,6 +1,7 @@
-## Genomiser genome analysis template.
-# This is the standard genomiser analysis for all sequence variants. If you just want to look at coding sequence variants,
-# use the preset-exome-analysis.yml
+## Genomiser Whole-Genome Analysis Model
+## exomiser_model_4
+# This is the standard Genomiser analysis for all sequence variants. If you just want to look at coding sequence variants,
+# use one of the preset-exome-analysis models.
 ---
 analysisMode: PASS_ONLY
 inheritanceModes: {

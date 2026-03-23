@@ -53,7 +53,7 @@ exomiser.phenotype.data-version=1807
 
 We strongly recommend using the latest versions of both the application and the data for optimum results.
 
-For further instructions on installing and running please refer to the [README.md](http://data.monarchinitiative.org/exomiser/README.md) file.
+For further instructions on installing and running, please refer to the [online documentation](https://exomiser.readthedocs.io/en/latest/)..
 
 #### Running it
 
