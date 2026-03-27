@@ -473,6 +473,23 @@ public class VariantEvaluationTest {
         assertThat(sv.pathogenicityScore(), equalTo(expected));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "CODING_SEQUENCE_VARIANT, 0.2",
+            "SPLICE_REGION_VARIANT, 0.9",
+            "CODING_TRANSCRIPT_VARIANT, 0.0",
+            "SEQUENCE_VARIANT, 0.0",
+    })
+    void testLargeNonSymbolicInsertionScores(VariantEffect variantEffect, float expected) {
+        // Non-symbolic insertions >= 1000bp are routed to the structural variant annotator and should
+        // receive SvAnna-based scoring, not the default SEQUENCE_VARIANT score of 0.0
+        String longAlt = "A".repeat(1001);
+        VariantEvaluation sv = newBuilder(2, 1, 1, "A", longAlt, 1000)
+                .variantEffect(variantEffect)
+                .build();
+        assertThat(sv.pathogenicityScore(), equalTo(expected));
+    }
+
     @Test
     public void testFailedFilterTypesDontContainPassedFilterTypes() {
         Set<FilterType> expectedFilters = EnumSet.of(FAIL_FREQUENCY_RESULT.filterType());
