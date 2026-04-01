@@ -238,7 +238,7 @@ public class VcfResultsWriter implements ResultsWriter {
         fields.add(assignment.map(AcmgAssignment::acmgClassification).orElse(AcmgClassification.NOT_AVAILABLE).toString());
         fields.add(assignment.map(acmgAssignment -> toVcfAcmgInfo(acmgAssignment.acmgEvidence())).orElse(""));
         fields.add(assignment.map(acmgAssignment -> acmgAssignment.disease().diseaseId()).orElse(""));
-        fields.add('"' + assignment.map(acmgAssignment -> acmgAssignment.disease().diseaseName().replace(" ", "_")).orElse("") + '"');
+        fields.add('"' + assignment.map(acmgAssignment -> acmgAssignment.disease().diseaseName().replace(" ", "_").replace(",", ";")).orElse("") + '"');
         return "{"+ String.join("|", fields) + "}";
     }
 
