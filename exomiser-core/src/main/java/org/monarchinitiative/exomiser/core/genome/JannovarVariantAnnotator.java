@@ -90,8 +90,6 @@ public class JannovarVariantAnnotator implements VariantAnnotator {
         if (variant == null) {
             return List.of();
         }
-        // Jannovar has a 1Kb cut-off for precise variant where it will simply assign them as 'STRUCTURAL_VARIANT'.
-        // Here we're going to hack Jannovar and send any of these types to the structural variant annotator.
-        return (variant.isSymbolic() || Math.abs(variant.changeLength()) >= 1000) ? structuralVariantAnnotator.annotate(variant) : smallVariantAnnotator.annotate(variant);
+        return variant.isSymbolic() ? structuralVariantAnnotator.annotate(variant) : smallVariantAnnotator.annotate(variant);
     }
 }

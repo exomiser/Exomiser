@@ -409,7 +409,11 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
 
     private float variantEffectScore() {
         float variantEffectScore = VariantEffectPathogenicityScore.pathogenicityScoreOf(variantEffect);
-        if (this.isSymbolic()) {
+        // Ensure non-symbolic insertions >= 1000bp receive SvAnna-based scoring and not the default SEQUENCE_VARIANT
+        // score of 0.0 if something has gone awry with the variant annotation. Originally Jannovar used to annotate
+        // precise variants over 1000 bp as symbolic, and these got low-scoring variant effects. This no longer appears
+        // to be the case.
+        if (this.isSymbolic() || Math.abs(this.changeLength()) >= 1000) {
             // SvAnna scoring https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-022-01046-6/tables/1
             //                                     |             element contains v
             // class | v contains t | v overlaps t | Coding or splice | UTR   | Intronic | Promoter
@@ -428,7 +432,8 @@ public class VariantEvaluation extends AbstractVariant implements Comparable<Var
                 // For INS might also be worth using the min((2* variant.length()/cds.length()), 1) score too?
                 variantEffectScore = this.variantType().baseType() == VariantType.INS ? 0.2f : 0.8f;
             } else if (variantEffect.isSplicing()) {
-                variantEffectScore = this.variantType().baseType() == VariantType.INS ? 0.9f : 1.0f;
+                // ensure that insertions in the splice acceptor/donor are maximally pathogenic
+                variantEffectScore = this.variantType().baseType() == VariantType.INS ? Math.max(0.9f, variantEffectScore) : 1.0f;
             } else if (variantEffect == VariantEffect.CODING_TRANSCRIPT_VARIANT) {
                 // TODO: the INV variant effect annotation needs better resolution for potential overlapping regions.
                 //  Currently it is too basic and misses annotations such as START_LOSS or any of the splicing categories.
