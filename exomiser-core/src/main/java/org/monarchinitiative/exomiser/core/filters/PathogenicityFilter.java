@@ -21,31 +21,49 @@
 package org.monarchinitiative.exomiser.core.filters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.charite.compbio.jannovar.annotation.VariantEffect;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
-import org.monarchinitiative.svart.VariantType;
 
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.Objects;
 
 /**
  * Filters variants according to their predicted pathogenicity.
  * <p>
- * The keepNonPathogenic parameter will apply the pathogenicity
- * scoring, but no further filtering will be applied so all variants will
- * pass irrespective of their score.
+ * When the keepNonPathogenic parameter is true, the class will apply the pathogenicity scoring, but no further
+ * filtering will be applied, so all variants will pass irrespective of their score.
+ * <p>
+ * When keepNonPathogenic is false, the target parameter is used to determine which variant types will be filtered out.
+ * If the target is set to ALL, the filter will consider both coding and non-coding variants. If set to NON_CODING,
+ * only non-coding variants will be considered. The intention is that this filter is used to filter non-coding variants
+ * in WGS samples (keepNonPathogenic=false, target=NON_CODING) whilst keeping all coding variants. For WES samples, it
+ * should be safe to run (keepNonPathogenic=false, target=NON_CODING), but seeing as the non-coding variants are not
+ * present, this will be the equivalent of (keepNonPathogenic=true). When used in pipelines which want to score and show
+ * all variants, the keepNonPathogenic parameter should be set to true.
  *
  * @author Peter N Robinson
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
  * @version 0.09 (29 December, 2012).
  */
-public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) implements VariantFilter {
+public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic, Target target) implements VariantFilter {
 
     private static final FilterType filterType = FilterType.PATHOGENICITY_FILTER;
 
+    public enum Target {
+        ALL,
+        NON_CODING
+    }
+
     private static final FilterResult PASS = FilterResult.pass(filterType);
     private static final FilterResult FAIL = FilterResult.fail(filterType);
+
+    public PathogenicityFilter {
+        target = Objects.requireNonNullElse(target, Target.ALL);
+    }
+
+    public PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) {
+        this(keepNonPathogenic, Target.ALL);
+    }
 
     /**
      * Flag to output results of filtering against polyphen, SIFT, and mutation
@@ -56,7 +74,6 @@ public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) imple
         return filterType;
     }
 
-    private static final Set<VariantEffect> INTRONIC_EFFECTS = EnumSet.of(VariantEffect.CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.NON_CODING_TRANSCRIPT_INTRON_VARIANT, VariantEffect.FIVE_PRIME_UTR_INTRON_VARIANT, VariantEffect.THREE_PRIME_UTR_INTRON_VARIANT);
     /**
      * VariantFilter variants based on their calculated pathogenicity. Those
      * that pass have a pathogenicity score assigned to them. The failed ones
@@ -68,26 +85,30 @@ public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) imple
             return PASS;
         }
         if (variantEvaluation.isNonCodingVariant()) {
-            PathogenicityData pathogenicityData = variantEvaluation.pathogenicityData();
-            // CADD, REMM and SPLICE_AI are all optional. However, CADD 1.6+ is a general non-coding model which
-            //  includes splice predictors, so check this first
-            PathogenicityScore caddScore = pathogenicityData.pathogenicityScore(PathogenicitySource.CADD);
-            if (caddScore != null && caddScore.rawScore() >= 15.0) {
-                return PASS;
-            }
-            PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
-            if (INTRONIC_EFFECTS.contains(variantEvaluation.variantEffect()) && (spliceAiScore != null && spliceAiScore.score() > SpliceAiScore.NON_SPLICEOGENIC_SCORE)) {
-                return PASS;
-            }
-            PathogenicityScore remmScore = pathogenicityData.pathogenicityScore(PathogenicitySource.REMM);
-            if (remmScore != null && remmScore.score() > RemmScore.LIKELY_PATHOGENIC_THRESHOLD) {
-                return PASS;
-            }
-            return FAIL;
+            return switch (target) {
+                case ALL, NON_CODING -> filterNonCoding(variantEvaluation.pathogenicityData());
+            };
         }
-        // this should run after the non-coding check as otherwise lower quality REMM scores will be returned and
-        // potential SpliceAI scores removed.
-        if (variantEvaluation.isPredictedPathogenic()) {
+        // coding variant
+        return switch (target) {
+            case NON_CODING -> PASS;
+            case ALL -> variantEvaluation.isPredictedPathogenic() ? PASS : FAIL;
+        };
+    }
+
+    private @NonNull FilterResult filterNonCoding(PathogenicityData pathogenicityData) {
+        // CADD, REMM and SPLICE_AI are all optional. However, CADD 1.6+ is a general non-coding model which
+        //  includes splice predictors, so check this first
+        PathogenicityScore caddScore = pathogenicityData.pathogenicityScore(PathogenicitySource.CADD);
+        if (caddScore != null && caddScore.rawScore() >= 15.0) {
+            return PASS;
+        }
+        PathogenicityScore spliceAiScore = pathogenicityData.pathogenicityScore(PathogenicitySource.SPLICE_AI);
+        if (spliceAiScore != null && spliceAiScore.score() > SpliceAiScore.NON_SPLICEOGENIC_SCORE) {
+            return PASS;
+        }
+        PathogenicityScore remmScore = pathogenicityData.pathogenicityScore(PathogenicitySource.REMM);
+        if (remmScore != null && remmScore.score() > RemmScore.LIKELY_PATHOGENIC_THRESHOLD) {
             return PASS;
         }
         return FAIL;
@@ -95,6 +116,6 @@ public record PathogenicityFilter(@JsonProperty boolean keepNonPathogenic) imple
 
     @Override
     public String toString() {
-        return "PathogenicityFilter{" + "keepNonPathogenic=" + keepNonPathogenic + '}';
+        return "PathogenicityFilter{" + "keepNonPathogenic=" + keepNonPathogenic + ", target=" + target + '}';
     }
 }

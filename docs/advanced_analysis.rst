@@ -491,24 +491,44 @@ frequency higher than the stated percentage in any database defined in the :ref:
 pathogenicityFilter:
 ....................
 Will apply the pathogenicity scores defined in the :ref:`pathogenicitySources<pathogenicitysources>` section to variants.
-If the ``keepNonPathogenic`` field is set to ``true`` then all variants will be kept. Setting this to ``false`` will set
-the filter to fail non-missense variants with pathogenicity scores lower than a score cutoff of 0.5.
-
 This filter is meant to be quite permissive and we recommend it be set to ``true`` unless running genomiser
-(i.e. including REMM/CADD/SPLICE_AI and all non-coding regions), in which case setting ``keepNonPathogenic: false`` is
-recommended as Exomiser will use a stringent cutoff to remove variants with a `CADD <https://cadd.bihealth.org/info>`_
-raw score <= 15.0 a `REMM score <https://doi.org/10.1093/gigascience/giad024>`_ <= 0.914
-or a `SpliceAI <https://doi.org/10.1016/j.cell.2018.12.015>`_ <= 0.1 These thresholds were chosen based on the
-recommendations of the authors of the scores.
+(i.e. including REMM/CADD/SPLICE_AI and all non-coding regions).
+
+If ``keepNonPathogenic`` is set to ``true``, all variants will pass regardless of their pathogenicity scores.
+
+If ``keepNonPathogenic`` is set to ``false``, the ``target`` field controls which variants are subject to filtering:
+
+- ``target: ALL`` — both coding and non-coding variants are filtered. Coding variants are failed if they have a
+  pathogenicity score < 0.5, non-coding variants are filtered using the thresholds described below.
+- ``target: NON_CODING`` (recommended for WGS) — only non-coding variants are filtered using the thresholds below;
+  all coding variants pass. For WES samples this is equivalent to ``keepNonPathogenic: true``, since non-coding
+  variants are absent.
+
+Non-coding variants (when subject to filtering) must exceed at least one of the following thresholds to pass:
+
+- `CADD <https://cadd.bihealth.org/info>`_ scaled score (Exomiser raw score) >= 15.0
+- `SpliceAI <https://doi.org/10.1016/j.cell.2018.12.015>`_ score > 0.1
+- `REMM <https://doi.org/10.1093/gigascience/giad024>`_ score > 0.914
+
+These thresholds were chosen based on the recommendations of the respective score authors. Scores are optional; a
+variant only needs to exceed one present score to pass.
+
+We recommend ``keepNonPathogenic: true`` for standard exome analysis. For whole-genome analysis including non-coding
+regions (e.g. using REMM/CADD/SpliceAI), use ``keepNonPathogenic: false`` with ``target: NON_CODING``.
 
 .. code-block:: yaml
 
+    # Either (recommended for WES/Exomiser)
     pathogenicityFilter: {keepNonPathogenic: true}
+    # Or (recommended for WGS/Genomiser)
+    pathogenicityFilter: {keepNonPathogenic: false, target: NON_CODING}
+    # Or (most stringent may result in reduced recall due to loss of false negatives)
+    pathogenicityFilter: {keepNonPathogenic: false, target: ALL}
 
 
 .. important::
 
-    Not defining this filter will result in all variants having no pathogenicity data or ClinVar annotations, even if the
+    Not defining this filter will result in variants having no pathogenicity data or ClinVar annotations, even if the
     :ref:`pathogenicitySources<pathogenicitysources>` are defined. Failing to include this will result in Exomiser
     using default scores based on the assigned variant effect. If you want to score all variants and write failed ones
     to the output, it is recommended to use `analysisMode: FULL`.

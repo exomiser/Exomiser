@@ -717,6 +717,24 @@ class JobParserTest {
     }
 
     @Test
+    void testPathogenicityFilterSetFalseTargetNonCoding() {
+        AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
+                .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder()
+                        .setKeepNonPathogenic(false)
+                        .setTarget(FiltersProto.PathogenicityFilter.Target.NON_CODING)
+                        .build())
+                .build();
+
+        AnalysisProto.Analysis protoAnalysis = AnalysisProto.Analysis.newBuilder()
+                .addPathogenicitySources("POLYPHEN")
+                .addSteps(analysisStep)
+                .build();
+
+        Analysis analysis = instance.parseAnalysis(jobWith(protoAnalysis));
+        assertThat(analysis.analysisSteps(), equalTo(List.of(new PathogenicityFilter(false, PathogenicityFilter.Target.NON_CODING))));
+    }
+
+    @Test
     void testInheritanceFilterNoInheritanceModeOptions() {
         AnalysisProto.AnalysisStep analysisStep = AnalysisProto.AnalysisStep.newBuilder()
                 .setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder()

@@ -52,7 +52,7 @@ steps: [
     alleleBalanceFilter: { },
     regulatoryFeatureFilter: { },
     frequencyFilter: { maxFrequency: 2.0 },
-    pathogenicityFilter: { keepNonPathogenic: false },
+    pathogenicityFilter: { keepNonPathogenic: false, target: NON_CODING },
     inheritanceFilter: { },
     omimPrioritiser: { }
 ]

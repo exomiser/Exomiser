@@ -243,6 +243,13 @@ public class AnalysisBuilderTest {
     }
 
     @Test
+    public void testAddPathogenicityFilterRemoveNonCodingNonPath() {
+        analysisBuilder.pathogenicitySources(EnumSet.allOf(PathogenicitySource.class));
+        analysisBuilder.addPathogenicityFilter(false, PathogenicityFilter.Target.NON_CODING);
+        assertThat(buildAndGetSteps(), equalTo(singletonList(new PathogenicityFilter(false, PathogenicityFilter.Target.NON_CODING))));
+    }
+
+    @Test
     public void testAddPriorityScoreFilter() {
         PriorityType priorityType = PriorityType.HIPHIVE_PRIORITY;
         float minPriorityScore = 0.501f;

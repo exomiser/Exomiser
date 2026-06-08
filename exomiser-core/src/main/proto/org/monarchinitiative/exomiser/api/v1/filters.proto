@@ -52,7 +52,12 @@ message FrequencyFilter {
 }
 
 message PathogenicityFilter {
+    enum Target {
+        ALL = 0;
+        NON_CODING = 1;
+    }
     bool keep_non_pathogenic = 1;
+    Target target = 2;
 }
 
 message InheritanceFilter {

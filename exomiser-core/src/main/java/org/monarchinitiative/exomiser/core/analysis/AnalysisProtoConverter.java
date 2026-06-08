@@ -71,8 +71,13 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
             case FrequencyFilter(float maxFreq) -> stepBuilder
                     .setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(maxFreq))
                     .build();
-            case PathogenicityFilter(boolean keepNonPathogenic) -> stepBuilder
-                    .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(keepNonPathogenic))
+            case PathogenicityFilter(boolean keepNonPathogenic, PathogenicityFilter.Target target) -> stepBuilder
+                    .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder()
+                            .setKeepNonPathogenic(keepNonPathogenic)
+                            .setTarget(switch (target) {
+                                case ALL -> FiltersProto.PathogenicityFilter.Target.ALL;
+                                case NON_CODING -> FiltersProto.PathogenicityFilter.Target.NON_CODING;
+                            }))
                     .build();
             case FailedVariantFilter failedVariantFilter -> stepBuilder
                     .setFailedVariantFilter(FiltersProto.FailedVariantFilter.newBuilder())
