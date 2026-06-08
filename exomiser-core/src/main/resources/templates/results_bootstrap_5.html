@@ -707,7 +707,10 @@
                                                             <!-- max path-->
                                                             <td th:with="pathScore = ${variant.pathogenicityData().mostPathogenicScore()}">
                                                                 <dl th:if="${pathScore} == null">-</dl>
-                                                                <dl th:if="${pathScore} != null" th:text="${#numbers.formatDecimal(pathScore.score(), 1, 3)}">1.0</dl>
+                                                                <th:block th:if="${pathScore} != null" th:switch="${pathScore.source().toString()}">
+                                                                    <dl th:case="CADD" th:text="|${#numbers.formatDecimal(pathScore.score(), 1, 3)} (${#numbers.formatDecimal(pathScore.rawScore(), 1, 3)})|">21.0</dl>
+                                                                    <dl th:case="*" th:text="${#numbers.formatDecimal(pathScore.score(), 1, 3)}">1.0</dl>
+                                                                </th:block>
                                                                 <dl th:if="${pathScore} != null" th:text="${pathScore.source()}">REVEL</dl>
                                                             </td>
                                                             <!-- max freq-->
@@ -771,7 +774,10 @@
                                                                                     </thead>
                                                                                     <tr th:each="pathScore: ${pathData.pathogenicityScores()}">
                                                                                         <td th:text="${pathScore.source()}">REVEL</td>
-                                                                                        <td th:text="${pathScore.score()}">0.965</td>
+                                                                                        <th:block th:switch="${pathScore.source().toString()}">
+                                                                                            <td th:case="CADD" th:text="|${#numbers.formatDecimal(pathScore.score(), 1, 3)} (${#numbers.formatDecimal(pathScore.rawScore(), 1, 3)})|">0.995 (21.0)</td>
+                                                                                            <td th:case="*" th:text="${#numbers.formatDecimal(pathScore.score(), 1, 3)}">0.965</td>
+                                                                                        </th:block>
                                                                                     </tr>
                                                                                 </th:block>
                                                                             </table>
