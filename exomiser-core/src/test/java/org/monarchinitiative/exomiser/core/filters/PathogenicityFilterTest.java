@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter.Target;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
@@ -40,6 +41,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.monarchinitiative.exomiser.core.filters.PathogenicityFilter.Target.*;
 
 /**
  * @author Jules Jacobsen <jules.jacobsen@sanger.ac.uk>
@@ -159,32 +161,49 @@ class PathogenicityFilterTest {
 
     @ParameterizedTest
     @CsvSource({
-            "DOWNSTREAM_GENE_VARIANT, false, '', FAIL",
-            "DOWNSTREAM_GENE_VARIANT, true, '', PASS",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, '', FAIL",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, SPLICE_AI=0.1, FAIL",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, SPLICE_AI=0.11, PASS",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;SPLICE_AI=0.11, PASS",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12, FAIL",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=15, PASS",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9;SPLICE_AI=0.11, PASS",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9, FAIL",
-            "CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.915, PASS",
-            "THREE_PRIME_UTR_EXON_VARIANT, false, CADD=12;REMM=0.915, PASS",
-            "THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
-            "NON_CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
-            "MISSENSE_VARIANT, false, CADD=12;REVEL=0.8, PASS",
-            "MISSENSE_VARIANT, false, REVEL=0.1, FAIL",
-            "MISSENSE_VARIANT, false, '', PASS",
-            "SYNONYMOUS_VARIANT, false, '', FAIL",
-            "SYNONYMOUS_VARIANT, false, SPLICE_AI=0.2, FAIL", // spliceAI permissive
-            "SYNONYMOUS_VARIANT, false, SPLICE_AI=0.5, PASS", // spliceAI default
-            "SPLICE_REGION_VARIANT, false, SPLICE_AI=0.2, PASS", // splice region variants have a default path score of 0.8
-            "SPLICE_REGION_VARIANT, false, '', PASS", // splice region variants have a default path score of 0.8
-            "FRAMESHIFT_TRUNCATION, false, '', PASS",
+            // non-coding
+            "false, ALL, DOWNSTREAM_GENE_VARIANT, false, '', FAIL",
+            "false, NON_CODING, DOWNSTREAM_GENE_VARIANT, false, '', FAIL",
+            "false, NON_CODING, DOWNSTREAM_GENE_VARIANT, true, '', PASS",
+            "true, ALL, DOWNSTREAM_GENE_VARIANT, true, '', PASS",
+            "true, NON_CODING, DOWNSTREAM_GENE_VARIANT, true, '', PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, '', FAIL",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, SPLICE_AI=0.1, FAIL",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, SPLICE_AI=0.11, PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;SPLICE_AI=0.11, PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12, FAIL",
+            "false, ALL, CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12, FAIL",
+            "true, ALL, CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12, PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=15, PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9;SPLICE_AI=0.11, PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9, FAIL",
+            "true, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9, PASS",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.9, FAIL",
+            "false, NON_CODING, CODING_TRANSCRIPT_INTRON_VARIANT, false, REMM=0.915, PASS",
+            "false, NON_CODING, THREE_PRIME_UTR_EXON_VARIANT, false, CADD=12;REMM=0.915, PASS",
+            "false, NON_CODING, THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
+            "false, NON_CODING, THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
+            "false, NON_CODING, THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
+            "false, NON_CODING, NON_CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
+            // coding
+            "false, ALL, MISSENSE_VARIANT, false, CADD=12;REVEL=0.8, PASS",
+            "false, ALL, MISSENSE_VARIANT, false, REVEL=0.1, FAIL",
+            "false, ALL, MISSENSE_VARIANT, false, REVEL=0.1, FAIL",
+            "false, NON_CODING, MISSENSE_VARIANT, false, REVEL=0.1, PASS", // When target is non-coding, pass any coding variant
+            "true, NON_CODING, MISSENSE_VARIANT, false, REVEL=0.1, PASS", // When target is non-coding, pass any coding variant
+            "false, NON_CODING, MISSENSE_VARIANT, false, '', PASS",
+            "false, ALL, SYNONYMOUS_VARIANT, false, '', FAIL",
+            "false, ALL, SYNONYMOUS_VARIANT, false, SPLICE_AI=0.2, FAIL", // spliceAI permissive
+            "true, ALL, SYNONYMOUS_VARIANT, false, SPLICE_AI=0.2, PASS", // spliceAI permissive - too low for default VariantEvaluation.isPredictedPathogenic threshold
+            "true, NON_CODING, SYNONYMOUS_VARIANT, false, SPLICE_AI=0.2, PASS", // spliceAI permissive
+            "true, ALL, SYNONYMOUS_VARIANT, false, SPLICE_AI=0.2, PASS", // spliceAI permissive
+            "false, ALL, SYNONYMOUS_VARIANT, false, SPLICE_AI=0.5, PASS", // spliceAI default
+            "false, ALL, SPLICE_REGION_VARIANT, false, SPLICE_AI=0.2, PASS", // splice region variants have a default path score of 0.8
+            "false, ALL, SPLICE_REGION_VARIANT, false, '', PASS", // splice region variants have a default path score of 0.8
+            "false, ALL, FRAMESHIFT_TRUNCATION, false, '', PASS",
     })
-    void whenFilterSetToRemoveNonPathogenic(VariantEffect variantEffect, boolean isWhitelisted, String pathScoreStrings, FilterResult.Status expected) {
-        PathogenicityFilter filter = new PathogenicityFilter(false);
+    void testFilter(boolean keepNonPathogenic, Target target, VariantEffect variantEffect, boolean isWhitelisted, String pathScoreStrings, FilterResult.Status expected) {
+        PathogenicityFilter filter = new PathogenicityFilter(keepNonPathogenic, target);
 
         var variant = testVariantBuilder()
                 .variantEffect(variantEffect)
@@ -213,9 +232,8 @@ class PathogenicityFilterTest {
 
     @Test
     void testToString() {
-        String expResult = "PathogenicityFilter{keepNonPathogenic=false}";
-        String result = instance.toString();
-        assertThat(result, equalTo(expResult));
+        assertThat(new PathogenicityFilter(true).toString(), equalTo("PathogenicityFilter{keepNonPathogenic=true, target=ALL}"));
+        assertThat(new PathogenicityFilter(false, NON_CODING).toString(), equalTo("PathogenicityFilter{keepNonPathogenic=false, target=NON_CODING}"));
     }
 
     @Test

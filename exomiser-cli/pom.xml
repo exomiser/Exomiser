@@ -32,7 +32,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>15.0.0</version>
+        <version>15.1.0</version>
     </parent>
 
 
@@ -225,6 +225,7 @@
                                     <goal>build</goal>
                                 </goals>
                                 <configuration>
+                                    <containerizingMode>packaged</containerizingMode>
                                     <from>
                                         <image>
                                             ${docker.base.image}
@@ -258,7 +259,6 @@
                                         </environment>
                                         <volumes>
                                             <volume>/exomiser-data</volume>
-                                            <volume>/exomiser</volume>
                                             <volume>/results</volume>
                                         </volumes>
                                     </container>
@@ -299,6 +299,7 @@
                                     <goal>build</goal>
                                 </goals>
                                 <configuration>
+                                    <containerizingMode>packaged</containerizingMode>
                                     <from>
                                         <image>
                                             ${docker.base.image}
@@ -330,7 +331,6 @@
                                         </environment>
                                         <volumes>
                                             <volume>/exomiser-data</volume>
-                                            <volume>/exomiser</volume>
                                             <volume>/results</volume>
                                         </volumes>
                                     </container>

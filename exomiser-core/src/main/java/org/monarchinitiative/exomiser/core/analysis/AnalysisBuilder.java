@@ -189,10 +189,14 @@ public class AnalysisBuilder implements FluentAnalysisBuilder<Analysis> {
     }
 
     public AnalysisBuilder addPathogenicityFilter(boolean keepNonPathogenic) {
+        return addPathogenicityFilter(keepNonPathogenic, PathogenicityFilter.Target.ALL);
+    }
+
+    public AnalysisBuilder addPathogenicityFilter(boolean keepNonPathogenic, PathogenicityFilter.Target target) {
         if (pathogenicitySources.isEmpty()) {
             throw new IllegalArgumentException("Pathogenicity sources have not yet been defined. Add some pathogenicity sources before defining the analysis steps.");
         }
-        analysisSteps.add(new PathogenicityFilter(keepNonPathogenic));
+        analysisSteps.add(new PathogenicityFilter(keepNonPathogenic, target));
         return this;
     }
 

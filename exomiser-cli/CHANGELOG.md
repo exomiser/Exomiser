@@ -1,5 +1,17 @@
 # The Exomiser Command Line Interface - Changelog
 
+## 15.1.0 2026-06-09
+- The `pathogenicityFilter` now has a `target` option to specify whether to filter non-coding variants. The default is
+  `ALL` but `NON_CODING` can be specified to filter non-coding variants. This change only affects variants found in 
+  non-coding regions. We recommend using the standard `pathogenicityFilter{keepNonPathogenic: true}` for exome analysis, 
+  but when running genomiser (i.e. including REMM/CADD/SPLICE_AI and all non-coding regions) or any analysis including
+  non-coding regions, use `pathogenicityFilter{keepNonPathogenic: false, target: NON_CODING}`. See the [documentation](https://exomiser.readthedocs.io/en/stable/advanced_analysis.html#pathogenicityfilter)
+  for more details.
+
+- Fix for issue [#629](https://github.com/exomiser/Exomiser/issues/629) - replace commas in disease names with semicolons.
+- Fix for issue [#633](https://github.com/exomiser/Exomiser/issues/633) - calculate variant score for non-symbolic insertions > 1kb.
+- Change for issue [#635](https://github.com/exomiser/Exomiser/issues/635) - Display CADD phred scores alongside the scaled scores in HTML.
+
 ## 15.0.0 2026-02-28
 [![Rare Disease Day](https://www.rarediseaseday.org/wp-content/uploads/Rare-disease-day-logo.svg
 )](https://www.rarediseaseday.org)

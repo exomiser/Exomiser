@@ -22,6 +22,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
+import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter.Target;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
@@ -122,7 +123,7 @@ class AnalysisPresetBuilder {
                 .addAlleleBalanceFilter()
                 .addRegulatoryFeatureFilter()
                 .addFrequencyFilter()
-                .addPathogenicityFilter(false)
+                .addPathogenicityFilter(false, Target.NON_CODING)
                 .addInheritanceFilter()
                 .addOmimPrioritiser()
                 .build();

@@ -103,7 +103,7 @@ class AnalysisProtoConverterTest {
                 .addStep(new RegulatoryFeatureFilter())
                 .addStep(new GeneBlacklistFilter(Set.of()))
                 .addStep(new FrequencyFilter(0.2f))
-                .addStep(new PathogenicityFilter(true))
+                .addStep(new PathogenicityFilter(false, PathogenicityFilter.Target.NON_CODING))
                 .addStep(InheritanceFilter.of())
                 .addStep(new OmimPriority(TestPriorityServiceFactory.stubPriorityService()))
                 .build();
@@ -115,7 +115,7 @@ class AnalysisProtoConverterTest {
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setRegulatoryFeatureFilter(FiltersProto.RegulatoryFeatureFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setGeneBlacklistFilter(FiltersProto.GeneBlacklistFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setFrequencyFilter(FiltersProto.FrequencyFilter.newBuilder().setMaxFrequency(0.2f)))
-                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(true)))
+                .addSteps(AnalysisProto.AnalysisStep.newBuilder().setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder().setKeepNonPathogenic(false).setTarget(FiltersProto.PathogenicityFilter.Target.NON_CODING)))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setInheritanceFilter(FiltersProto.InheritanceFilter.newBuilder()))
                 .addSteps(AnalysisProto.AnalysisStep.newBuilder().setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder()))
                 .build();

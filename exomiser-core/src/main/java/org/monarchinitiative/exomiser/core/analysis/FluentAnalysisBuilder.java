@@ -23,6 +23,7 @@ package org.monarchinitiative.exomiser.core.analysis;
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.monarchinitiative.exomiser.core.filters.FailedVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
+import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -47,11 +48,11 @@ interface FluentAnalysisBuilder<R> {
 
     public FluentAnalysisBuilder<R> inheritanceModes(InheritanceModeOptions inheritanceModeOptions);
 
-    public FluentAnalysisBuilder analysisMode(AnalysisMode analysisMode);
+    public FluentAnalysisBuilder<R> analysisMode(AnalysisMode analysisMode);
 
-    public FluentAnalysisBuilder frequencySources(Set<FrequencySource> frequencySources);
+    public FluentAnalysisBuilder<R> frequencySources(Set<FrequencySource> frequencySources);
 
-    public FluentAnalysisBuilder pathogenicitySources(Set<PathogenicitySource> pathogenicitySources);
+    public FluentAnalysisBuilder<R> pathogenicitySources(Set<PathogenicitySource> pathogenicitySources);
 
     // Filters
 
@@ -61,30 +62,30 @@ interface FluentAnalysisBuilder<R> {
      *
      * @return An {@link AnalysisBuilder} with a {@link FailedVariantFilter} added to the analysis steps.
      */
-    public FluentAnalysisBuilder addFailedVariantFilter();
+    public FluentAnalysisBuilder<R> addFailedVariantFilter();
 
-    public FluentAnalysisBuilder addIntervalFilter(GeneticInterval interval);
+    public FluentAnalysisBuilder<R> addIntervalFilter(GeneticInterval interval);
 
     /**
      * @param chromosomalRegions regions within which variants should be considered in an analysis
      * @return An {@link AnalysisBuilder} with a {@link Collection < ChromosomalRegion >} added to the analysis steps.
      * @since 12.0.0
      */
-    public FluentAnalysisBuilder addIntervalFilter(Collection<ChromosomalRegion> chromosomalRegions);
+    public FluentAnalysisBuilder<R> addIntervalFilter(Collection<ChromosomalRegion> chromosomalRegions);
 
-    public FluentAnalysisBuilder addGeneIdFilter(Set<String> entrezIds);
+    public FluentAnalysisBuilder<R> addGeneIdFilter(Set<String> entrezIds);
 
-    public FluentAnalysisBuilder addVariantEffectFilter(Set<VariantEffect> variantEffects);
+    public FluentAnalysisBuilder<R> addVariantEffectFilter(Set<VariantEffect> variantEffects);
 
-    public FluentAnalysisBuilder addQualityFilter(double cutoff);
+    public FluentAnalysisBuilder<R> addQualityFilter(double cutoff);
 
-    public FluentAnalysisBuilder addAlleleBalanceFilter();
+    public FluentAnalysisBuilder<R> addAlleleBalanceFilter();
 
-    public FluentAnalysisBuilder addKnownVariantFilter();
+    public FluentAnalysisBuilder<R> addKnownVariantFilter();
 
-    public FluentAnalysisBuilder addFrequencyFilter(float cutOff);
+    public FluentAnalysisBuilder<R> addFrequencyFilter(float cutOff);
 
-    public FluentAnalysisBuilder addGeneBlacklistFilter();
+    public FluentAnalysisBuilder<R> addGeneBlacklistFilter();
 
     /**
      * Add a frequency filter using the maximum frequency for any defined mode of inheritance as the cut-off. Calling this
@@ -95,28 +96,32 @@ interface FluentAnalysisBuilder<R> {
      * frequency taken from the {@link InheritanceModeOptions}.
      * @since 11.0.0
      */
-    public FluentAnalysisBuilder addFrequencyFilter();
+    public FluentAnalysisBuilder<R> addFrequencyFilter();
 
-    public FluentAnalysisBuilder addPathogenicityFilter(boolean keepNonPathogenic);
+    default FluentAnalysisBuilder<R> addPathogenicityFilter(boolean keepNonPathogenic) {
+        return addPathogenicityFilter(keepNonPathogenic, PathogenicityFilter.Target.ALL);
+    }
 
-    public FluentAnalysisBuilder addPriorityScoreFilter(PriorityType priorityType, float minPriorityScore);
+    public FluentAnalysisBuilder<R> addPathogenicityFilter(boolean keepNonPathogenic, PathogenicityFilter.Target target);
 
-    public FluentAnalysisBuilder addRegulatoryFeatureFilter();
+    public FluentAnalysisBuilder<R> addPriorityScoreFilter(PriorityType priorityType, float minPriorityScore);
 
-    public FluentAnalysisBuilder addInheritanceFilter();
+    public FluentAnalysisBuilder<R> addRegulatoryFeatureFilter();
+
+    public FluentAnalysisBuilder<R> addInheritanceFilter();
 
     // Prioritisers
-    public FluentAnalysisBuilder addOmimPrioritiser();
+    public FluentAnalysisBuilder<R> addOmimPrioritiser();
 
-    public FluentAnalysisBuilder addPhivePrioritiser();
+    public FluentAnalysisBuilder<R> addPhivePrioritiser();
 
-    public FluentAnalysisBuilder addHiPhivePrioritiser();
+    public FluentAnalysisBuilder<R> addHiPhivePrioritiser();
 
-    public FluentAnalysisBuilder addHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions);
+    public FluentAnalysisBuilder<R> addHiPhivePrioritiser(HiPhiveOptions hiPhiveOptions);
 
-    public FluentAnalysisBuilder addPhenixPrioritiser();
+    public FluentAnalysisBuilder<R> addPhenixPrioritiser();
 
-    public FluentAnalysisBuilder addExomeWalkerPrioritiser(List<Integer> seedGenes);
+    public FluentAnalysisBuilder<R> addExomeWalkerPrioritiser(List<Integer> seedGenes);
 
     public FluentAnalysisBuilder addBoqaPrioritiser();
 
