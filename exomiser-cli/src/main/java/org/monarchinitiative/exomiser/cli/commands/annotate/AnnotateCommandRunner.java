@@ -183,7 +183,7 @@ public class AnnotateCommandRunner implements CommandRunner<AnnotateCommand> {
                         VariantEvaluation variantEvaluation = buildAndAnnotateVariantEvaluation(genomeAnalysisService, genomicVariant);
                         GeneIdentifier geneIdentifier = knownGeneIdentifiers.getOrDefault(variantEvaluation.geneSymbol(), EMPTY_GENE_IDENTIFIER);
                         // Exomiser ACMG
-                        List<Disease> diseases = diseaseDao.getDiseaseDataAssociatedWithGeneId(Integer.parseInt(geneIdentifier.entrezId()));
+                        List<Disease> diseases = geneIdentifier.entrezId().isEmpty() ? List.of(): diseaseDao.getDiseaseDataAssociatedWithGeneId(Integer.parseInt(geneIdentifier.entrezId()));
                         ModeOfInheritance modeOfInheritance = findMoiForGene(diseases);
                         AcmgEvidence acmgEvidence = acmgEvidenceAssigner.assignVariantAcmgEvidence(variantEvaluation, modeOfInheritance, List.of(variantEvaluation), diseases, List.of());
                         AcmgClassification acmgClassification = acmgClassifier.classify(acmgEvidence);
