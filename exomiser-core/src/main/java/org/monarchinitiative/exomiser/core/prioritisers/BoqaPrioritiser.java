@@ -111,9 +111,16 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
             // An Exomiser Disease is a disease-gene-moi concept, but again these will all have the same phenotypic
             // features extracted from the HPOA
             // new disease table: id, label, source (e.g. HPOA, DDD2G), geneId, geneSymbol, moi, validity (ClinGen/GENCC), triplosensitivity, haploinsufficient, observedPhenotypes, excludedPhenotypes
-            Map<Disease, BoqaResult> boqaResults = diseases.stream()
-                    .filter(disease -> disease.id().startsWith("OMIM"))
-                    .collect(toUnmodifiableMap(Function.identity(), disease -> boqaResultsByDiseaseId.get(disease.diseaseId()), (first, second) -> first));
+            Map<Disease, BoqaResult> map = new HashMap<>();
+            for (Disease disease : diseases) {
+                if (disease.id().startsWith("OMIM")) {
+                    BoqaResult boqaResult = boqaResultsByDiseaseId.get(disease.diseaseId());
+                    if (boqaResult != null) {
+                        map.putIfAbsent(disease, boqaResult);
+                    }
+                }
+            }
+            Map<Disease, BoqaResult> boqaResults = Collections.unmodifiableMap(map);
 
             double score = boqaResults.values().stream().mapToDouble(BoqaResult::boqaScore).max().orElse(0d);
             BoqaPriorityResult boqaPriorityResult = new BoqaPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score, boqaResults);
