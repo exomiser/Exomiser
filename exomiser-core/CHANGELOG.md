@@ -1,5 +1,21 @@
 # The Exomiser - Core Library Changelog
 
+## 15.1.0 2026-06-09
+
+API-breaking changes:
+- None
+
+New APIs:
+- Added new PathogenicityFilter.Target enum and corresponding protobuf
+
+Updates:
+- Issue [#635](https://github.com/exomiser/Exomiser/issues/635) - Display CADD phred scores alongside the scaled scores in HTML
+
+Bug fixes:
+- Issue [#629](https://github.com/exomiser/Exomiser/issues/629) - replace commas in disease names with semicolons.
+- Issue [#633](https://github.com/exomiser/Exomiser/issues/633) - calculate variant score for non-symbolic insertions > 1kb.
+
+
 ## 15.0.0 2026-02-28
 [![Rare Disease Day](https://www.rarediseaseday.org/wp-content/uploads/Rare-disease-day-logo.svg
 )](https://www.rarediseaseday.org)
