@@ -35,8 +35,8 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         // it. The Counter now takes ~ 300ms to create, but still, it would be best to move it's creation into the config code.
         this.priorityService = priorityService;
         this.counter = counter;
-        this.alpha = 1.0/19077; // TODO: Make alpha and beta constructor parameters
-        this.beta = 0.9;
+        this.alpha = 0.01916; // TODO: Make alpha and beta constructor parameters
+        this.beta = 0.65;
     }
 
     @Override
