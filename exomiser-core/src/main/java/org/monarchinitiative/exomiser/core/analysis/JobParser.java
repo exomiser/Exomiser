@@ -45,6 +45,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static org.monarchinitiative.exomiser.core.filters.PathogenicityFilter.*;
 import static org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource.valueOf;
 
 /**
@@ -265,8 +266,14 @@ public class JobParser {
             if (pathogenicitySources.isEmpty()) {
                 throw new IllegalStateException("Pathogenicity filter requires a list of pathogenicity sources for the analysis e.g. {pathogenicitySources: [SIFT, POLYPHEN, MUTATION_TASTER]}");
             }
-            boolean keepNonPathogenic = getKeepNonPathogenic(protoAnalysisStep.getPathogenicityFilter());
-            analysisBuilder.addPathogenicityFilter(keepNonPathogenic);
+            FiltersProto.PathogenicityFilter pathogenicityFilter = protoAnalysisStep.getPathogenicityFilter();
+            boolean keepNonPathogenic = pathogenicityFilter.getKeepNonPathogenic();
+            Target target = switch (pathogenicityFilter.getTarget()) {
+                case ALL -> Target.ALL;
+                case NON_CODING -> Target.NON_CODING;
+                default -> throw new IllegalArgumentException("Unsupported pathogenicity filter target: " + pathogenicityFilter.getTarget());
+            };
+            analysisBuilder.addPathogenicityFilter(keepNonPathogenic, target);
         } else if (protoAnalysisStep.hasInheritanceFilter()) {
             analysisBuilder.addInheritanceFilter();
         } else if (protoAnalysisStep.hasGeneBlacklistFilter()) {
@@ -354,11 +361,6 @@ public class JobParser {
             return inheritanceModeOptions.getMaxFreq();
         }
         return maxFreq;
-    }
-
-    private boolean getKeepNonPathogenic(FiltersProto.PathogenicityFilter pathogenicityFilter) {
-        // n.b. defaults to false if not set.
-        return pathogenicityFilter.getKeepNonPathogenic();
     }
 
     private PriorityType parsePriorityType(FiltersProto.PriorityScoreFilter priorityScoreFilter) {

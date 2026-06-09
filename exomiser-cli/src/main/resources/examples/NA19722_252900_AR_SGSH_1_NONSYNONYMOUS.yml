@@ -102,7 +102,7 @@ analysis:
       regulatoryFeatureFilter: { },
     #knownVariantFilter: {}, #removes variants represented in the database
       frequencyFilter: { maxFrequency: 2.0 },
-      pathogenicityFilter: { keepNonPathogenic: true },
+      pathogenicityFilter: { keepNonPathogenic: false, target: NON_CODING },
     #inheritanceFilter and omimPrioritiser should always run AFTER all other filters have completed
     #they will analyse genes according to the specified modeOfInheritance above- UNDEFINED will not be analysed.
       inheritanceFilter: { },

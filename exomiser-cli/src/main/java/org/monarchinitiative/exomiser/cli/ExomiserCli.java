@@ -3,6 +3,7 @@ package org.monarchinitiative.exomiser.cli;
 import org.monarchinitiative.exomiser.cli.commands.AnalyseCommand;
 import org.monarchinitiative.exomiser.cli.commands.AnnotateCommand;
 import org.monarchinitiative.exomiser.cli.commands.BatchCommand;
+import org.monarchinitiative.exomiser.cli.commands.PhenotypeCommand;
 import org.monarchinitiative.exomiser.cli.pico.ManifestVersionProvider;
 import picocli.CommandLine;
 

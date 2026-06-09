@@ -27,6 +27,7 @@ import org.monarchinitiative.exomiser.api.v1.FiltersProto;
 import org.monarchinitiative.exomiser.api.v1.PrioritisersProto;
 import org.monarchinitiative.exomiser.core.filters.FailedVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
+import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter;
 import org.monarchinitiative.exomiser.core.model.ChromosomalRegion;
 import org.monarchinitiative.exomiser.core.model.GeneticInterval;
 import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
@@ -205,9 +206,18 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
     }
 
     public AnalysisProtoBuilder addPathogenicityFilter(boolean keepNonPathogenic) {
+        return addPathogenicityFilter(keepNonPathogenic, PathogenicityFilter.Target.ALL);
+    }
+
+    public AnalysisProtoBuilder addPathogenicityFilter(boolean keepNonPathogenic, PathogenicityFilter.Target target) {
         builder.addSteps(stepBuilder()
                 .setPathogenicityFilter(FiltersProto.PathogenicityFilter.newBuilder()
-                        .setKeepNonPathogenic(keepNonPathogenic)));
+                        .setKeepNonPathogenic(keepNonPathogenic)
+                        .setTarget(switch (target) {
+                            case ALL -> FiltersProto.PathogenicityFilter.Target.ALL;
+                            case NON_CODING -> FiltersProto.PathogenicityFilter.Target.NON_CODING;
+                        })
+                ));
         return this;
     }
 

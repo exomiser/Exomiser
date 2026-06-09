@@ -388,7 +388,7 @@ class VcfResultsWriterTest {
         Disease diseaseNameWithSpaces = Disease.builder()
                 .diseaseId("DISEASE:1")
                 // this should not have spaces in the VCF file
-                .diseaseName("Name with spaces")
+                .diseaseName("Name with spaces, and a damn comma")
                 .build();
 
         GeneScore adScore = GeneScore.builder()
@@ -404,7 +404,7 @@ class VcfResultsWriterTest {
 
         String vcf = instance.writeString(analysisResults, settings);
         final String expected = METADATA_HEADER + CHR_7_CONTIG_HEADER + SAMPLE_HEADER
-                + "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={1|7-155604800-C-CT_AD|SHH_alpha_spaces|6469|AD|1.0000|1.0000|0.0000|0.0000|1.0000|1|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|LIKELY_BENIGN|BP1_Moderate|DISEASE:1|\"Name_with_spaces\"}\tGT:RD\t0/1:30\n";
+                + "7\t155604800\t.\tC\tCT\t1\tPASS\tExomiser={1|7-155604800-C-CT_AD|SHH_alpha_spaces|6469|AD|1.0000|1.0000|0.0000|0.0000|1.0000|1|0|frameshift_variant|SHH:uc003wmk.1:c.16dup:p.(Arg6Lysfs*58)|LIKELY_BENIGN|BP1_Moderate|DISEASE:1|\"Name_with_spaces;_and_a_damn_comma\"}\tGT:RD\t0/1:30\n";
         assertThat(vcf, equalTo(expected));
     }
 

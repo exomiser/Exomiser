@@ -32,7 +32,7 @@
     <parent>
         <groupId>org.monarchinitiative.exomiser</groupId>
         <artifactId>exomiser</artifactId>
-        <version>15.0.0</version>
+        <version>15.1.0</version>
     </parent>
 
 
@@ -210,7 +210,7 @@
         <profile>
             <id>docker:bash</id>
             <properties>
-                <docker.base.image>eclipse-temurin:25.0.2_10-jre</docker.base.image>
+                <docker.base.image>eclipse-temurin:25.0.2_10-jre@sha256:ff82c74a630c08b417502c4c18189e62074edbb28eb1f2d31b799ac138c01058</docker.base.image>
             </properties>
             <build>
                 <plugins>
@@ -225,6 +225,7 @@
                                     <goal>build</goal>
                                 </goals>
                                 <configuration>
+                                    <containerizingMode>packaged</containerizingMode>
                                     <from>
                                         <image>
                                             ${docker.base.image}
@@ -234,11 +235,6 @@
                                                 <os>linux</os>
                                                 <architecture>arm64</architecture>
                                             </platform>
-                                            <!-- No longer provided was this for MacOS? -->
-<!--                                            <platform>-->
-<!--                                                <os>linux</os>-->
-<!--                                                <architecture>arm</architecture>-->
-<!--                                            </platform>-->
                                             <platform>
                                                 <os>linux</os>
                                                 <architecture>amd64</architecture>
@@ -258,16 +254,25 @@
                                         <entrypoint>
                                             <arg>/bin/bash</arg>
                                         </entrypoint>
+                                        <environment>
+                                            <EXOMISER_DATA_DIRECTORY>/exomiser-data</EXOMISER_DATA_DIRECTORY>
+                                        </environment>
                                         <volumes>
                                             <volume>/exomiser-data</volume>
-                                            <volume>/exomiser</volume>
                                             <volume>/results</volume>
                                         </volumes>
                                     </container>
                                     <extraDirectories>
+                                        <paths>
+                                            <path>
+                                                <from>src/main/jib</from>
+                                                <into>/usr/local/bin</into>
+                                                <includes>exomiser</includes>
+                                            </path>
+                                        </paths>
                                         <permissions>
                                             <permission>
-                                                <file>/entrypoint.sh</file>
+                                                <file>/usr/local/bin/exomiser</file>
                                                 <mode>755</mode>
                                             </permission>
                                         </permissions>
@@ -294,6 +299,7 @@
                                     <goal>build</goal>
                                 </goals>
                                 <configuration>
+                                    <containerizingMode>packaged</containerizingMode>
                                     <from>
                                         <image>
                                             ${docker.base.image}
@@ -320,9 +326,11 @@
                                         </tags>
                                     </to>
                                     <container>
+                                        <environment>
+                                            <EXOMISER_DATA_DIRECTORY>/exomiser-data</EXOMISER_DATA_DIRECTORY>
+                                        </environment>
                                         <volumes>
                                             <volume>/exomiser-data</volume>
-                                            <volume>/exomiser</volume>
                                             <volume>/results</volume>
                                         </volumes>
                                     </container>
