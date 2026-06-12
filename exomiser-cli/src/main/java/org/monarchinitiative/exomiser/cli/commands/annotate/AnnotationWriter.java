@@ -26,7 +26,6 @@ import static java.util.stream.Collectors.joining;
 public class AnnotationWriter {
 
     public static final CSVFormat EXOMISER_VARIANTS_TSV_FORMAT = CSVFormat.newFormat('\t')
-            .withSkipHeaderRecord()
             .withRecordSeparator("\n")
             .withIgnoreSurroundingSpaces(true)
             .withHeader("ID", "GENE_SYMBOL", "HGNC_GENE_ID", "ENTREZ_GENE_ID",  "EXOMISER_VARIANT_SCORE",
