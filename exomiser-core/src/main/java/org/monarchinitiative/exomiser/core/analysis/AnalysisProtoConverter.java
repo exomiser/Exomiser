@@ -121,36 +121,51 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
 
     private AnalysisProto.AnalysisStep buildPrioritiserProto(AnalysisStep analysisStep) {
         AnalysisProto.AnalysisStep.Builder stepBuilder = AnalysisProto.AnalysisStep.newBuilder();
-        if (analysisStep instanceof OmimPriority) {
-            return stepBuilder
-                    .setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder())
-                    .build();
+        switch (analysisStep) {
+            case BoqaPrioritiser boqaPrioritiser -> {
+                return stepBuilder
+                        .setBoqaPrioritiser(PrioritisersProto.BoqaPrioritiser.newBuilder())
+                        .build();
+            }
+            case OmimPriority omimPriority -> {
+                return stepBuilder
+                        .setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder())
+                        .build();
+            }
+            case HiPhivePriority hiPhivePriority -> {
+                HiPhiveOptions hiPhiveOptions = hiPhivePriority.getOptions();
+                return stepBuilder
+                        .setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder()
+                                .setRunParams(hiPhiveOptions.getRunParams())
+                                .setDiseaseId(hiPhiveOptions.diseaseId())
+                                .setCandidateGeneSymbol(hiPhiveOptions.candidateGeneSymbol()))
+                        .build();
+            }
+            case PhenixPriority phenixPriority -> {
+                return stepBuilder
+                        .setPhenixPrioritiser(PrioritisersProto.PhenixPrioritiser.newBuilder())
+                        .build();
+            }
+            case PhivePriority phivePriority -> {
+                return stepBuilder
+                        .setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.newBuilder())
+                        .build();
+            }
+            case ExomeWalkerPriority exomeWalkerPriority -> {
+                return stepBuilder
+                        .setExomeWalkerPrioritiser(PrioritisersProto.ExomeWalkerPrioritiser.newBuilder().addAllSeedGeneIds(exomeWalkerPriority.getSeedGenes()))
+                        .build();
+            }
+            case null -> {
+                // this might be a genuine case where no prioritiser was specified.
+                return null;
+            }
+            default -> {
+                // shouldn't get here, warn and continue
+                logger.warn("Unknown prioritiser type {}", analysisStep);
+                return null;
+            }
         }
-        if (analysisStep instanceof HiPhivePriority hiPhivePriority) {
-            HiPhiveOptions hiPhiveOptions = hiPhivePriority.getOptions();
-            return stepBuilder
-                    .setHiPhivePrioritiser(PrioritisersProto.HiPhivePrioritiser.newBuilder()
-                            .setRunParams(hiPhiveOptions.getRunParams())
-                            .setDiseaseId(hiPhiveOptions.diseaseId())
-                            .setCandidateGeneSymbol(hiPhiveOptions.candidateGeneSymbol()))
-                    .build();
-        }
-        if (analysisStep instanceof PhenixPriority) {
-            return stepBuilder
-                    .setPhenixPrioritiser(PrioritisersProto.PhenixPrioritiser.newBuilder())
-                    .build();
-        }
-        if (analysisStep instanceof PhivePriority) {
-            return stepBuilder
-                    .setPhivePrioritiser(PrioritisersProto.PhivePrioritiser.newBuilder())
-                    .build();
-        }
-        if (analysisStep instanceof ExomeWalkerPriority exomeWalkerPriority) {
-            return stepBuilder
-                    .setExomeWalkerPrioritiser(PrioritisersProto.ExomeWalkerPrioritiser.newBuilder().addAllSeedGeneIds(exomeWalkerPriority.getSeedGenes()))
-                    .build();
-        }
-        return null;
     }
 
     @Override
