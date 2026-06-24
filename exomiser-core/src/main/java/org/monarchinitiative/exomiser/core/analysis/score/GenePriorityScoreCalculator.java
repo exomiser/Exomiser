@@ -23,15 +23,11 @@ package org.monarchinitiative.exomiser.core.analysis.score;
 import de.charite.compbio.jannovar.mendel.ModeOfInheritance;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
-import org.monarchinitiative.exomiser.core.prioritisers.HiPhivePriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.OmimPriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
-import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.exomiser.core.prioritisers.*;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
+import org.p2gx.boqa.core.analysis.BoqaResult;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -60,12 +56,44 @@ class GenePriorityScoreCalculator {
         double knownDiseaseInheritanceModeModifier = diseaseScoresByMode.getOrDefault(modeOfInheritance, 1d);
         double score = phenotypePrioritiserScore * knownDiseaseInheritanceModeModifier;
 
+        // horribly unscalable. TODO: Fix this to become more generic if we keep Boqa
+        BoqaPriorityResult boqaPriorityResult = gene.getPriorityResult(BoqaPriorityResult.class);
+        if (boqaPriorityResult != null) {
+            return boqaAdjustedGenePriorityScore(modeOfInheritance, knownDiseaseInheritanceModeModifier, boqaPriorityResult);
+        }
         // Adjust score using the MOI compatible disease models from the HiPhiveResult
         HiPhivePriorityResult hiPhivePriorityResult = gene.getPriorityResult(HiPhivePriorityResult.class);
         if (hiPhivePriorityResult == null) {
             return new GenePriorityScore(score, modeOfInheritance, List.of());
         }
         return hiPhiveAdjustedGenePriorityScore(modeOfInheritance, knownDiseaseInheritanceModeModifier, hiPhivePriorityResult);
+    }
+
+    private GenePriorityScore boqaAdjustedGenePriorityScore(ModeOfInheritance modeOfInheritance, double knownDiseaseInheritanceModeModifier, BoqaPriorityResult boqaPriorityResult) {
+        List<ModelPhenotypeMatch<Disease>> compatibleDiseaseMatches = findMoiCompatibleDiseasePhenotypeMatches(modeOfInheritance, boqaPriorityResult.boqaResults());
+        if (compatibleDiseaseMatches.isEmpty()) {
+            // No compatible diseases for this MOI - use the best model, but apply the knownDiseaseInheritanceModeModifier
+            double moiAdjustedNonDiseaseModelScore = boqaPriorityResult.score() * knownDiseaseInheritanceModeModifier;
+            return new GenePriorityScore(moiAdjustedNonDiseaseModelScore, modeOfInheritance, List.of());
+        }
+        ModelPhenotypeMatch<Disease> topDiseaseHitForMoi = compatibleDiseaseMatches.getFirst();
+        return new GenePriorityScore(topDiseaseHitForMoi.score(), modeOfInheritance, compatibleDiseaseMatches);
+    }
+
+    private List<ModelPhenotypeMatch<Disease>> findMoiCompatibleDiseasePhenotypeMatches(ModeOfInheritance modeOfInheritance, Map<Disease, BoqaResult> boqaResults) {
+        // strict - will only add disease with known and compatible MOI
+        return boqaResults.entrySet().stream()
+                .map(entry -> {
+                    Disease disease = entry.getKey();
+                    BoqaResult boqaResult = entry.getValue();
+                    if (disease.inheritanceMode().isCompatibleWith(modeOfInheritance)) {
+                        return new ModelPhenotypeMatch<>(boqaResult.boqaScore(), disease, List.of());
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList();
     }
 
     private GenePriorityScore hiPhiveAdjustedGenePriorityScore(ModeOfInheritance modeOfInheritance, double knownDiseaseInheritanceModeModifier, HiPhivePriorityResult hiPhivePriorityResult) {
