@@ -24,7 +24,7 @@
 
     <groupId>org.monarchinitiative.exomiser</groupId>
     <artifactId>exomiser</artifactId>
-    <version>15.1.0</version>
+    <version>15.1.0-boqa</version>
     <packaging>pom</packaging>
 
     <name>exomiser</name>

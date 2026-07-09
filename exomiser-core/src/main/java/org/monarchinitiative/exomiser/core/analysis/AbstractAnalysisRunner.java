@@ -54,7 +54,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
     private static final Logger logger = LoggerFactory.getLogger(AbstractAnalysisRunner.class);
 
     private final GenomeAnalysisService genomeAnalysisService;
-
+//    private final PhenotypeAnalysisService phenotypeAnalysisService;
     protected final VariantFilterRunner variantFilterRunner;
     private final GeneFilterRunner geneFilterRunner;
 
@@ -135,7 +135,8 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
         logger.info("Scoring genes");
         List<Gene> genes = geneScorer.scoreGenes(genesToScore);
         List<VariantEvaluation> variants = variantsLoaded ? getFinalVariantList(variantEvaluations) : List.of();
-
+        // run blended BOQA here
+//        List<BlendedGene> blendedGenes = BlendedBoqa.willItBlend(genes.stream().flatMap(Gene::geneScores).filter().limit(10));
         logger.info("Analysed sample {} with {} genes containing {} filtered variants", probandIdentifier, genes.size(), variants.size());
         AnalysisResults analysisResults = AnalysisResults.builder()
                 .filterCounts(filterResultCounts)
@@ -143,6 +144,7 @@ abstract class AbstractAnalysisRunner implements AnalysisRunner {
                 .analysis(analysis)
                 .sampleNames(sampleNames)
                 .genes(genes)
+//                .blendedGenes(blendedGenes)
                 .variantEvaluations(variants)
                 .build();
 
