@@ -60,8 +60,6 @@ author = u'Jules Jacobsen, Damian Smedley, Peter Robinson'
 
 # The short X.Y version
 version = u'15.1.1'
-genome_data_version = u'2602'
-phenotype_data_version = u'2602'
 # The full version, including alpha/beta/rc tags
 release = version
 
