@@ -22,53 +22,14 @@ package org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology;
 
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLine;
 
-import java.util.Objects;
-
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
-public class AltToCurrentId implements OutputLine {
-
-    private final String altId;
-    private final String currentId;
-
-    public AltToCurrentId(String altId, String currentId) {
-        this.altId = altId;
-        this.currentId = currentId;
-    }
-
-    public String getAltId() {
-        return altId;
-    }
-
-    public String getCurrentId() {
-        return currentId;
-    }
+public record AltToCurrentId(String altId, String currentId) implements OutputLine {
 
     @Override
     public String toOutputLine() {
         return altId + "|" + currentId;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AltToCurrentId)) return false;
-        AltToCurrentId that = (AltToCurrentId) o;
-        return altId.equals(that.altId) &&
-                currentId.equals(that.currentId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(altId, currentId);
-    }
-
-    @Override
-    public String toString() {
-        return "AltToCurrentId{" +
-                "altId='" + altId + '\'' +
-                ", currentId='" + currentId + '\'' +
-                '}';
-    }
 }

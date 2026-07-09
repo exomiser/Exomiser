@@ -111,6 +111,9 @@ public class OboOntologyParser {
                 else if (line.startsWith("replaced_by:")){
                     termBuilder.replacedBy(line.substring(12).trim());
                 }
+                else if (line.startsWith("consider:")) {
+                    termBuilder.addConsider(line.substring(9).trim());
+                }
                 else if (line.isEmpty() && id != null) {
                     // add current term
                     ontologyTerms.add(termBuilder.build());

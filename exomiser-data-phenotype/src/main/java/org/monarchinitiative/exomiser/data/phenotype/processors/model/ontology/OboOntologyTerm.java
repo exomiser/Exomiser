@@ -22,9 +22,7 @@ package org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology;
 
 import org.monarchinitiative.exomiser.data.phenotype.processors.writers.OutputLine;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Very simple ontology class to represent the ontology term data found in an obo ontology which we require directly in
@@ -39,14 +37,16 @@ public class OboOntologyTerm implements OutputLine {
     private final boolean obsolete;
     private final List<String> altIds;
     private final String replacedBy;
+    private final List<String> consider;
 
     private OboOntologyTerm(Builder builder) {
         Objects.requireNonNull(builder.id);
         this.id = builder.id;
-        this.label = builder.label == null ? "" : builder.label;
+        this.label = builder.label;
         this.obsolete = builder.obsolete;
-        this.altIds = builder.altIds == null ? List.of() : List.copyOf(builder.altIds);
-        this.replacedBy = builder.replacedBy == null ? "" : builder.replacedBy;
+        this.altIds = List.copyOf(builder.altIds);
+        this.replacedBy = builder.replacedBy;
+        this.consider = List.copyOf(builder.consider);
     }
 
     public String getId() {
@@ -69,6 +69,10 @@ public class OboOntologyTerm implements OutputLine {
         return replacedBy;
     }
 
+    public List<String> getConsider() {
+        return consider;
+    }
+
     @Override
     public String toOutputLine() {
         return id + "|" + label;
@@ -83,12 +87,13 @@ public class OboOntologyTerm implements OutputLine {
                 Objects.equals(id, that.id) &&
                 Objects.equals(label, that.label) &&
                 Objects.equals(altIds, that.altIds) &&
-                Objects.equals(replacedBy, that.replacedBy);
+                Objects.equals(replacedBy, that.replacedBy) &&
+                Objects.equals(consider, that.consider);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, label, obsolete, altIds, replacedBy);
+        return Objects.hash(id, label, obsolete, altIds, replacedBy, consider);
     }
 
     @Override
@@ -99,6 +104,7 @@ public class OboOntologyTerm implements OutputLine {
                 ", obsolete=" + obsolete +
                 ", altIds=" + altIds +
                 ", replacedBy='" + replacedBy + '\'' +
+                ", consider='" + consider + '\'' +
                 '}';
     }
 
@@ -111,8 +117,9 @@ public class OboOntologyTerm implements OutputLine {
         private String id = null;
         private String label = "";
         private boolean obsolete = false;
-        private List<String> altIds = new ArrayList<>();
+        private final Set<String> altIds = new LinkedHashSet<>();
         private String replacedBy = "";
+        private final Set<String> consider = new LinkedHashSet<>();
 
         public Builder id(String id) {
             this.id = id;
@@ -120,7 +127,7 @@ public class OboOntologyTerm implements OutputLine {
         }
 
         public Builder label(String label) {
-            this.label = label;
+            this.label = Objects.requireNonNullElse(label, "");
             return this;
         }
 
@@ -130,7 +137,11 @@ public class OboOntologyTerm implements OutputLine {
         }
 
         public Builder altIds(List<String> altIds) {
-            this.altIds = altIds;
+            if (altIds != null) {
+                for (String altId : altIds) {
+                    addAltId(altId);
+                }
+            }
             return this;
         }
 
@@ -142,7 +153,14 @@ public class OboOntologyTerm implements OutputLine {
         }
 
         public Builder replacedBy(String replacedBy) {
-            this.replacedBy = replacedBy;
+            this.replacedBy = Objects.requireNonNullElse(replacedBy, "");
+            return this;
+        }
+
+        public Builder addConsider(String considerId) {
+            if (considerId != null && !considerId.isEmpty()) {
+                this.consider.add(considerId);
+            }
             return this;
         }
 

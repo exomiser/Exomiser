@@ -103,7 +103,7 @@ public class OntologyProcessingGroup implements ProcessingGroup {
         hpWriter.write(hpTerms);
         List<AltToCurrentId> altToCurrentIds = hpOntology.getIdToTerms().entrySet().stream()
                 .map(entry -> new AltToCurrentId(entry.getKey(), entry.getValue().getId()))
-                .collect(toList());
+                .toList();
         // alt_id : current_id
         hpAltIdWriter.write(altToCurrentIds);
         hpHpPhenodigmProcessor.process(hpTerms, hpTerms);
