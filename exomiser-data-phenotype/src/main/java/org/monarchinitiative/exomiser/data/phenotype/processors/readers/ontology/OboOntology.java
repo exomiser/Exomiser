@@ -21,6 +21,8 @@
 package org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontology;
 
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology.OboOntologyTerm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +35,8 @@ import java.util.stream.Collectors;
  */
 public class OboOntology {
 
+    private static final Logger logger = LoggerFactory.getLogger(OboOntology.class);
+
     // parsed data
     private final String dataVersion;
     private final List<OboOntologyTerm> currentOntologyTerms;
@@ -44,10 +48,10 @@ public class OboOntology {
         this.dataVersion = dataVersion;
         this.currentOntologyTerms = ontologyTerms.stream()
                 .filter(ontologyTerm -> !ontologyTerm.isObsolete())
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
         this.obsoleteOntologyTerms = ontologyTerms.stream()
                 .filter(OboOntologyTerm::isObsolete)
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
         this.obsoleteIdToCurrentTerms = makeObsoleteTerms(currentOntologyTerms, obsoleteOntologyTerms);
     }
 
@@ -64,7 +68,7 @@ public class OboOntology {
         // contains a replaced_by term. Newer versions of the HPO handle this better by already adding the alt_id to
         // the current term.
         for (OboOntologyTerm obsoleteTerm : obsoleteOntologyTerms) {
-            String replacedById = obsoleteTerm.getReplacedBy();
+            String replacedById = findReplacedById(obsoleteTerm);
             OboOntologyTerm currentTerm = idToTerms.get(replacedById);
             if (currentTerm != null) {
                 idToTerms.put(obsoleteTerm.getId(), currentTerm);
@@ -75,6 +79,23 @@ public class OboOntology {
         }
 
         return Collections.unmodifiableMap(idToTerms);
+    }
+
+    private String findReplacedById(OboOntologyTerm obsoleteTerm) {
+        String replacedBy = obsoleteTerm.getReplacedBy();
+        // sometimes the replaced_by is missing as no precise replacement is available, in which case we'll just go with
+        // the first possible consider term e.g.
+        // [Term]
+        // id: HP:0000535
+        // name: obsolete Sparse and thin eyebrow
+        // is_obsolete: true
+        // consider: HP:0045074
+        // consider: HP:0045075
+        if (replacedBy.isEmpty() && !obsoleteTerm.getConsider().isEmpty()) {
+            logger.warn("Obsolete term {} has no 'replaced_by' term. Replacing with first non-exact 'consider' term {}.", obsoleteTerm.getId(), obsoleteTerm.getConsider().getFirst());
+            return obsoleteTerm.getConsider().getFirst();
+        }
+        return replacedBy;
     }
 
     public String getDataVersion() {

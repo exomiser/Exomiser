@@ -22,8 +22,11 @@ package org.monarchinitiative.exomiser.data.phenotype.processors.readers.ontolog
 
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.monarchinitiative.exomiser.data.phenotype.processors.model.ontology.OboOntologyTerm;
 
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -127,5 +130,94 @@ class OboOntologyParserTest {
 
         assertThat(termIds.get(obsoleteTerm.getId()), equalTo(currentTerm));
         obsoleteTerm.getAltIds().forEach(altId -> assertThat(termIds.get(altId), equalTo(currentTerm)));
+    }
+
+    // test for issue #649
+    @Test
+    void testReplacedByConsider(@TempDir Path temp) {
+        String hpo = """
+                format-version: 1.2
+                data-version: hp/releases/2026-06-23
+                subsetdef: hposlim_core "Core clinical terminology"
+                subsetdef: secondary_consequence "Consequence of a disorder in another organ system."
+                synonymtypedef: abbreviation "abbreviation"
+                synonymtypedef: allelic_requirement "allelic_requirement"
+                synonymtypedef: layperson "layperson term"
+                synonymtypedef: obsolete_synonym "discarded/obsoleted synonym"
+                synonymtypedef: plural_form "plural form"
+                synonymtypedef: uk_spelling "UK spelling"
+                default-namespace: human_phenotype
+                idspace: dc http://purl.org/dc/elements/1.1/\s
+                idspace: oboInOwl http://www.geneontology.org/formats/oboInOwl#\s
+                idspace: terms http://purl.org/dc/terms/\s
+                remark: Please see license of HPO at http://www.human-phenotype-ontology.org
+                ontology: hp.obo
+                
+                [term]
+                id: HP:0000535
+                name: obsolete Sparse and thin eyebrow
+                is_obsolete: true
+                consider: HP:0045074
+                consider: HP:0045075
+                
+                [Term]
+                id: HP:0045074
+                name: Thin eyebrow
+                def: "Decreased diameter of eyebrow hairs." []
+                synonym: "Thin eyebrow" EXACT layperson []
+                synonym: "Thin eyebrows" EXACT layperson []
+                is_a: HP:0100840 ! Aplasia/Hypoplasia of the eyebrow
+                property_value: terms:creator https://orcid.org/0000-0002-5316-1399
+                property_value: terms:date "2016-07-28T11:49:07Z" xsd:dateTime
+                
+                [Term]
+                id: HP:0045075
+                name: Sparse eyebrow
+                alt_id: HP:0002222
+                alt_id: HP:0002554
+                alt_id: HP:0004520
+                alt_id: HP:0004551
+                def: "Decreased density/number of eyebrow hairs." [https://orcid.org/0000-0002-5316-1399, PMID:19125427]
+                comment: Sparseness can be regional (medial, central, lateral) or total.
+                subset: hposlim_core
+                synonym: "Hypotrichosis of eyebrow" EXACT [https://orcid.org/0000-0002-5316-1399]
+                synonym: "Sparse eyebrow" EXACT layperson []
+                synonym: "Sparse eyebrows" EXACT layperson []
+                is_a: HP:0100840 ! Aplasia/Hypoplasia of the eyebrow
+                property_value: terms:date "2016-07-28T11:49:07Z" xsd:dateTime
+                
+                """;
+
+        Path oboFile = temp.resolve("hp.obo");
+        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(oboFile)) {
+            bufferedWriter.write(hpo);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        OboOntologyTerm sparseAndThinEyebrow = OboOntologyTerm.builder()
+                .id("HP:0000535")
+                .label("obsolete Sparse and thin eyebrow")
+                .obsolete(true)
+                .addConsider("HP:0045074")
+                .addConsider("HP:0045075")
+                .build();
+
+        OboOntologyTerm thinEyebrow = OboOntologyTerm.builder()
+                .id("HP:0045074")
+                .label("Thin eyebrow")
+                .build();
+
+        OboOntologyTerm sparseEyebrow = OboOntologyTerm.builder()
+                .id("HP:0045075")
+                .label("Sparse eyebrow")
+                .altIds(List.of("HP:0002222", "HP:0002554", "HP:0004520", "HP:0004551"))
+                .build();
+
+        OboOntology ontology = OboOntologyParser.parseOboFile(oboFile);
+        assertThat(ontology.getDataVersion(), equalTo("hp/releases/2026-06-23"));
+        assertThat(ontology.getCurrentOntologyTerms(), equalTo(List.of(thinEyebrow, sparseEyebrow)));
+        assertThat(ontology.getObsoleteOntologyTerms(), equalTo(List.of(sparseAndThinEyebrow)));
+        assertThat(ontology.getIdToTerms().get("HP:0000535"), equalTo(thinEyebrow)); // the first 'consider' term
     }
 }

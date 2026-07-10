@@ -109,11 +109,12 @@ Splice variants will be assigned PS1 with Strong, Moderate or Supporting modifie
 according to table 2 of `Using the ACMG/AMP framework to capture evidence related to
 predicted and observed impact on splicing: Recommendations from the ClinGen SVI Splicing Subgroup <https://doi.org/10.1016/j.ajhg.2023.06.002>`_.
 
-PM4
+PM4 / BP3
 ---
     `Protein length changing variant`
 
 Stop-loss and in-frame insertions or deletions, not previously assigned a `PVS1` criterion are assigned `PM4`.
+`BP3` is not currently assigned.
 
 PM5
 ---
