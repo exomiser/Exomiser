@@ -76,7 +76,7 @@ public class PhenotypeMatchService {
         return hpoIds.stream()
                 .map(ontologyService::getPhenotypeTermForHpoId)
                 .filter(Objects::nonNull)
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     private Set<PhenotypeMatch> getSpeciesMatchesForHpoTerm(PhenotypeTerm hpoTerm, Organism species) {

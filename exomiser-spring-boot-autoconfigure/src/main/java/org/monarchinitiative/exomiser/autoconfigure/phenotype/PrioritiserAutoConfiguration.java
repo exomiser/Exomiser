@@ -50,7 +50,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
@@ -167,34 +166,27 @@ public class PrioritiserAutoConfiguration {
 
     @Bean
     @Lazy
-    @ConditionalOnMissingBean(name = "boqaCounter")
-    Counter boqaCounter(Ontology hpoOntology) {
-        // Parse disease-HPO associations into DiseaseData object
+    @ConditionalOnMissingBean(name = "hpoDiseases")
+    public HpoDiseases hpoDiseases(Ontology hpoOntology) {
         Path hpoaFilePath = phenotypeDataDirectory().resolve("phenotype.hpoa");
-        logger.debug("Importing disease phenotype associations from file: {} ...", hpoaFilePath);
-        DiseaseData diseaseData;
+        Set<DiseaseDatabase> diseaseDatabase = Set.of(DiseaseDatabase.OMIM);
+        HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(diseaseDatabase,false, 100);
+        HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpoOntology, options);
         try {
-            //diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoaFilePath);
-            Set<DiseaseDatabase> diseaseDatabase = Set.of("OMIM").stream()
-                    .map(DiseaseDatabase::fromString)
-                    .collect(Collectors.toSet());
-            HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(diseaseDatabase,false, 100);
-            HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpoOntology(), options);
-            HpoDiseases diseases = loader.load(hpoaFilePath);
-            diseaseData = DiseaseDataPhenolIngest.of(hpoOntology(), diseases);
+            logger.debug("Importing disease phenotype associations from file: {}", hpoaFilePath);
+            return loader.load(hpoaFilePath);
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException("Unable to read HPO annotations from " + hpoaFilePath, e);
         }
-        logger.debug("Disease data parsed from {}", hpoaFilePath);
+    }
 
-        // n.b. the OMIM entries in the Exomiser database are a subset of the entire HPOA as there are approximately
-        // 1950 OMIM entries without a confirmed gene association
-//        List<Disease> diseases = priorityService.getAllDiseaseData();
-//        DiseaseData exomiserDiseaseData = new BoqaPrioritiser.ExomiserDiseaseData(diseases);
-
-        // Initialize Counter
+    @Bean
+    @Lazy
+    @ConditionalOnMissingBean(name = "boqaCounter")
+    Counter boqaCounter(Ontology hpoOntology, HpoDiseases hpoDiseases) {
+        // Parse disease-HPO associations into DiseaseData object
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpoOntology, hpoDiseases);
         var counter = new BoqaSetCounter(diseaseData, hpoOntology);
-
         logger.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
         return counter;
     }

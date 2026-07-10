@@ -1,6 +1,7 @@
 package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.monarchinitiative.exomiser.core.model.Gene;
+import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -47,7 +48,12 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
     @Override
     public Stream<BoqaPriorityResult> prioritise(List<String> hpoIds, List<Gene> genes) {
         logger.info("Running BOQA prioritiser...");
-        var observedHpoIds = hpoIds.stream().map(TermId::of).collect(toUnmodifiableSet());
+        // this will provide a set of current terms, filtering out any obsolete terms with no replacements
+        var observedHpoIds = priorityService.makePhenotypeTermsFromHpoIds(hpoIds)
+                .stream()
+                .map(PhenotypeTerm::id)
+                .map(TermId::of)
+                .collect(toUnmodifiableSet());
         PatientData patientData = new ExomiserPatientData(observedHpoIds, Collections.emptySet());
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResultsRawLog(patientData, counter, params);
