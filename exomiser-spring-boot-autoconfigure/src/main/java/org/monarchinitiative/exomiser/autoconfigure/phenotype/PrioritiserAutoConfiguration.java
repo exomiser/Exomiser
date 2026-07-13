@@ -167,6 +167,27 @@ public class PrioritiserAutoConfiguration {
 
     @Bean
     @Lazy
+    HpoDiseases hpoDiseases(Ontology hpOntology) {
+         Path hpoaFilePath = phenotypeDataDirectory().resolve("phenotype.hpoa");
+        logger.debug("Importing disease phenotype associations from file: {} ...", hpoaFilePath);
+        try {
+            //diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoaFilePath);
+            Set<DiseaseDatabase> diseaseDatabase = Set.of("OMIM").stream()
+                    .map(DiseaseDatabase::fromString)
+                    .collect(Collectors.toSet());
+            HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(diseaseDatabase,false, 100);
+            HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpoOntology(), options);
+            HpoDiseases diseases = loader.load(hpoaFilePath);
+            return diseases;
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        
+    }
+
+
+    @Bean
+    @Lazy
     @ConditionalOnMissingBean(name = "boqaCounter")
     Counter boqaCounter(Ontology hpoOntology) {
         // Parse disease-HPO associations into DiseaseData object

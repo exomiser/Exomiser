@@ -73,7 +73,7 @@
         <dependency>
             <groupId>io.github.p2gx.boqa</groupId>
             <artifactId>boqa-core</artifactId>
-            <version>0.1.0</version>
+            <version>0.2.1</version>
         </dependency>
         <!--Phenix dependencies:-->
         <!-- possibly could be replaced by org.monarchinitiative.phenol. If these artefacts are missing from the
