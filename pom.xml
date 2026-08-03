@@ -114,6 +114,7 @@
         <!--    These properties are used for the README.md and updating the application.properties -->
         <genome.data.version>2512</genome.data.version>
         <phenotype.data.version>2512</phenotype.data.version>
+         <phenol.version>2.1.2</phenol.version>
     </properties>
 
     <dependencyManagement>
@@ -124,6 +125,16 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.phenol</groupId>
+                <artifactId>phenol-core</artifactId>
+                <version>${phenol.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.monarchinitiative.phenol</groupId>
+                <artifactId>phenol-annotations</artifactId>
+                <version>${phenol.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

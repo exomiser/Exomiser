@@ -61,6 +61,8 @@ exomiser-db/nbactions.xml
 .classpath
 .DS_Store
 
+.vscode
+
 # Python & docs stuff
 .venv/
 docs/_build/
