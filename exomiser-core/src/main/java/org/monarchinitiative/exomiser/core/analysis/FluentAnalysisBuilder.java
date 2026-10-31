@@ -125,4 +125,7 @@ interface FluentAnalysisBuilder<R> {
 
     public FluentAnalysisBuilder addBoqaPrioritiser();
 
+    public FluentAnalysisBuilder addBlendedBoqaPrioritiser();
+
+
 }

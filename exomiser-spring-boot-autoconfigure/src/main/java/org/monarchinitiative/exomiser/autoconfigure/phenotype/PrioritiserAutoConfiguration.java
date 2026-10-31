@@ -32,10 +32,6 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.p2gx.boqa.core.Counter;
-import org.p2gx.boqa.core.DiseaseData;
-import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -185,40 +181,6 @@ public class PrioritiserAutoConfiguration {
         
     }
 
-
-    @Bean
-    @Lazy
-    @ConditionalOnMissingBean(name = "boqaCounter")
-    Counter boqaCounter(Ontology hpoOntology) {
-        // Parse disease-HPO associations into DiseaseData object
-        Path hpoaFilePath = phenotypeDataDirectory().resolve("phenotype.hpoa");
-        logger.debug("Importing disease phenotype associations from file: {} ...", hpoaFilePath);
-        DiseaseData diseaseData;
-        try {
-            //diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoaFilePath);
-            Set<DiseaseDatabase> diseaseDatabase = Set.of("OMIM").stream()
-                    .map(DiseaseDatabase::fromString)
-                    .collect(Collectors.toSet());
-            HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(diseaseDatabase,false, 100);
-            HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpoOntology(), options);
-            HpoDiseases diseases = loader.load(hpoaFilePath);
-            diseaseData = DiseaseDataPhenolIngest.of(hpoOntology(), diseases);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-        logger.debug("Disease data parsed from {}", hpoaFilePath);
-
-        // n.b. the OMIM entries in the Exomiser database are a subset of the entire HPOA as there are approximately
-        // 1950 OMIM entries without a confirmed gene association
-//        List<Disease> diseases = priorityService.getAllDiseaseData();
-//        DiseaseData exomiserDiseaseData = new BoqaPrioritiser.ExomiserDiseaseData(diseases);
-
-        // Initialize Counter
-        var counter = new BoqaSetCounter(diseaseData, hpoOntology);
-
-        logger.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
-        return counter;
-    }
 
     /**
      * This needs a lot of RAM and is slow to create from the randomWalkFile, so

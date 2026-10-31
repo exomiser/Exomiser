@@ -31,3 +31,6 @@ message ExomeWalkerPrioritiser {
 message BoqaPrioritiser {
 
 }
+
+message BlendedBoqaPrioritiser {
+}

@@ -127,6 +127,11 @@ public class AnalysisProtoConverter implements ProtoConverter<Analysis, Analysis
                         .setBoqaPrioritiser(PrioritisersProto.BoqaPrioritiser.newBuilder())
                         .build();
             }
+            case BlendedBoqaPrioritiser blendedBoqaPrioritiser -> {
+                return stepBuilder
+                        .setBlendedBoqaPrioritiser(PrioritisersProto.BlendedBoqaPrioritiser.newBuilder())
+                        .build();
+            }
             case OmimPriority omimPriority -> {
                 return stepBuilder
                         .setOmimPrioritiser(PrioritisersProto.OmimPrioritiser.newBuilder())

@@ -37,6 +37,7 @@ public enum PriorityType {
     //Prioritises against OMIM data
     OMIM_PRIORITY,
     BOQA_PRIORITY,
+    BLENDED_BOQA_PRIORITY,
     //None - for when you don't want to run any prioritisation
     NONE
 

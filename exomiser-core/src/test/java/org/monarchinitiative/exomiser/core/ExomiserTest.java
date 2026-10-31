@@ -37,7 +37,8 @@ import org.monarchinitiative.exomiser.core.model.frequency.FrequencySource;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
 import org.monarchinitiative.exomiser.core.phenotype.service.OntologyService;
 import org.monarchinitiative.exomiser.core.phenotype.service.TestOntologyService;
-import org.monarchinitiative.exomiser.core.prioritisers.BoqaCounterStub;
+import org.monarchinitiative.exomiser.core.prioritisers.HpoOntologyStub;
+import org.monarchinitiative.exomiser.core.prioritisers.HpoDiseasesStub;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactory;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityFactoryImpl;
 import org.monarchinitiative.exomiser.core.prioritisers.service.TestPriorityServiceFactory;
@@ -59,7 +60,9 @@ class ExomiserTest {
 
     private final GenomeAnalysisServiceProvider genomeAnalysisServiceProvider = new GenomeAnalysisServiceProvider(TestFactory
             .buildDefaultHg19GenomeAnalysisService());
-    private final PriorityFactory priorityFactory = new PriorityFactoryImpl(TestPriorityServiceFactory.testPriorityService(), DataMatrix.empty(), null, new BoqaCounterStub());
+    private final PriorityFactory priorityFactory = new PriorityFactoryImpl(
+            TestPriorityServiceFactory.testPriorityService(), DataMatrix.empty(), null,
+            new HpoOntologyStub(), new HpoDiseasesStub());
     private final OntologyService ontologyService = TestOntologyService.builder().build();
 
     private final AnalysisFactory analysisFactory = new AnalysisFactory(genomeAnalysisServiceProvider, priorityFactory, ontologyService);

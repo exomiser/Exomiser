@@ -45,4 +45,6 @@ public interface PriorityFactory {
 
     BoqaPrioritiser makeBoqaPrioritiser();
 
+    BlendedBoqaPrioritiser makeBlendedBoqaPrioritiser();
+
 }

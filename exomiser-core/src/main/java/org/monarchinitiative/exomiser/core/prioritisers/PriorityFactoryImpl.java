@@ -27,7 +27,8 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
 import org.monarchinitiative.exomiser.core.prioritisers.util.DataMatrix;
-import org.p2gx.boqa.core.Counter;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,14 +50,18 @@ public class PriorityFactoryImpl implements PriorityFactory {
     private final PriorityService priorityService;
     private final DataMatrix randomWalkMatrix;
     private final Path phenixDataDirectory;
-    private final Counter counter;
+    private final Ontology hpoOntology;
+    private final HpoDiseases hpoDiseases;
+
 
     @Autowired
-    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory, Counter boqaCounter) {
+    public PriorityFactoryImpl(PriorityService priorityService, DataMatrix randomWalkMatrix, Path phenixDataDirectory,
+                               Ontology hpoOntology, HpoDiseases hpoDiseases) {
         this.priorityService = priorityService;
         this.randomWalkMatrix = randomWalkMatrix;
         this.phenixDataDirectory = phenixDataDirectory;
-        this.counter = boqaCounter;
+        this.hpoOntology = hpoOntology;
+        this.hpoDiseases = hpoDiseases;
     }
 
     @Override
@@ -87,6 +92,11 @@ public class PriorityFactoryImpl implements PriorityFactory {
 
     @Override
     public BoqaPrioritiser makeBoqaPrioritiser() {
-        return new BoqaPrioritiser(priorityService, counter);
+        return new BoqaPrioritiser(priorityService, hpoOntology, hpoDiseases);
+    }
+
+    @Override
+    public BlendedBoqaPrioritiser makeBlendedBoqaPrioritiser() {
+        return new BlendedBoqaPrioritiser(priorityService, hpoOntology, hpoDiseases);
     }
 }

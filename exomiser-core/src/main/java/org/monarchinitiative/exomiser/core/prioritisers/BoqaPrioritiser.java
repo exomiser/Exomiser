@@ -3,18 +3,26 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 import org.monarchinitiative.exomiser.core.model.Gene;
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.monarchinitiative.exomiser.core.prioritisers.service.PriorityService;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.algorithm.OntologyTraverser;
+import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.BoqaResult;
+import org.p2gx.boqa.core.analysis.CandidateResult;
+import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
@@ -24,19 +32,18 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
     private static final Logger logger = LoggerFactory.getLogger(BoqaPrioritiser.class);
 
     private final PriorityService priorityService;
-    private final Counter counter;
-    private final double alpha;
-    private final double beta;
+    private final Ontology hpo;
+    private final HpoDiseases diseases;
 
-    public BoqaPrioritiser(PriorityService priorityService, Counter counter) {
+
+    public BoqaPrioritiser(PriorityService priorityService, Ontology hpo, HpoDiseases diseases) {
         // TODO: add getCounter(): Counter to Priority Service, then initialise the Counter @Lazy in the exomiser-config
         // or make a @Lazy Counter bean to inject along with the Priority Service in the PriorityFactoryImpl
         // The Counter takes about 1 minute to create, so we only want to do that once and only if we really want to use
         // it. The Counter now takes ~ 300ms to create, but still, it would be best to move it's creation into the config code.
         this.priorityService = priorityService;
-        this.counter = counter;
-        this.alpha = 0.01916; // TODO: Make alpha and beta constructor parameters
-        this.beta = 0.65;
+        this.hpo = hpo;
+        this.diseases = diseases;
     }
 
     @Override
@@ -49,13 +56,27 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
         logger.info("Running BOQA prioritiser...");
         var observedHpoIds = hpoIds.stream().map(TermId::of).collect(toUnmodifiableSet());
         PatientData patientData = new ExomiserPatientData(observedHpoIds, Collections.emptySet());
-        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
-        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResultsRawLog(patientData, counter, params);
-        List<BoqaResult> rescaledBoqaResults = reScaledRawLogBoqaExomiserScores(boqaAnalysisResult.boqaResults());
-        logger.debug("Top 10 BOQA results:");
-        rescaledBoqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).limit(10).forEach(b -> logger.debug("BOQA score: {} {} {}", b.counts().diseaseId(), b.boqaScore(), b.counts().diseaseLabel()));
-        Map<String, BoqaResult> boqaResultsByDiseaseId = rescaledBoqaResults.stream()
-                .collect(toUnmodifiableMap(boqaResult -> boqaResult.counts().diseaseId(), Function.identity()));
+        AlgorithmParameters params = AlgorithmParameters.defaultParams();
+        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
+        Counter counter = new SetCounter(ontologyTraverser, patientData.getObservedTerms());
+        List<TargetDisease.PhenotypeOnly> targetDiseaseList = diseases.stream()
+                .map(d -> new TargetDisease.PhenotypeOnly(d.id().toString(), d.diseaseName(),
+                        d.annotationTermIds().collect(Collectors.toSet())
+                )).toList();
+        List<CandidateDisease> diseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
+
+        int limit = Integer.MAX_VALUE;
+        List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
+                patientData, counter, limit, params,  diseaseCandidateList);
+//        PatientAnalysisResult patientAnalysisResult = new PatientAnalysisResult(
+//                ppkt, candidateResults.stream().limit(limit).toList());
+//
+//        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResultsRawLog(patientData, counter, params);
+//        List<BoqaResult> rescaledBoqaResults = reScaledRawLogBoqaExomiserScores(boqaAnalysisResult.boqaResults());
+//        logger.debug("Top 10 BOQA results:");
+//        rescaledBoqaResults.stream().sorted(Comparator.comparing(BoqaResult::boqaScore)).limit(10).forEach(b -> logger.debug("BOQA score: {} {} {}", b.counts().diseaseId(), b.boqaScore(), b.counts().diseaseLabel()));
+          Map<String, CandidateResult> boqaResultsByDiseaseId = candidateResults.stream()
+                .collect(toUnmodifiableMap(c -> c.finalDiseases().stream().map(TargetDisease::diseaseId).toString(), Function.identity()));
         return genes.stream().map(prioritiseGene(boqaResultsByDiseaseId));
     }
 
@@ -102,7 +123,7 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
      * all OMIM and Orphanet diseases associated with the entrez Gene.
      *
      **/
-    private Function<Gene, BoqaPriorityResult> prioritiseGene(Map<String, BoqaResult> boqaResultsByDiseaseId) {
+    private Function<Gene, BoqaPriorityResult> prioritiseGene(Map<String, CandidateResult> boqaResultsByDiseaseId) {
         return gene -> {
             List<Disease> diseases = priorityService.getDiseaseDataAssociatedWithGeneId(gene.entrezGeneId());
 
@@ -111,20 +132,20 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
             // An Exomiser Disease is a disease-gene-moi concept, but again these will all have the same phenotypic
             // features extracted from the HPOA
             // new disease table: id, label, source (e.g. HPOA, DDD2G), geneId, geneSymbol, moi, validity (ClinGen/GENCC), triplosensitivity, haploinsufficient, observedPhenotypes, excludedPhenotypes
-            Map<Disease, BoqaResult> map = new HashMap<>();
+            Map<Disease, CandidateResult> map = new HashMap<>();
             for (Disease disease : diseases) {
                 if (disease.id().startsWith("OMIM")) {
-                    BoqaResult boqaResult = boqaResultsByDiseaseId.get(disease.diseaseId());
-                    if (boqaResult != null) {
-                        map.putIfAbsent(disease, boqaResult);
+                    CandidateResult c = boqaResultsByDiseaseId.get(disease.diseaseId());
+                    if (c != null) {
+                        map.putIfAbsent(disease, c);
                     }
                 }
             }
-            Map<Disease, BoqaResult> boqaResults = Collections.unmodifiableMap(map);
+            Map<Disease, CandidateResult> res = Collections.unmodifiableMap(map);
 
-            double score = boqaResults.values().stream().mapToDouble(BoqaResult::boqaScore).max().orElse(0d);
-            BoqaPriorityResult boqaPriorityResult = new BoqaPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score, boqaResults);
-            logger.trace("BOQA score for {} is {} {}", gene.geneSymbol(), score, boqaResults);
+            double score = res.values().stream().mapToDouble(CandidateResult::score).max().orElse(0d);
+            BoqaPriorityResult boqaPriorityResult = new BoqaPriorityResult(gene.entrezGeneId(), gene.geneSymbol(), score, res);
+            logger.trace("BOQA score for {} is {} {}", gene.geneSymbol(), score, res);
             return boqaPriorityResult;
         };
     }
@@ -157,8 +178,6 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
 
         private final Map<String, String> diseaseIdToLabel;
         private final Map<String, Set<String>> diseaseObservedPhenotypes;
-        private final Map<String, Set<String>> diseaseGeneIds;
-        private final Map<String, Set<String>> diseaseGeneSymbols;
 
         // TODO: check if there are multiple D2G mappings in the HPO disease2Gene.tsv
         public ExomiserDiseaseData(List<Disease> diseases) {
@@ -170,13 +189,13 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
                     .filter(disease -> disease.diseaseId().startsWith("OMIM"))
                     .collect(toMap(Disease::diseaseId, disease -> Set.copyOf(disease.phenotypeIds()), (first, second) -> first));
 
-            diseaseGeneIds = diseases.stream()
-                    .filter(disease -> disease.diseaseId().startsWith("OMIM"))
-                    .collect(groupingBy(Disease::diseaseId, mapping(disease -> Integer.toString(disease.associatedGeneId()), toUnmodifiableSet())));
-
-            diseaseGeneSymbols = diseases.stream()
-                    .filter(disease -> disease.diseaseId().startsWith("OMIM"))
-                    .collect(groupingBy(Disease::diseaseId, mapping(Disease::associateGeneSymbol, toUnmodifiableSet())));
+//            diseaseGeneIds = diseases.stream()
+//                    .filter(disease -> disease.diseaseId().startsWith("OMIM"))
+//                    .collect(groupingBy(Disease::diseaseId, mapping(disease -> Integer.toString(disease.associatedGeneId()), toUnmodifiableSet())));
+//
+//            diseaseGeneSymbols = diseases.stream()
+//                    .filter(disease -> disease.diseaseId().startsWith("OMIM"))
+//                    .collect(groupingBy(Disease::diseaseId, mapping(Disease::associateGeneSymbol, toUnmodifiableSet())));
 
         }
 
@@ -200,15 +219,6 @@ public class BoqaPrioritiser implements Prioritiser<BoqaPriorityResult> {
             return Set.of();
         }
 
-        @Override
-        public Set<String> getDiseaseGeneIds(String diseaseId) {
-            return diseaseGeneIds.getOrDefault(diseaseId, Set.of());
-        }
-
-        @Override
-        public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-            return diseaseGeneSymbols.getOrDefault(diseaseId, Set.of());
-        }
 
         @Override
         public Map<String, String> getIdToLabel() {

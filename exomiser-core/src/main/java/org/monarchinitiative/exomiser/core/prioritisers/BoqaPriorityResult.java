@@ -2,6 +2,7 @@ package org.monarchinitiative.exomiser.core.prioritisers;
 
 import org.monarchinitiative.exomiser.core.prioritisers.model.Disease;
 import org.p2gx.boqa.core.analysis.BoqaResult;
+import org.p2gx.boqa.core.analysis.CandidateResult;
 
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
  * @param boqaResults A map of {@link Disease} to {@link BoqaResult} linked to this gene
  */
 public record BoqaPriorityResult(int geneId, String geneSymbol, double score,
-                                 Map<Disease, BoqaResult> boqaResults) implements PriorityResult {
+                                 Map<Disease, CandidateResult> boqaResults) implements PriorityResult {
 
     @Override
     public PriorityType priorityType() {
