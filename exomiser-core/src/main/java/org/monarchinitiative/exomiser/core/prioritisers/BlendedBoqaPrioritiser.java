@@ -100,6 +100,7 @@ public class BlendedBoqaPrioritiser implements Prioritiser<BlendedBoqaPriorityRe
         List<BlendedBoqaPriorityResult> blendedResults = new ArrayList<>();
         // 1. Find genes with candidate pathogenic variants
         List<TargetDisease.PhenotypeAndGene> targetDiseaseList = getCandidateDiseases(genes);
+
         BoqaBlendedExomiserAnalyser bbqAnalyser = new BoqaBlendedExomiserAnalyser(hpo, hpoDiseases);
         PatientData patientData = PatientData.fromObservedHpoTermList(hpoIds);
         List<CandidateResult> candidateResults = bbqAnalyser.computeBlendedBoqaResults(
@@ -115,6 +116,7 @@ public class BlendedBoqaPrioritiser implements Prioritiser<BlendedBoqaPriorityRe
                     .map(geneMap::get).toList();
             blendedResults.add(new BlendedBoqaPriorityResult(diseaseGenes, c));
         });
+
         return blendedResults.stream();
     }
 

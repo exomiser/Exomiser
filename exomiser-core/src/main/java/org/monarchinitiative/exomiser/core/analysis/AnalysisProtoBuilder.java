@@ -296,7 +296,7 @@ public class AnalysisProtoBuilder implements FluentAnalysisBuilder<AnalysisProto
     }
     @Override
     public AnalysisProtoBuilder addBlendedBoqaPrioritiser() {
-        builder.addSteps(stepBuilder().setBoqaPrioritiser(PrioritisersProto.BoqaPrioritiser.getDefaultInstance()));
+        builder.addSteps(stepBuilder().setBlendedBoqaPrioritiser(PrioritisersProto.BlendedBoqaPrioritiser.getDefaultInstance()));
         return this;
     }
 

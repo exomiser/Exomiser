@@ -24,6 +24,7 @@ import de.charite.compbio.jannovar.annotation.VariantEffect;
 import de.charite.compbio.jannovar.mendel.SubModeOfInheritance;
 import org.monarchinitiative.exomiser.api.v1.*;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
+import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter.Target;
 import org.monarchinitiative.exomiser.core.genome.BedFiles;
 import org.monarchinitiative.exomiser.core.genome.GenomeAnalysisServiceProvider;
 import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
@@ -298,6 +299,8 @@ public class JobParser {
             analysisBuilder.addExomeWalkerPrioritiser(protoAnalysisStep.getExomeWalkerPrioritiser().getSeedGeneIdsList());
         } else if (protoAnalysisStep.hasBoqaPrioritiser()) {
             analysisBuilder.addBoqaPrioritiser();
+        } else if (protoAnalysisStep.hasBlendedBoqaPrioritiser()) {
+            analysisBuilder.addBlendedBoqaPrioritiser();
         }
     }
 

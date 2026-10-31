@@ -75,6 +75,7 @@ message AnalysisStep {
         PriorityScoreFilter priority_score_filter = 15;
         ExomeWalkerPrioritiser exome_walker_prioritiser = 16;
         BoqaPrioritiser boqa_prioritiser = 18;
+        BlendedBoqaPrioritiser blended_boqa_prioritiser = 20;
     }
 }
 
