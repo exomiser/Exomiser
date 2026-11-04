@@ -44,44 +44,45 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
     static {
         Map<String, ClinSig> temp = new HashMap<>();
         // ClinVar just seem to make up whatever as they go along. None of this is documented, just found through errors...
-        temp.put("Uncertain_significance", UNCERTAIN_SIGNIFICANCE);
-        temp.put("VUS-high", UNCERTAIN_SIGNIFICANCE);
-        temp.put("VUS-mid", UNCERTAIN_SIGNIFICANCE);
-        temp.put("VUS-low", UNCERTAIN_SIGNIFICANCE);
-        temp.put("VUS", UNCERTAIN_SIGNIFICANCE);
+        // removed underscores and lowercased everything to try and head-off rogue casing and underscores because they happen
+        temp.put("uncertainsignificance", UNCERTAIN_SIGNIFICANCE);
+        temp.put("vus-high", UNCERTAIN_SIGNIFICANCE);
+        temp.put("vus-mid", UNCERTAIN_SIGNIFICANCE);
+        temp.put("vus-low", UNCERTAIN_SIGNIFICANCE);
+        temp.put("vus", UNCERTAIN_SIGNIFICANCE);
 //        temp.put("Uncertain_significance/Uncertain_risk_allele", UNCERTAIN_SIGNIFICANCE);
-        temp.put("Benign", BENIGN);
+        temp.put("benign", BENIGN);
 //        temp.put("Benign/Likely_benign", BENIGN_OR_LIKELY_BENIGN);
-        temp.put("Likely_benign", LIKELY_BENIGN);
-        temp.put("Conflicting_interpretations_of_pathogenicity", CONFLICTING_PATHOGENICITY_INTERPRETATIONS);
-        temp.put("Conflicting_classifications_of_pathogenicity", CONFLICTING_PATHOGENICITY_INTERPRETATIONS);
-        temp.put("Likely_pathogenic", LIKELY_PATHOGENIC);
-        temp.put("Likely_pathogenic,_low_penetrance", LIKELY_PATHOGENIC);
-        temp.put("Likely_pathogenic/Likely_risk_allele", LIKELY_PATHOGENIC);
-        temp.put("Likely_pathogenic/Established_risk_allele", LIKELY_PATHOGENIC);
-        temp.put("Pathogenic/Likely_pathogenic", PATHOGENIC_OR_LIKELY_PATHOGENIC);
-        temp.put("Pathogenic/Likely_pathogenic/Likely_risk_allele", PATHOGENIC_OR_LIKELY_PATHOGENIC);
-        temp.put("Pathogenic/Likely_pathogenic/Pathogenic,_low_penetrance", PATHOGENIC_OR_LIKELY_PATHOGENIC);
-        temp.put("Pathogenic/Likely_pathogenic/Pathogenic,_low_penetrance/Established_risk_allele"
+        temp.put("likelybenign", LIKELY_BENIGN);
+        temp.put("conflictinginterpretationsofpathogenicity", CONFLICTING_PATHOGENICITY_INTERPRETATIONS);
+        temp.put("conflictingclassificationsofpathogenicity", CONFLICTING_PATHOGENICITY_INTERPRETATIONS);
+        temp.put("likelypathogenic", LIKELY_PATHOGENIC);
+        temp.put("likelypathogenic,lowpenetrance", LIKELY_PATHOGENIC);
+        temp.put("likelypathogenic/likelyriskallele", LIKELY_PATHOGENIC);
+        temp.put("likelypathogenic/establishedriskallele", LIKELY_PATHOGENIC);
+        temp.put("pathogenic/likelypathogenic", PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("pathogenic/likelypathogenic/likelyriskallele", PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("pathogenic/likelypathogenic/pathogenic,lowpenetrance", PATHOGENIC_OR_LIKELY_PATHOGENIC);
+        temp.put("pathogenic/likelypathogenic/pathogenic,lowpenetrance/establishedriskallele"
                 , PATHOGENIC_OR_LIKELY_PATHOGENIC);
-        temp.put("Pathogenic", PATHOGENIC);
-        temp.put("Pathogenic,_low_penetrance", PATHOGENIC);
-        temp.put("Pathogenic/Likely_risk_allele", PATHOGENIC);
-        temp.put("Pathogenic/Pathogenic,_low_penetrance", PATHOGENIC);
-        temp.put("Uncertain_risk_allele", UNCERTAIN_RISK_ALLELE);
-        temp.put("Likely_risk_allele", LIKELY_RISK_ALLELE);
-        temp.put("Established_risk_allele", ESTABLISHED_RISK_ALLELE);
-        temp.put("not_provided", NOT_PROVIDED);
-        temp.put("no_classification_for_the_single_variant", NOT_PROVIDED);
-        temp.put("no_classifications_from_unflagged_records", NOT_PROVIDED);
-        temp.put("Affects", AFFECTS);
+        temp.put("pathogenic", PATHOGENIC);
+        temp.put("pathogenic,lowpenetrance", PATHOGENIC);
+        temp.put("pathogenic/likelyriskallele", PATHOGENIC);
+        temp.put("pathogenic/pathogenic,lowpenetrance", PATHOGENIC);
+        temp.put("uncertainriskallele", UNCERTAIN_RISK_ALLELE);
+        temp.put("likelyriskallele", LIKELY_RISK_ALLELE);
+        temp.put("establishedriskallele", ESTABLISHED_RISK_ALLELE);
+        temp.put("notprovided", NOT_PROVIDED);
+        temp.put("noclassificationforthesinglevariant", NOT_PROVIDED);
+        temp.put("noclassificationsfromunflaggedrecords", NOT_PROVIDED);
+        temp.put("affects", AFFECTS);
         temp.put("association", ASSOCIATION);
-        temp.put("association_not_found", ASSOCIATION); // TODO add ASSOCIATION_NOT_FOUND
-        temp.put("drug_response", DRUG_RESPONSE);
+        temp.put("associationnotfound", ASSOCIATION); // TODO add ASSOCIATION_NOT_FOUND
+        temp.put("drugresponse", DRUG_RESPONSE);
         temp.put("other", OTHER);
-        temp.put("confers_sensitivity", OTHER);
+        temp.put("conferssensitivity", OTHER);
         temp.put("protective", PROTECTIVE);
-        temp.put("risk_factor", RISK_FACTOR);
+        temp.put("riskfactor", RISK_FACTOR);
         CLINSIG_MAP = Map.copyOf(temp);
     }
 
@@ -169,6 +170,7 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
     private Map<ClinSig, Integer> parseClnSigConf(String value) {
         // CLNSIGCONF=Pathogenic(1)|Uncertain_significance(2)
         // CLNSIGCONF=Uncertain_significance(1)|Likely_benign(1)
+        // CLNSIGCONF=Uncertain_significance_(1)|Likely_benign_(1)
         Map<ClinSig, Integer> confMap = new LinkedHashMap<>();
         String[] categories = value.split("\\|");
         for (String category : categories) {
@@ -189,8 +191,10 @@ public class ClinVarAlleleParser extends VcfAlleleParser {
         // risk_factor=411
 
         // this is yuk!
-        clinsig = clinsig.replace(",_low_penetrance", "");
         Set<ClinSig> clinSigs = Arrays.stream(clinsig.split("/"))
+                .map(c -> c.replace(",_low_penetrance", ""))
+                .map(c -> c.replace("_", ""))
+                .map(String::toLowerCase)
                 .map(CLINSIG_MAP::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(ClinSig.class)));

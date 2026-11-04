@@ -313,6 +313,21 @@ public class ClinVarAlleleParserTest extends AbstractAlleleParserTester<ClinVarA
         assertParseLineEquals(line, List.of(expected));
     }
 
+    @Test
+    void conflictingInterpretationCountsWithExtraFlippingUnderscoresNowBecauseClinVarCantStopBloodyChangingThings() {
+        // why? who knows, but almost every damn time I run this, they have made some new changes.
+        String line = "1\t94051698\t7879\tC\tG\t.\t.\tCLNREVSTAT=criteria_provided,_conflicting_classifications;CLNSIG=Conflicting_classifications_of_pathogenicity;CLNSIGCONF=Pathogenic_(19)|Likely_pathogenic_(4)|Pathogenic,_low_penetrance(1)|Uncertain_significance(1);RS=1660844326";
+        Allele expected = new Allele(1, 94051698, "C", "G");
+        expected.setRsId("1660844326");
+        expected.setClinVarData(ClinVarData.builder()
+                .variationId("7879")
+                .primaryInterpretation(CONFLICTING_PATHOGENICITY_INTERPRETATIONS)
+                .reviewStatus(CRITERIA_PROVIDED_CONFLICTING_INTERPRETATIONS)
+                .conflictingInterpretationCounts(Map.of(PATHOGENIC, 20, LIKELY_PATHOGENIC, 4, UNCERTAIN_SIGNIFICANCE, 1))
+                .build());
+        assertParseLineEquals(line, List.of(expected));
+    }
+
     // 4	6301479	215392	G	C	.	.	ALLELEID=211061;CLNDISDB=MedGen:CN517202|MONDO:MONDO:0009101,MedGen:C4551693,OMIM:222300,Orphanet:3463;CLNDN=not_provided|Wolfram_syndrome_1;CLNHGVS=NC_000004.12:g.6301479G>C;CLNREVSTAT=criteria_provided,_multiple_submitters,_no_conflicts;CLNSIG=Likely_pathogenic/Likely_risk_allele;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;CLNVI=ClinGen:CA322818;GENEINFO=WFS1:7466;MC=SO:0001583|missense_variant;ORIGIN=1;RS=753237278
 
 
