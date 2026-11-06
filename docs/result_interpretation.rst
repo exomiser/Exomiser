@@ -149,6 +149,11 @@ were used to calculate the ``geneVariantScore`` and the ``geneCombinedScore``.
 Another distinguishing feature of the parquet output is the some fields may hold lists or structs to describe their data,
 e.g. the ``acmgEvidence`` column or the ``frequencies`` column.
 
+When HiPhive results are available, ``diseaseMatches`` contains all direct human disease phenotype matches in descending
+score order, including the best match summarised in the gene TSV's ``HUMAN_PHENO_EVIDENCE``. These matches are independent
+of the row's ``moi``; their presence does not imply inheritance compatibility. PPI evidence is stored separately in
+``ppiMatches``. Without HiPhive results, ``diseaseMatches`` retains the gene score's compatible disease annotations.
+
 VCF
 ===
 
