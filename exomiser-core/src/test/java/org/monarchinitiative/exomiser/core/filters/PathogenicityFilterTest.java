@@ -32,8 +32,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter.Target;
 import org.monarchinitiative.exomiser.core.genome.TestFactory;
+import org.monarchinitiative.exomiser.core.model.SampleGenotype;
+import org.monarchinitiative.exomiser.core.model.SampleGenotypes;
 import org.monarchinitiative.exomiser.core.model.VariantEvaluation;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.*;
+import org.monarchinitiative.svart.VariantType;
 
 import java.util.Arrays;
 import java.util.List;
@@ -185,7 +188,22 @@ class PathogenicityFilterTest {
             "false, NON_CODING, THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
             "false, NON_CODING, THREE_PRIME_UTR_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
             "false, NON_CODING, NON_CODING_TRANSCRIPT_INTRON_VARIANT, false, CADD=12;REMM=0.915, PASS",
+            "false, ALL, INTERGENIC_VARIANT, false, '', FAIL",
+            "false, NON_CODING, INTERGENIC_VARIANT, false, '', FAIL",
+            "false, NON_CODING, INTERGENIC_VARIANT, false, CADD=15, PASS",
+            "false, ALL, FIVE_PRIME_UTR_EXON_VARIANT, false, '', FAIL",
+            "false, NON_CODING, FIVE_PRIME_UTR_EXON_VARIANT, false, '', FAIL",
+            "false, ALL, THREE_PRIME_UTR_EXON_VARIANT, false, '', FAIL",
+            "false, NON_CODING, THREE_PRIME_UTR_EXON_VARIANT, false, '', FAIL",
+            "false, ALL, STRUCTURAL_VARIANT, false, '', FAIL",
+            "false, NON_CODING, STRUCTURAL_VARIANT, false, '', FAIL",
             // coding
+            "false, ALL, EXON_LOSS_VARIANT, false, '', PASS",
+            "false, NON_CODING, EXON_LOSS_VARIANT, false, '', PASS",
+            "false, ALL, INFRAME_DELETION, false, '', PASS",
+            "false, NON_CODING, INFRAME_DELETION, false, '', PASS",
+            "false, ALL, INFRAME_INSERTION, false, '', PASS",
+            "false, NON_CODING, INFRAME_INSERTION, false, '', PASS",
             "false, ALL, MISSENSE_VARIANT, false, CADD=12;REVEL=0.8, PASS",
             "false, ALL, MISSENSE_VARIANT, false, REVEL=0.1, FAIL",
             "false, ALL, MISSENSE_VARIANT, false, REVEL=0.1, FAIL",
@@ -211,6 +229,50 @@ class PathogenicityFilterTest {
                 .pathogenicityData(PathogenicityData.of(parsePathScores(pathScoreStrings)))
                 .build();
         assertThat(filter.runFilter(variant).status(), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "false, ALL, false, ''",
+            "false, NON_CODING, false, ''",
+            "false, ALL, false, CADD=20",
+            "false, NON_CODING, false, CADD=20",
+            "false, ALL, false, CADD=1",
+            "false, NON_CODING, false, CADD=1",
+            "true, ALL, false, CADD=1",
+            "true, NON_CODING, false, CADD=1",
+            "false, ALL, true, ''",
+            "false, NON_CODING, true, ''"
+    })
+    void testSymbolicExonLossDeletion(boolean keepNonPathogenic, Target target, boolean whitelisted, String pathScoreStrings) {
+        // Synthetic deletion: test filtering of an already annotated allele, without a patient or annotation database.
+        PathogenicityData pathData = PathogenicityData.of(parsePathScores(pathScoreStrings));
+        VariantEvaluation variant = TestFactory.variantBuilder(1, 1000, 6500, "N", "<DEL>", -5500)
+                .sampleGenotypes(SampleGenotypes.of("sample", SampleGenotype.het()))
+                .variantEffect(VariantEffect.EXON_LOSS_VARIANT)
+                .pathogenicityData(pathData)
+                .whiteListed(whitelisted)
+                .build();
+
+        assertThat(variant.isSymbolic(), is(true));
+        assertThat(variant.variantType(), equalTo(VariantType.DEL));
+        assertThat(variant.start(), equalTo(1000));
+        assertThat(variant.end(), equalTo(6500));
+        assertThat(variant.changeLength(), equalTo(-5500));
+        assertThat(variant.sampleGenotype("sample"), equalTo(SampleGenotype.het()));
+        // The existing effect score is already 1.0, even with a low predictor score.
+        assertThat(variant.pathogenicityScore(), equalTo(1.0f));
+
+        FilterResult result = new PathogenicityFilter(keepNonPathogenic, target).runFilter(variant);
+        assertThat(result.filterType(), equalTo(FilterType.PATHOGENICITY_FILTER));
+        assertThat(result.filterType().vcfValue(), equalTo("path"));
+        variant.addFilterResult(result);
+        assertThat(variant.failedFilterTypes().contains(FilterType.PATHOGENICITY_FILTER), is(false));
+        FilterTestHelper.assertPassed(result);
+        assertThat(variant.isCodingVariant(), is(true));
+        assertThat(variant.isNonCodingVariant(), is(false));
+        assertThat(variant.pathogenicityData(), equalTo(pathData));
+        assertThat(variant.pathogenicityScore(), equalTo(1.0f));
     }
 
     private List<PathogenicityScore> parsePathScores(String pathScoreStrings) {
