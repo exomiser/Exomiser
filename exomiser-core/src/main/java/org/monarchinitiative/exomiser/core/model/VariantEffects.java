@@ -31,6 +31,7 @@ import java.util.Set;
 public final class VariantEffects {
 
     private static final Set<VariantEffect> codingVariantEffects = EnumSet.of(
+            VariantEffect.EXON_LOSS_VARIANT,
             VariantEffect.STOP_LOST,
             VariantEffect.STOP_RETAINED_VARIANT,
             VariantEffect.STOP_GAINED,

@@ -22,6 +22,10 @@ package org.monarchinitiative.exomiser.core.model;
 
 import de.charite.compbio.jannovar.annotation.VariantEffect;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.monarchinitiative.exomiser.core.genome.TestFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +34,35 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Jules Jacobsen <j.jacobsen@qmul.ac.uk>
  */
 public class VariantEffectUtilityTest {
+
+    @ParameterizedTest
+    @CsvSource({
+            "EXON_LOSS_VARIANT, true, false",
+            "MISSENSE_VARIANT, true, false",
+            "INFRAME_DELETION, true, false",
+            "INFRAME_INSERTION, true, false",
+            "CODING_TRANSCRIPT_INTRON_VARIANT, false, false",
+            "NON_CODING_TRANSCRIPT_EXON_VARIANT, false, false",
+            "INTERGENIC_VARIANT, false, false",
+            "FIVE_PRIME_UTR_EXON_VARIANT, false, true",
+            "THREE_PRIME_UTR_EXON_VARIANT, false, true",
+            "STRUCTURAL_VARIANT, false, false"
+    })
+    void testCodingClassification(VariantEffect effect, boolean coding, boolean regulatory) {
+        assertThat(VariantEffects.affectsCodingRegion(effect), is(coding));
+        assertThat(VariantEffects.isNonCodingVariant(effect), is(!coding));
+        assertThat(VariantEffects.isRegulatoryNonCodingVariant(effect), is(regulatory));
+
+        VariantEvaluation variant = TestFactory.variantBuilder(1, 1, "A", "T").variantEffect(effect).build();
+        assertThat(variant.isCodingVariant(), is(coding));
+        assertThat(variant.isNonCodingVariant(), is(!coding));
+    }
+
+    @ParameterizedTest
+    @EnumSource(VariantEffect.class)
+    void testCodingAndNonCodingAreComplementary(VariantEffect effect) {
+        assertThat(VariantEffects.isNonCodingVariant(effect), is(!VariantEffects.affectsCodingRegion(effect)));
+    }
 
     @Test
     public void testIsNonCodingVariant() throws Exception {
