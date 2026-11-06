@@ -21,6 +21,7 @@ import org.monarchinitiative.exomiser.core.model.pathogenicity.ClinVarData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityData;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicityScore;
 import org.monarchinitiative.exomiser.core.model.pathogenicity.PathogenicitySource;
+import org.monarchinitiative.exomiser.core.phenotype.ModelPhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.Organism;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeMatch;
 import org.monarchinitiative.exomiser.core.phenotype.PhenotypeTerm;
@@ -112,6 +113,10 @@ public class ParquetResultsWriter implements ResultsWriter {
         PathogenicityData pathogenicityData = ve.pathogenicityData();
         ClinVarData clinVarData = pathogenicityData.clinVarData();
         Optional<PathogenicityScore> maxPath = Optional.ofNullable(pathogenicityData.mostPathogenicScore());
+        // Human phenotype evidence, like the TSV evidence and human score, is independent of the row's MOI.
+        List<ModelPhenotypeMatch<Disease>> diseaseMatches = hiPhivePriorityResult == null
+                ? geneScore.compatibleDiseaseMatches()
+                : hiPhivePriorityResult.compatibleDiseaseMatches(ModeOfInheritance.ANY);
         return new VariantResult(rank,
                 variantId,
                 geneIdentifier.geneSymbol(),
@@ -166,7 +171,7 @@ public class ParquetResultsWriter implements ResultsWriter {
                 hiPhivePriorityResult == null ? 0 : hiPhivePriorityResult.fishScore(),
                 hiPhivePriorityResult == null ? 0 : hiPhivePriorityResult.ppiScore(),
                 associatedDiseases,
-                geneScore.compatibleDiseaseMatches().stream()
+                diseaseMatches.stream()
                         .map(dm -> new DiseaseMatch(dm.score(), dm.model().diseaseId(), toSimplePhenotypeMatches(dm.bestPhenotypeMatches())))
                         .toList(),
                 hiPhivePriorityResult == null ? List.of() : hiPhivePriorityResult.phenotypeEvidence().stream()
