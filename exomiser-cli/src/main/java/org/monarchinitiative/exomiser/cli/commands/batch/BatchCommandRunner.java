@@ -12,9 +12,7 @@ import org.monarchinitiative.exomiser.core.analysis.AnalysisResults;
 import org.monarchinitiative.exomiser.core.analysis.JobParser;
 import org.monarchinitiative.exomiser.core.analysis.sample.PedigreeSampleValidator;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
-import org.monarchinitiative.exomiser.core.genome.NoOpVcfReader;
-import org.monarchinitiative.exomiser.core.genome.VcfFileReader;
-import org.monarchinitiative.exomiser.core.genome.VcfReader;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.pedigree.Pedigree;
 import org.monarchinitiative.exomiser.core.model.SampleIdentifiers;
 import org.monarchinitiative.exomiser.core.writers.AnalysisResultsWriter;
@@ -185,13 +183,17 @@ public class BatchCommandRunner implements CommandRunner<BatchCommand> {
                 return Result.err(new SampleValidationError(line, ex.getMessage()));
             }
             try {
-                VcfReader vcfReader = sample.hasVcf() ? new VcfFileReader(sample.vcfPath()) : new NoOpVcfReader();
-                List<String> sampleNames = vcfReader.readSampleIdentifiers();
+                // Dry runs must report read failures, not treat them as a VCF with no samples.
+                List<String> sampleNames = sample.hasVcf()
+                        ? VcfFiles.readVcfHeader(sample.vcfPath()).getGenotypeSamples()
+                        : List.of();
                 String probandIdentifier = SampleIdentifiers.checkProbandIdentifier(sample.probandSampleName(), sampleNames);
                 Pedigree validatedPedigree = PedigreeSampleValidator.validate(sample.pedigree(), probandIdentifier, sampleNames);
                 return Result.ok(sample);
             } catch (Exception ex) {
-                return Result.err(new SampleValidationError(line, ex.getMessage()));
+                // HTSJDK's header error message can omit the cause's type (e.g. AccessDeniedException).
+                String message = ex.getCause() == null ? ex.getMessage() : ex.getMessage() + ": " + ex.getCause();
+                return Result.err(new SampleValidationError(line, message));
             }
         }
     }
