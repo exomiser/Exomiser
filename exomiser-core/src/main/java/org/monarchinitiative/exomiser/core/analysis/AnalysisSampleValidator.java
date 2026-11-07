@@ -20,15 +20,23 @@
 
 package org.monarchinitiative.exomiser.core.analysis;
 
+import htsjdk.samtools.SAMSequenceDictionary;
+import htsjdk.samtools.SAMSequenceRecord;
 import org.monarchinitiative.exomiser.core.analysis.sample.Sample;
 import org.monarchinitiative.exomiser.core.filters.FrequencyFilter;
 import org.monarchinitiative.exomiser.core.filters.KnownVariantFilter;
 import org.monarchinitiative.exomiser.core.filters.PathogenicityFilter;
+import org.monarchinitiative.exomiser.core.genome.GenomeAssembly;
+import org.monarchinitiative.exomiser.core.genome.VcfFiles;
 import org.monarchinitiative.exomiser.core.prioritisers.Prioritiser;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityResult;
 import org.monarchinitiative.exomiser.core.prioritisers.PriorityType;
+import org.monarchinitiative.svart.Contig;
 
 import java.util.Objects;
+
+import static org.monarchinitiative.svart.assembly.AssignedMoleculeType.CHROMOSOME;
+import static org.monarchinitiative.svart.assembly.SequenceRole.ASSEMBLED_MOLECULE;
 
 /**
  * Class to check the {@link Sample} and {@link Analysis} provided to the {@link AnalysisRunner} are in a
@@ -79,6 +87,35 @@ class AnalysisSampleValidator {
                 throw new IllegalStateException("HPO IDs not defined. Define some sample phenotypes before adding prioritiser: " + analysisStep
                         .getClass()
                         .getSimpleName());
+            }
+        }
+        validateVcfAssembly(sample);
+    }
+
+    /**
+     * Checks only known positive lengths of canonical nuclear chromosomes (autosomes, X and Y) in the header.
+     * Missing metadata and unmapped contigs cannot establish incompatibility. Alternate loci and decoys are not
+     * checked, nor is mitochondrial DNA: common hg19 and GRCh37 mitochondrial references differ in length.
+     * Passing this check does not prove the assembly or validate variant coordinates; no assembly is inferred.
+     */
+    private static void validateVcfAssembly(Sample sample) {
+        GenomeAssembly assembly = sample.genomeAssembly();
+        if (!sample.hasVcf() || assembly == GenomeAssembly.UNKNOWN) {
+            return;
+        }
+        SAMSequenceDictionary dictionary = VcfFiles.readVcfHeader(sample.vcfPath()).getSequenceDictionary();
+        if (dictionary == null) {
+            return;
+        }
+        for (SAMSequenceRecord sequence : dictionary.getSequences()) {
+            Contig contig = assembly.getContigByName(sequence.getSequenceName());
+            int observedLength = sequence.getSequenceLength();
+            if (contig.sequenceRole() == ASSEMBLED_MOLECULE && contig.assignedMoleculeType() == CHROMOSOME
+                    && observedLength > 0 && contig.length() > 0 && observedLength != contig.length()) {
+                throw new IllegalStateException("VCF file " + sample.vcfPath() + " has contig "
+                        + sequence.getSequenceName() + " with length " + observedLength
+                        + ", but selected assembly " + assembly + " (" + assembly.toGrcString()
+                        + ") expects " + contig.length() + ". Check the VCF reference and selected genome assembly.");
             }
         }
     }
